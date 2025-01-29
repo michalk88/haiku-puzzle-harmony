@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import HaikuLine from "./HaikuLine";
 import WordTile from "./WordTile";
 
@@ -29,6 +28,22 @@ const HaikuPuzzle: React.FC = () => {
     setDraggedWord(word);
   };
 
+  const handleWordReorder = (lineIndex: number, draggedWord: string, dropIndex: number) => {
+    const newLines = [...lines];
+    const currentLine = [...newLines[lineIndex]];
+    
+    // Remove the word from its current position if it exists in the line
+    const currentIndex = currentLine.indexOf(draggedWord);
+    if (currentIndex !== -1) {
+      currentLine.splice(currentIndex, 1);
+    }
+    
+    // Insert the word at the new position
+    currentLine.splice(dropIndex, 0, draggedWord);
+    newLines[lineIndex] = currentLine;
+    setLines(newLines);
+  };
+
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
   return (
@@ -39,6 +54,7 @@ const HaikuPuzzle: React.FC = () => {
             key={index}
             words={line}
             onDrop={handleDrop(index)}
+            onWordDrop={(draggedWord, dropIndex) => handleWordReorder(index, draggedWord, dropIndex)}
           />
         ))}
       </div>
