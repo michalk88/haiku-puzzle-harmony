@@ -2,6 +2,13 @@ import React, { useState } from "react";
 import HaikuLine from "./HaikuLine";
 import WordTile from "./WordTile";
 
+// The solution represents the correct order of words for each line
+const solution = [
+  ["a", "haiku", "today"],
+  ["dementia", "will", "not", "keep"],
+  ["one", "day", "away"]
+];
+
 const availableWords = [
   "haiku", "away", "a", "today",
   "keep", "not", "start", "one",
@@ -43,12 +50,10 @@ const HaikuPuzzle: React.FC = () => {
   };
 
   const handleWordReturnToPool = (word: string, lineIndex: number) => {
-    // Remove the word from the line
     const newLines = [...lines];
     newLines[lineIndex] = newLines[lineIndex].filter(w => w !== word);
     setLines(newLines);
     
-    // Remove the word from usedWords
     const newUsedWords = new Set(usedWords);
     newUsedWords.delete(word);
     setUsedWords(newUsedWords);
@@ -77,7 +82,6 @@ const HaikuPuzzle: React.FC = () => {
           e.preventDefault();
           const word = e.dataTransfer.getData("text/plain");
           if (word) {
-            // Find which line contains the word
             lines.forEach((line, index) => {
               if (line.includes(word)) {
                 handleWordReturnToPool(word, index);
