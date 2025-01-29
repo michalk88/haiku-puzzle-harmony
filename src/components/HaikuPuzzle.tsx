@@ -12,6 +12,7 @@ const availableWords = [
 const HaikuPuzzle: React.FC = () => {
   const [lines, setLines] = useState<string[][]>([[], [], []]);
   const [draggedWord, setDraggedWord] = useState<string>("");
+  const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
 
   const handleDrop = (lineIndex: number) => (e: React.DragEvent) => {
     e.preventDefault();
@@ -19,6 +20,7 @@ const HaikuPuzzle: React.FC = () => {
       const newLines = [...lines];
       newLines[lineIndex] = [...newLines[lineIndex], draggedWord];
       setLines(newLines);
+      setUsedWords(new Set([...usedWords, draggedWord]));
       setDraggedWord("");
     }
   };
@@ -26,6 +28,8 @@ const HaikuPuzzle: React.FC = () => {
   const handleDragStart = (word: string) => {
     setDraggedWord(word);
   };
+
+  const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
   return (
     <div className="max-w-2xl mx-auto p-8">
@@ -40,7 +44,7 @@ const HaikuPuzzle: React.FC = () => {
       </div>
       
       <div className="flex flex-wrap gap-3 justify-center">
-        {availableWords.map((word) => (
+        {remainingWords.map((word) => (
           <WordTile
             key={word}
             word={word}
