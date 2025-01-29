@@ -32,16 +32,26 @@ const HaikuPuzzle: React.FC = () => {
     const newLines = [...lines];
     const currentLine = [...newLines[lineIndex]];
     
-    // Remove the word from its current position if it exists in the line
     const currentIndex = currentLine.indexOf(draggedWord);
     if (currentIndex !== -1) {
       currentLine.splice(currentIndex, 1);
     }
     
-    // Insert the word at the new position
     currentLine.splice(dropIndex, 0, draggedWord);
     newLines[lineIndex] = currentLine;
     setLines(newLines);
+  };
+
+  const handleWordReturnToPool = (word: string, lineIndex: number) => {
+    // Remove the word from the line
+    const newLines = [...lines];
+    newLines[lineIndex] = newLines[lineIndex].filter(w => w !== word);
+    setLines(newLines);
+    
+    // Remove the word from usedWords
+    const newUsedWords = new Set(usedWords);
+    newUsedWords.delete(word);
+    setUsedWords(newUsedWords);
   };
 
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
@@ -55,11 +65,27 @@ const HaikuPuzzle: React.FC = () => {
             words={line}
             onDrop={handleDrop(index)}
             onWordDrop={(draggedWord, dropIndex) => handleWordReorder(index, draggedWord, dropIndex)}
+            onWordReturnToPool={(word) => handleWordReturnToPool(word, index)}
           />
         ))}
       </div>
       
-      <div className="flex flex-wrap gap-3 justify-center">
+      <div 
+        className="flex flex-wrap gap-3 justify-center p-4 border-2 border-dashed border-haiku-border rounded-lg"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const word = e.dataTransfer.getData("text/plain");
+          if (word) {
+            // Find which line contains the word
+            lines.forEach((line, index) => {
+              if (line.includes(word)) {
+                handleWordReturnToPool(word, index);
+              }
+            });
+          }
+        }}
+      >
         {remainingWords.map((word) => (
           <WordTile
             key={word}

@@ -5,10 +5,17 @@ interface HaikuLineProps {
   words: string[];
   onDrop: (e: React.DragEvent) => void;
   onWordDrop: (draggedWord: string, dropIndex: number) => void;
+  onWordReturnToPool: (word: string) => void;
   className?: string;
 }
 
-const HaikuLine: React.FC<HaikuLineProps> = ({ words, onDrop, onWordDrop, className }) => {
+const HaikuLine: React.FC<HaikuLineProps> = ({ 
+  words, 
+  onDrop, 
+  onWordDrop, 
+  onWordReturnToPool,
+  className 
+}) => {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
