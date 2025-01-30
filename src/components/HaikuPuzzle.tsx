@@ -5,9 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 
 // The solution represents the correct order of words for each line
 const solution = [
-  ["a", "haiku", "today"],
-  ["dementia", "will", "not", "keep"],
-  ["one", "day", "away"]
+  ["one", "haiku", "a", "day"],
+  ["will", "keep", "dementia", "away"],
+  ["why", "not", "start", "today"]
 ];
 
 const availableWords = [
