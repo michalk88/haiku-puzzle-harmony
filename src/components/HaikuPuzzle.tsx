@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HaikuLine from "./HaikuLine";
 import WordTile from "./WordTile";
+import { useToast } from "@/hooks/use-toast";
 
 // The solution represents the correct order of words for each line
 const solution = [
@@ -19,6 +20,26 @@ const HaikuPuzzle: React.FC = () => {
   const [lines, setLines] = useState<string[][]>([[], [], []]);
   const [draggedWord, setDraggedWord] = useState<string>("");
   const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
+
+  useEffect(() => {
+    checkSolution();
+  }, [lines]);
+
+  const checkSolution = () => {
+    const isSolved = lines.every((line, lineIndex) => {
+      if (line.length !== solution[lineIndex].length) return false;
+      return line.every((word, wordIndex) => word === solution[lineIndex][wordIndex]);
+    });
+
+    if (isSolved) {
+      toast({
+        title: "Congratulations!",
+        description: "You've successfully arranged the haiku in the correct order!",
+        duration: 5000,
+      });
+    }
+  };
 
   const handleDrop = (lineIndex: number) => (e: React.DragEvent) => {
     e.preventDefault();
