@@ -4,7 +4,7 @@ import WordTile from "./WordTile";
 interface WordPoolProps {
   words: string[];
   onDragStart: (word: string) => void;
-  onWordReturn: (word: string) => void;
+  onWordReturn: (word: string, lineIndex?: number) => void;
 }
 
 const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn }) => {

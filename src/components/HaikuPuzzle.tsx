@@ -28,7 +28,7 @@ const HaikuPuzzle: React.FC = () => {
     setDraggedWord("");
   };
 
-  const handleWordReturn = (word: string, lineIndex: number) => {
+  const handleWordReturn = (word: string, lineIndex?: number) => {
     const newUsedWords = new Set(usedWords);
     newUsedWords.delete(word);
     setUsedWords(newUsedWords);
