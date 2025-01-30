@@ -22,11 +22,17 @@ const HaikuPuzzle: React.FC = () => {
 
   const handleDrop = (lineIndex: number) => (e: React.DragEvent) => {
     e.preventDefault();
-    if (draggedWord) {
-      const newLines = [...lines];
-      newLines[lineIndex] = [...newLines[lineIndex], draggedWord];
+    const word = e.dataTransfer.getData("text/plain");
+    if (word) {
+      // Remove the word from its current line if it exists in any line
+      const newLines = lines.map(line => line.filter(w => w !== word));
+      
+      // Add the word to the target line
+      newLines[lineIndex] = [...newLines[lineIndex], word];
       setLines(newLines);
-      setUsedWords(new Set([...usedWords, draggedWord]));
+      
+      // Ensure the word is marked as used
+      setUsedWords(new Set([...usedWords, word]));
       setDraggedWord("");
     }
   };
@@ -37,13 +43,14 @@ const HaikuPuzzle: React.FC = () => {
 
   const handleWordReorder = (lineIndex: number, draggedWord: string, dropIndex: number) => {
     const newLines = [...lines];
+    
+    // Remove the word from all lines
+    lines.forEach((line, idx) => {
+      newLines[idx] = line.filter(w => w !== draggedWord);
+    });
+    
+    // Add the word at the specific position in the target line
     const currentLine = [...newLines[lineIndex]];
-    
-    const currentIndex = currentLine.indexOf(draggedWord);
-    if (currentIndex !== -1) {
-      currentLine.splice(currentIndex, 1);
-    }
-    
     currentLine.splice(dropIndex, 0, draggedWord);
     newLines[lineIndex] = currentLine;
     setLines(newLines);
