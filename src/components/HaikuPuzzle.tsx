@@ -22,7 +22,7 @@ const HaikuPuzzle: React.FC = () => {
 
   const handleDrop = (lineIndex: number) => (e: React.DragEvent) => {
     e.preventDefault();
-    const word = e.dataTransfer.getData("text/plain");
+    const word = draggedWord || e.dataTransfer.getData("text/plain");
     if (word) {
       // Remove the word from its current line if it exists in any line
       const newLines = lines.map(line => line.filter(w => w !== word));
