@@ -20,6 +20,11 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
   const [lines, setLines] = useState<string[][]>([[], [], []]);
   const { toast } = useToast();
 
+  // Reset lines when solution changes (new haiku is loaded)
+  useEffect(() => {
+    setLines([[], [], []]);
+  }, [solution]);
+
   useEffect(() => {
     checkSolution();
   }, [lines]);
