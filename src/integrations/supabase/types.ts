@@ -9,7 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      haikus: {
+        Row: {
+          created_at: string
+          id: string
+          line1_words: string[]
+          line2_words: string[]
+          line3_words: string[]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          line1_words: string[]
+          line2_words: string[]
+          line3_words: string[]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          line1_words?: string[]
+          line2_words?: string[]
+          line3_words?: string[]
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

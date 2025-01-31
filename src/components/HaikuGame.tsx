@@ -7,13 +7,15 @@ interface HaikuGameProps {
   usedWords: Set<string>;
   onWordUse: (word: string) => void;
   onWordReturn: (word: string, lineIndex: number) => void;
+  onSolved: () => void;
 }
 
 const HaikuGame: React.FC<HaikuGameProps> = ({ 
   solution, 
   usedWords, 
   onWordUse, 
-  onWordReturn 
+  onWordReturn,
+  onSolved
 }) => {
   const [lines, setLines] = useState<string[][]>([[], [], []]);
   const { toast } = useToast();
@@ -34,6 +36,7 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
         description: "You've successfully arranged the haiku in the correct order!",
         duration: 5000,
       });
+      onSolved();
     }
   };
 
