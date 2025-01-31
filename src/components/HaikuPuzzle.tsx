@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 
-// The solution represents the correct order of words for each line
 const solution = [
   ["one", "haiku", "a", "day"],
   ["will", "keep", "dementia", "away"],
@@ -20,6 +19,7 @@ const HaikuPuzzle: React.FC = () => {
   const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
 
   const handleDragStart = (word: string) => {
+    e.dataTransfer.setData("text/plain", word);
     setDraggedWord(word);
   };
 

@@ -7,6 +7,7 @@ interface WordTileProps {
 
 const WordTile: React.FC<WordTileProps> = ({ word, onDragStart }) => {
   const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData("text/plain", word);
     onDragStart(word);
   };
 
