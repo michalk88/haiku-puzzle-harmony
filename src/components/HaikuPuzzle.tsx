@@ -18,7 +18,7 @@ const HaikuPuzzle: React.FC = () => {
   const [draggedWord, setDraggedWord] = useState<string>("");
   const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
 
-  const handleDragStart = (word: string) => {
+  const handleDragStart = (e: React.DragEvent, word: string) => {
     e.dataTransfer.setData("text/plain", word);
     setDraggedWord(word);
   };

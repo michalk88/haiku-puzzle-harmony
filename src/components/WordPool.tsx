@@ -3,7 +3,7 @@ import WordTile from "./WordTile";
 
 interface WordPoolProps {
   words: string[];
-  onDragStart: (word: string) => void;
+  onDragStart: (e: React.DragEvent, word: string) => void;
   onWordReturn: (word: string, lineIndex?: number) => void;
 }
 

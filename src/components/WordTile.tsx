@@ -2,13 +2,12 @@ import React from "react";
 
 interface WordTileProps {
   word: string;
-  onDragStart: (word: string) => void;
+  onDragStart: (e: React.DragEvent, word: string) => void;
 }
 
 const WordTile: React.FC<WordTileProps> = ({ word, onDragStart }) => {
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData("text/plain", word);
-    onDragStart(word);
+    onDragStart(e, word);
   };
 
   return (
