@@ -49,8 +49,14 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
     e.preventDefault();
     const word = e.dataTransfer.getData("text/plain");
     if (word) {
-      // Remove the word from its current line if it exists in any line
-      const newLines = lines.map(line => line.filter(w => w !== word));
+      // Create a copy of the current lines
+      const newLines = [...lines];
+      
+      // Remove the word from its current line if it exists
+      const currentLineIndex = lines.findIndex(line => line.includes(word));
+      if (currentLineIndex !== -1) {
+        newLines[currentLineIndex] = newLines[currentLineIndex].filter(w => w !== word);
+      }
       
       // Add the word to the target line
       newLines[lineIndex] = [...newLines[lineIndex], word];
@@ -64,10 +70,11 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
   const handleWordReorder = (lineIndex: number, draggedWord: string, dropIndex: number) => {
     const newLines = [...lines];
     
-    // Remove the word from all lines
-    lines.forEach((line, idx) => {
-      newLines[idx] = line.filter(w => w !== draggedWord);
-    });
+    // Remove the word from its current line if it exists
+    const currentLineIndex = lines.findIndex(line => line.includes(draggedWord));
+    if (currentLineIndex !== -1) {
+      newLines[currentLineIndex] = newLines[currentLineIndex].filter(w => w !== draggedWord);
+    }
     
     // Add the word at the specific position in the target line
     const currentLine = [...newLines[lineIndex]];
