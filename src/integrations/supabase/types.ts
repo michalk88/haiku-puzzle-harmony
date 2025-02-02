@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      completed_haikus: {
+        Row: {
+          created_at: string
+          haiku_id: string
+          id: string
+          line1_arrangement: string[]
+          line2_arrangement: string[]
+          line3_arrangement: string[]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          haiku_id: string
+          id?: string
+          line1_arrangement: string[]
+          line2_arrangement: string[]
+          line3_arrangement: string[]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          haiku_id?: string
+          id?: string
+          line1_arrangement?: string[]
+          line2_arrangement?: string[]
+          line3_arrangement?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "completed_haikus_haiku_id_fkey"
+            columns: ["haiku_id"]
+            isOneToOne: false
+            referencedRelation: "haikus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_haiku"
+            columns: ["haiku_id"]
+            isOneToOne: false
+            referencedRelation: "haikus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       haikus: {
         Row: {
           created_at: string
