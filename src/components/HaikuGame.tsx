@@ -49,7 +49,6 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
     e.preventDefault();
     const word = e.dataTransfer.getData("text/plain");
     if (word) {
-      // Create a copy of the current lines
       const newLines = [...lines];
       
       // Remove the word from its current line if it exists
@@ -60,6 +59,8 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
       
       // Add the word to the target line
       newLines[lineIndex] = [...newLines[lineIndex], word];
+      
+      // Update the state with the new lines
       setLines(newLines);
       
       // Ensure the word is marked as used
@@ -80,6 +81,8 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
     const currentLine = [...newLines[lineIndex]];
     currentLine.splice(dropIndex, 0, draggedWord);
     newLines[lineIndex] = currentLine;
+    
+    // Update the state with the new lines
     setLines(newLines);
   };
 
