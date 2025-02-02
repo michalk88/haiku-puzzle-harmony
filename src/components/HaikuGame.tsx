@@ -20,11 +20,6 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
   const [lines, setLines] = useState<string[][]>([[], [], []]);
   const { toast } = useToast();
 
-  // Reset lines when solution changes (new haiku is loaded)
-  useEffect(() => {
-    setLines([[], [], []]);
-  }, [solution]);
-
   useEffect(() => {
     checkSolution();
   }, [lines]);
@@ -49,18 +44,11 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
     e.preventDefault();
     const word = e.dataTransfer.getData("text/plain");
     if (word) {
-      const newLines = [...lines];
-      
-      // Remove the word from its current line if it exists
-      const currentLineIndex = lines.findIndex(line => line.includes(word));
-      if (currentLineIndex !== -1) {
-        newLines[currentLineIndex] = newLines[currentLineIndex].filter(w => w !== word);
-      }
+      // Remove the word from its current line if it exists in any line
+      const newLines = lines.map(line => line.filter(w => w !== word));
       
       // Add the word to the target line
       newLines[lineIndex] = [...newLines[lineIndex], word];
-      
-      // Update the state with the new lines
       setLines(newLines);
       
       // Ensure the word is marked as used
@@ -71,18 +59,15 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
   const handleWordReorder = (lineIndex: number, draggedWord: string, dropIndex: number) => {
     const newLines = [...lines];
     
-    // Remove the word from its current line if it exists
-    const currentLineIndex = lines.findIndex(line => line.includes(draggedWord));
-    if (currentLineIndex !== -1) {
-      newLines[currentLineIndex] = newLines[currentLineIndex].filter(w => w !== draggedWord);
-    }
+    // Remove the word from all lines
+    lines.forEach((line, idx) => {
+      newLines[idx] = line.filter(w => w !== draggedWord);
+    });
     
     // Add the word at the specific position in the target line
     const currentLine = [...newLines[lineIndex]];
     currentLine.splice(dropIndex, 0, draggedWord);
     newLines[lineIndex] = currentLine;
-    
-    // Update the state with the new lines
     setLines(newLines);
   };
 
