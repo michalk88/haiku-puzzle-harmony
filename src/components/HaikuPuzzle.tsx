@@ -3,9 +3,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
-import { Button } from "./ui/button";
-import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import HaikuHeader from "./haiku/HaikuHeader";
+import CompletedHaiku from "./haiku/CompletedHaiku";
+import LoadingState from "./haiku/LoadingState";
 
 const HaikuPuzzle: React.FC = () => {
   const [draggedWord, setDraggedWord] = useState<string>("");
@@ -83,16 +84,8 @@ const HaikuPuzzle: React.FC = () => {
     }
   };
 
-  const handleReset = (haikuId: string) => {
-    resetMutation.mutate(haikuId);
-  };
-
   if (isLoadingHaikus || isLoadingCompleted) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (!haikus || haikus.length === 0) {
@@ -113,45 +106,28 @@ const HaikuPuzzle: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-8">
-      <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-xl font-semibold">{currentHaiku.title}</h2>
-        <div className="flex gap-2">
-          {isCompleted && (
-            <Button 
-              variant="outline"
-              onClick={() => handleReset(currentHaiku.id)}
-              disabled={resetMutation.isPending}
-            >
-              {resetMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                'Reset'
-              )}
-            </Button>
-          )}
-          <Button 
-            onClick={handleNextHaiku}
-            disabled={!isSolved || currentHaikuIndex === haikus.length - 1}
-          >
-            Next Haiku
-          </Button>
-        </div>
-      </div>
+      <HaikuHeader
+        title={currentHaiku.title}
+        isCompleted={isCompleted}
+        isSolved={isSolved}
+        isLastHaiku={currentHaikuIndex === haikus.length - 1}
+        onReset={() => resetMutation.mutate(currentHaiku.id)}
+        onNextHaiku={handleNextHaiku}
+        isResetting={resetMutation.isPending}
+      />
 
       {isCompleted ? (
-        <div className="space-y-4">
-          <div className="text-center space-y-2">
-            {[completedHaiku?.line1_arrangement, completedHaiku?.line2_arrangement, completedHaiku?.line3_arrangement].map((line, index) => (
-              <p key={index} className="text-lg">
-                {line?.join(' ')}
-              </p>
-            ))}
-          </div>
-        </div>
+        <CompletedHaiku
+          lines={[
+            completedHaiku?.line1_arrangement,
+            completedHaiku?.line2_arrangement,
+            completedHaiku?.line3_arrangement
+          ]}
+        />
       ) : (
         <>
           <HaikuGame
-            key={currentHaikuIndex} // Add this line to force remount on haiku change
+            key={currentHaikuIndex}
             solution={[
               currentHaiku.line1_words,
               currentHaiku.line2_words,
