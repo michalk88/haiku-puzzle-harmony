@@ -151,6 +151,7 @@ const HaikuPuzzle: React.FC = () => {
       ) : (
         <>
           <HaikuGame
+            key={currentHaikuIndex} // Add this line to force remount on haiku change
             solution={[
               currentHaiku.line1_words,
               currentHaiku.line2_words,
