@@ -95,6 +95,7 @@ const HaikuPuzzle: React.FC = () => {
   const currentHaiku = haikus[currentHaikuIndex];
   const isCompleted = completedHaikus?.some(ch => ch.haiku_id === currentHaiku.id);
   const completedHaiku = completedHaikus?.find(ch => ch.haiku_id === currentHaiku.id);
+  const isLastHaiku = currentHaikuIndex === haikus.length - 1;
 
   const availableWords = [
     ...currentHaiku.line1_words,
@@ -110,7 +111,7 @@ const HaikuPuzzle: React.FC = () => {
         title={currentHaiku.title}
         isCompleted={isCompleted}
         isSolved={isSolved}
-        isLastHaiku={currentHaikuIndex === haikus.length - 1}
+        isLastHaiku={isLastHaiku}
         onReset={() => resetMutation.mutate(currentHaiku.id)}
         onNextHaiku={handleNextHaiku}
         isResetting={resetMutation.isPending}
