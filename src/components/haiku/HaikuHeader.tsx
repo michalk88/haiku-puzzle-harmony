@@ -38,12 +38,14 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
             )}
           </Button>
         )}
-        <Button 
-          onClick={onNextHaiku}
-          disabled={!isSolved || !isCompleted || isLastHaiku}
-        >
-          Next Haiku
-        </Button>
+        {!isLastHaiku && (
+          <Button 
+            onClick={onNextHaiku}
+            disabled={!isSolved}
+          >
+            Next Haiku
+          </Button>
+        )}
       </div>
     </div>
   );
