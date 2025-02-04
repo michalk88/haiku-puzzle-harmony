@@ -117,12 +117,12 @@ const HaikuPuzzle: React.FC = () => {
         isResetting={resetMutation.isPending}
       />
 
-      {isCompleted ? (
+      {isCompleted || isSolved ? (
         <CompletedHaiku
           lines={[
-            completedHaiku?.line1_arrangement,
-            completedHaiku?.line2_arrangement,
-            completedHaiku?.line3_arrangement
+            completedHaiku?.line1_arrangement || currentHaiku.line1_words,
+            completedHaiku?.line2_arrangement || currentHaiku.line2_words,
+            completedHaiku?.line3_arrangement || currentHaiku.line3_words
           ]}
         />
       ) : (
