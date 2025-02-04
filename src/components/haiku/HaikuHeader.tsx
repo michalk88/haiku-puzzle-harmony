@@ -23,30 +23,34 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
 }) => {
   return (
     <div className="mb-6 flex justify-between items-center">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      <div className="flex gap-2">
-        {isCompleted && (
-          <Button 
-            variant="outline"
-            onClick={onReset}
-            disabled={isResetting}
-          >
-            {isResetting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              'Reset'
-            )}
-          </Button>
-        )}
-        {!isLastHaiku && (
-          <Button 
-            onClick={onNextHaiku}
-            disabled={!isSolved}
-          >
-            Next Haiku
-          </Button>
-        )}
-      </div>
+      <h2 className={`text-xl font-semibold ${(isCompleted || isSolved) ? 'mx-auto' : ''}`}>
+        {title}
+      </h2>
+      {!(isCompleted || isSolved) && (
+        <div className="flex gap-2">
+          {isCompleted && (
+            <Button 
+              variant="outline"
+              onClick={onReset}
+              disabled={isResetting}
+            >
+              {isResetting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                'Reset'
+              )}
+            </Button>
+          )}
+          {!isLastHaiku && (
+            <Button 
+              onClick={onNextHaiku}
+              disabled={!isSolved}
+            >
+              Next Haiku
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
