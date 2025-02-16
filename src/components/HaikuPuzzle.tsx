@@ -1,10 +1,8 @@
-
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
-import { useToast } from "@/hooks/use-toast";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
@@ -16,7 +14,7 @@ const HaikuPuzzle: React.FC = () => {
   const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
   const [currentHaikuIndex, setCurrentHaikuIndex] = useState(0);
   const [isSolved, setIsSolved] = useState(false);
-  const { toast } = useToast();
+  const [encouragingMessage, setEncouragingMessage] = useState<string>("");
   const queryClient = useQueryClient();
 
   const { data: haikus, isLoading: isLoadingHaikus } = useQuery({
@@ -56,10 +54,7 @@ const HaikuPuzzle: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['completed_haikus'] });
       setIsSolved(false);
       setUsedWords(new Set());
-      toast({
-        title: "Haiku Reset",
-        description: "You can now solve this haiku again!",
-      });
+      setEncouragingMessage("");
     }
   });
 
@@ -69,14 +64,15 @@ const HaikuPuzzle: React.FC = () => {
   };
 
   const handleWordUse = (word: string) => {
-    setUsedWords(new Set([...usedWords, word]));
-    setDraggedWord("");
+    setUsedWords(prev => new Set([...prev, word]));
   };
 
   const handleWordReturn = (word: string) => {
-    const newUsedWords = new Set(usedWords);
-    newUsedWords.delete(word);
-    setUsedWords(newUsedWords);
+    setUsedWords(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(word);
+      return newSet;
+    });
   };
 
   const handleNextHaiku = () => {
@@ -84,7 +80,13 @@ const HaikuPuzzle: React.FC = () => {
       setCurrentHaikuIndex(prev => prev + 1);
       setUsedWords(new Set());
       setIsSolved(false);
+      setEncouragingMessage("");
     }
+  };
+
+  const handleSolved = (message: string) => {
+    setIsSolved(true);
+    setEncouragingMessage(message);
   };
 
   if (isLoadingHaikus || isLoadingCompleted) {
@@ -118,6 +120,7 @@ const HaikuPuzzle: React.FC = () => {
         onReset={() => resetMutation.mutate(currentHaiku.id)}
         onNextHaiku={handleNextHaiku}
         isResetting={resetMutation.isPending}
+        encouragingMessage={encouragingMessage}
       />
 
       {isCompleted || isSolved ? (
@@ -153,7 +156,7 @@ const HaikuPuzzle: React.FC = () => {
             usedWords={usedWords}
             onWordUse={handleWordUse}
             onWordReturn={handleWordReturn}
-            onSolved={() => setIsSolved(true)}
+            onSolved={handleSolved}
           />
           
           <WordPool

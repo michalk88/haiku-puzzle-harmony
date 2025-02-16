@@ -1,14 +1,13 @@
 
 import React, { useState, useEffect } from "react";
 import HaikuLine from "./HaikuLine";
-import { useToast } from "@/hooks/use-toast";
 
 interface HaikuGameProps {
   solution: string[][];
   usedWords: Set<string>;
   onWordUse: (word: string) => void;
   onWordReturn: (word: string) => void;
-  onSolved: () => void;
+  onSolved: (message: string) => void;
 }
 
 const encouragingMessages = [
@@ -30,7 +29,6 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
   onSolved,
 }) => {
   const [lines, setLines] = useState<string[][]>([[], [], []]);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (lines.every((line, i) => 
@@ -38,13 +36,9 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
       line.every((word, j) => word === solution[i][j])
     )) {
       const randomMessage = encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)];
-      toast({
-        title: randomMessage,
-        className: "bg-green-500 text-white text-lg font-medium border-none shadow-xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg p-4",
-      });
-      onSolved();
+      onSolved(randomMessage);
     }
-  }, [lines, solution, onSolved, toast]);
+  }, [lines, solution, onSolved]);
 
   const handleDrop = (index: number) => (e: React.DragEvent) => {
     e.preventDefault();
