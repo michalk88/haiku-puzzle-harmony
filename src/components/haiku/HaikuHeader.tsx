@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
@@ -38,14 +39,6 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
             ) : (
               'Reset'
             )}
-          </Button>
-        )}
-        {!isLastHaiku && isSolved && (
-          <Button 
-            onClick={onNextHaiku}
-            disabled={!isSolved}
-          >
-            Next Haiku
           </Button>
         )}
       </div>

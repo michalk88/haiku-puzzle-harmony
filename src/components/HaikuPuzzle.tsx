@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
+import { Button } from "./ui/button";
+import { ChevronRight } from "lucide-react";
 
 const HaikuPuzzle: React.FC = () => {
   const [draggedWord, setDraggedWord] = useState<string>("");
@@ -118,13 +121,26 @@ const HaikuPuzzle: React.FC = () => {
       />
 
       {isCompleted || isSolved ? (
-        <CompletedHaiku
-          lines={[
-            completedHaiku?.line1_arrangement || currentHaiku.line1_words,
-            completedHaiku?.line2_arrangement || currentHaiku.line2_words,
-            completedHaiku?.line3_arrangement || currentHaiku.line3_words
-          ]}
-        />
+        <>
+          <CompletedHaiku
+            lines={[
+              completedHaiku?.line1_arrangement || currentHaiku.line1_words,
+              completedHaiku?.line2_arrangement || currentHaiku.line2_words,
+              completedHaiku?.line3_arrangement || currentHaiku.line3_words
+            ]}
+          />
+          {!isLastHaiku && isSolved && (
+            <div className="mt-8 flex justify-center">
+              <Button 
+                onClick={handleNextHaiku}
+                className="px-6 py-2 text-lg"
+              >
+                Next Haiku
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <>
           <HaikuGame
