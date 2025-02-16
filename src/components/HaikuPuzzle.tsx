@@ -133,10 +133,10 @@ const HaikuPuzzle: React.FC = () => {
             <div className="mt-8 flex justify-center">
               <Button 
                 onClick={handleNextHaiku}
-                className="px-6 py-2 text-lg"
+                className="w-16 h-16 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 bg-black hover:bg-gray-900 transform hover:-translate-y-1"
+                aria-label="Next Haiku"
               >
-                Next Haiku
-                <ChevronRight className="ml-2 h-5 w-5" />
+                <ChevronRight className="h-8 w-8 text-white" strokeWidth={3} />
               </Button>
             </div>
           )}
