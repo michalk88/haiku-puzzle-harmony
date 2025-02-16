@@ -1,3 +1,4 @@
+
 import React from "react";
 import { cn } from "@/lib/utils";
 
@@ -52,8 +53,9 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
           }}
           onDragOver={(e) => handleWordDragOver(e, index)}
           onDrop={(e) => handleWordDrop(e, index)}
-          className="bg-haiku-tile px-3 py-1 rounded-lg text-haiku-text cursor-move 
-                    hover:animate-tile-hover shadow-sm hover:shadow transition-shadow"
+          className="bg-black text-white px-3 py-1 rounded-lg cursor-move 
+                    shadow-lg hover:shadow-xl transition-all duration-200
+                    transform hover:-translate-y-1 hover:bg-gray-900"
         >
           {word}
         </div>
