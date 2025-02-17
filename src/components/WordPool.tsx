@@ -23,7 +23,7 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
   return (
     <div 
       className="flex flex-wrap gap-1.5 sm:gap-3 justify-center p-2 sm:p-4 
-                 border-2 border-dashed border-haiku-border rounded-lg"
+                 rounded-lg"
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
