@@ -9,9 +9,9 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines }) => {
   const getLineSize = (line: string[] | null) => {
     if (!line) return "base";
     const totalLength = line.join(' ').length;
-    if (totalLength > 20) return "xs";
-    if (totalLength > 15) return "sm";
-    return "base";
+    if (totalLength > 25) return "sm";
+    if (totalLength > 20) return "base";
+    return "lg";
   };
 
   const sizes = useMemo(() => 
@@ -20,13 +20,13 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines }) => {
   );
 
   const sizeClasses = {
-    xs: "text-xs sm:text-sm",
     sm: "text-sm sm:text-base",
-    base: "text-base sm:text-lg"
+    base: "text-base sm:text-lg",
+    lg: "text-lg sm:text-xl"
   };
 
   return (
-    <div className="my-8 sm:my-12 flex flex-col gap-4 sm:gap-6">
+    <div className="my-6 sm:my-8 flex flex-col gap-4 sm:gap-6">
       {lines.map((line, index) => (
         <div 
           key={index} 
@@ -35,7 +35,7 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines }) => {
           {line?.map((word, wordIndex) => (
             <span
               key={`${word}-${wordIndex}`}
-              className={`${sizeClasses[sizes[index]]} text-haiku-text font-light`}
+              className={`${sizeClasses[sizes[index]]} text-haiku-text font-normal`}
             >
               {word}
             </span>
