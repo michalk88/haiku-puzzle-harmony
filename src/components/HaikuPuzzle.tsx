@@ -6,8 +6,7 @@ import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
-import { Button } from "./ui/button";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import BottomNavigation from "./BottomNavigation";
 
 const HaikuPuzzle: React.FC = () => {
   const [draggedWord, setDraggedWord] = useState<string>("");
@@ -70,11 +69,6 @@ const HaikuPuzzle: React.FC = () => {
     }
   });
 
-  const handleDragStart = (e: React.DragEvent, word: string) => {
-    e.dataTransfer.setData("text/plain", word);
-    setDraggedWord(word);
-  };
-
   const handleWordUse = (word: string) => {
     setUsedWords(prev => new Set([...prev, word]));
   };
@@ -107,6 +101,13 @@ const HaikuPuzzle: React.FC = () => {
     }
   };
 
+  const handleReset = () => {
+    setUsedWords(new Set());
+    setIsSolved(false);
+    setEncouragingMessage("");
+    setIsMessageVisible(false);
+  };
+
   const handleSolved = (message: string) => {
     setIsSolved(true);
     setEncouragingMessage(message);
@@ -123,7 +124,6 @@ const HaikuPuzzle: React.FC = () => {
   const currentHaiku = haikus[currentHaikuIndex];
   const isCompleted = completedHaikus?.some(ch => ch.haiku_id === currentHaiku.id);
   const completedHaiku = completedHaikus?.find(ch => ch.haiku_id === currentHaiku.id);
-  const isLastHaiku = currentHaikuIndex === haikus.length - 1;
 
   const availableWords = [
     ...currentHaiku.line1_words,
@@ -134,12 +134,12 @@ const HaikuPuzzle: React.FC = () => {
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 sm:px-8 py-4 sm:py-8">
+    <div className="w-full max-w-2xl mx-auto px-4 sm:px-8 py-4 sm:py-8 pb-28">
       <HaikuHeader
         title={currentHaiku.title}
         isCompleted={isCompleted}
         isSolved={isSolved}
-        isLastHaiku={isLastHaiku}
+        isLastHaiku={currentHaikuIndex === haikus.length - 1}
         onReset={() => resetMutation.mutate(currentHaiku.id)}
         onNextHaiku={handleNextHaiku}
         isResetting={resetMutation.isPending}
@@ -147,37 +147,13 @@ const HaikuPuzzle: React.FC = () => {
       />
 
       {isCompleted || isSolved ? (
-        <>
-          <CompletedHaiku
-            lines={[
-              completedHaiku?.line1_arrangement || currentHaiku.line1_words,
-              completedHaiku?.line2_arrangement || currentHaiku.line2_words,
-              completedHaiku?.line3_arrangement || currentHaiku.line3_words
-            ]}
-          />
-          <div className="mt-6 sm:mt-8 flex justify-center gap-4">
-            {currentHaikuIndex > 0 && (
-              <Button 
-                onClick={handlePreviousHaiku}
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 shadow-lg hover:shadow-xl 
-                         transition-all duration-200 bg-black hover:bg-gray-900 
-                         transform hover:-translate-y-1"
-                aria-label="Previous Haiku"
-              >
-                <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
-              </Button>
-            )}
-            <Button 
-              onClick={handleNextHaiku}
-              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 shadow-lg hover:shadow-xl 
-                       transition-all duration-200 bg-black hover:bg-gray-900 
-                       transform hover:-translate-y-1"
-              aria-label="Next Haiku"
-            >
-              <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
-            </Button>
-          </div>
-        </>
+        <CompletedHaiku
+          lines={[
+            completedHaiku?.line1_arrangement || currentHaiku.line1_words,
+            completedHaiku?.line2_arrangement || currentHaiku.line2_words,
+            completedHaiku?.line3_arrangement || currentHaiku.line3_words
+          ]}
+        />
       ) : (
         <>
           <HaikuGame
@@ -200,33 +176,17 @@ const HaikuPuzzle: React.FC = () => {
               onWordReturn={handleWordReturn}
             />
           </div>
-
-          <div className="mt-6 sm:mt-8 flex justify-center gap-4">
-            {currentHaikuIndex > 0 && (
-              <Button 
-                onClick={handlePreviousHaiku}
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 shadow-lg hover:shadow-xl 
-                         transition-all duration-200 bg-black hover:bg-gray-900 
-                         transform hover:-translate-y-1"
-                aria-label="Previous Haiku"
-              >
-                <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
-              </Button>
-            )}
-            <Button 
-              onClick={handleNextHaiku}
-              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 shadow-lg hover:shadow-xl 
-                       transition-all duration-200 bg-black hover:bg-gray-900 
-                       transform hover:-translate-y-1 disabled:opacity-30 disabled:transform-none
-                       disabled:shadow-none disabled:hover:bg-black"
-              aria-label="Next Haiku"
-              disabled={!isSolved}
-            >
-              <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
-            </Button>
-          </div>
         </>
       )}
+
+      <BottomNavigation
+        onPrevious={handlePreviousHaiku}
+        onNext={handleNextHaiku}
+        onReset={handleReset}
+        showPrevious={currentHaikuIndex > 0}
+        isNextDisabled={!isSolved && !isCompleted}
+        isResetting={resetMutation.isPending}
+      />
     </div>
   );
 };
