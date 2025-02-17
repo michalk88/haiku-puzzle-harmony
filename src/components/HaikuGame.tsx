@@ -29,16 +29,24 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
   onSolved,
 }) => {
   const [lines, setLines] = useState<string[][]>([[], [], []]);
+  const [isCorrect, setIsCorrect] = useState(false);
 
   useEffect(() => {
-    if (lines.every((line, i) => 
+    const isSolved = lines.every((line, i) => 
       line.length === solution[i].length && 
       line.every((word, j) => word === solution[i][j])
-    )) {
+    );
+
+    if (isSolved && !isCorrect) {
+      setIsCorrect(true);
       const randomMessage = encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)];
-      onSolved(randomMessage);
+      
+      // Delay the transition to solved state by 2 seconds
+      setTimeout(() => {
+        onSolved(randomMessage);
+      }, 2000);
     }
-  }, [lines, solution, onSolved]);
+  }, [lines, solution, onSolved, isCorrect]);
 
   const handleDrop = (index: number) => (e: React.DragEvent) => {
     e.preventDefault();
