@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import HaikuGame from "./HaikuGame";
@@ -15,7 +15,19 @@ const HaikuPuzzle: React.FC = () => {
   const [currentHaikuIndex, setCurrentHaikuIndex] = useState(0);
   const [isSolved, setIsSolved] = useState(false);
   const [encouragingMessage, setEncouragingMessage] = useState<string>("");
+  const [isMessageVisible, setIsMessageVisible] = useState(false);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (encouragingMessage) {
+      setIsMessageVisible(true);
+      timeout = setTimeout(() => {
+        setIsMessageVisible(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timeout);
+  }, [encouragingMessage]);
 
   const { data: haikus, isLoading: isLoadingHaikus } = useQuery({
     queryKey: ['haikus'],
@@ -81,6 +93,7 @@ const HaikuPuzzle: React.FC = () => {
       setUsedWords(new Set());
       setIsSolved(false);
       setEncouragingMessage("");
+      setIsMessageVisible(false);
     }
   };
 
@@ -120,7 +133,7 @@ const HaikuPuzzle: React.FC = () => {
         onReset={() => resetMutation.mutate(currentHaiku.id)}
         onNextHaiku={handleNextHaiku}
         isResetting={resetMutation.isPending}
-        encouragingMessage={encouragingMessage}
+        encouragingMessage={isMessageVisible ? encouragingMessage : ""}
       />
 
       {isCompleted || isSolved ? (

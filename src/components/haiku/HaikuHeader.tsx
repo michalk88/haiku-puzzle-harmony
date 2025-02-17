@@ -26,11 +26,13 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
 }) => {
   return (
     <div className="mb-6">
-      {encouragingMessage && (
-        <div className="text-lg font-medium text-green-500 mb-2 text-center animate-in fade-in duration-300">
-          {encouragingMessage}
-        </div>
-      )}
+      <div className="h-8 mb-2">
+        {encouragingMessage && (
+          <div className="text-lg font-medium text-green-500 text-center animate-in fade-in slide-in-from-top-4 duration-300">
+            {encouragingMessage}
+          </div>
+        )}
+      </div>
       <div className="flex justify-between items-center">
         <h2 className={`text-xl font-semibold ${(isCompleted || isSolved) ? 'mx-auto' : ''}`}>
           {title}
