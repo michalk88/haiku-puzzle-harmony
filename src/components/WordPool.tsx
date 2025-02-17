@@ -17,9 +17,12 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
     }
   };
 
+  // Calculate word size based on average word length
+  const wordSize = words.join(' ').length / words.length > 6 ? "sm" : "base";
+
   return (
     <div 
-      className="flex flex-wrap gap-2 sm:gap-3 justify-center p-3 sm:p-4 
+      className="flex flex-wrap gap-1.5 sm:gap-3 justify-center p-2 sm:p-4 
                  border-2 border-dashed border-haiku-border rounded-lg"
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
@@ -29,6 +32,7 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
           key={word}
           word={word}
           onDragStart={onDragStart}
+          size={wordSize}
         />
       ))}
     </div>
