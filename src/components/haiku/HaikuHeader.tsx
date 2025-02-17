@@ -25,8 +25,8 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
   encouragingMessage,
 }) => {
   return (
-    <div className="mb-6">
-      <div className="h-8 mb-2">
+    <div className="mb-4">
+      <div className="h-6 mb-1">
         {encouragingMessage && (
           <div className="text-lg font-medium text-green-500 text-center animate-in fade-in slide-in-from-top-4 duration-300">
             {encouragingMessage}
@@ -34,11 +34,11 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
         )}
       </div>
       <div className="flex justify-between items-center">
-        <h2 className={`text-xl font-semibold ${(isCompleted || isSolved) ? 'mx-auto' : ''}`}>
+        <h2 className={`text-xl font-semibold text-center w-full ${(isCompleted || isSolved) ? 'mx-auto' : ''}`}>
           {title}
         </h2>
-        <div className="flex gap-2">
-          {isCompleted && (
+        {isCompleted && (
+          <div className="flex gap-2 ml-4">
             <Button 
               variant="outline"
               onClick={onReset}
@@ -50,8 +50,8 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
                 'Reset'
               )}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
