@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +7,7 @@ import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
 import { Button } from "./ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 const HaikuPuzzle: React.FC = () => {
   const [draggedWord, setDraggedWord] = useState<string>("");
@@ -98,6 +97,16 @@ const HaikuPuzzle: React.FC = () => {
     }
   };
 
+  const handlePreviousHaiku = () => {
+    if (currentHaikuIndex > 0) {
+      setCurrentHaikuIndex(prev => prev - 1);
+      setUsedWords(new Set());
+      setIsSolved(false);
+      setEncouragingMessage("");
+      setIsMessageVisible(false);
+    }
+  };
+
   const handleSolved = (message: string) => {
     setIsSolved(true);
     setEncouragingMessage(message);
@@ -146,19 +155,28 @@ const HaikuPuzzle: React.FC = () => {
               completedHaiku?.line3_arrangement || currentHaiku.line3_words
             ]}
           />
-          {!isLastHaiku && (
-            <div className="mt-6 sm:mt-8 flex justify-center">
+          <div className="mt-6 sm:mt-8 flex justify-center gap-4">
+            {currentHaikuIndex > 0 && (
               <Button 
-                onClick={handleNextHaiku}
+                onClick={handlePreviousHaiku}
                 className="w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 shadow-lg hover:shadow-xl 
                          transition-all duration-200 bg-black hover:bg-gray-900 
                          transform hover:-translate-y-1"
-                aria-label="Next Haiku"
+                aria-label="Previous Haiku"
               >
-                <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
+                <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
               </Button>
-            </div>
-          )}
+            )}
+            <Button 
+              onClick={handleNextHaiku}
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 shadow-lg hover:shadow-xl 
+                       transition-all duration-200 bg-black hover:bg-gray-900 
+                       transform hover:-translate-y-1"
+              aria-label="Next Haiku"
+            >
+              <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
+            </Button>
+          </div>
         </>
       ) : (
         <>
@@ -183,21 +201,30 @@ const HaikuPuzzle: React.FC = () => {
             />
           </div>
 
-          {!isLastHaiku && (
-            <div className="mt-6 sm:mt-8 flex justify-center">
+          <div className="mt-6 sm:mt-8 flex justify-center gap-4">
+            {currentHaikuIndex > 0 && (
               <Button 
-                onClick={handleNextHaiku}
+                onClick={handlePreviousHaiku}
                 className="w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 shadow-lg hover:shadow-xl 
                          transition-all duration-200 bg-black hover:bg-gray-900 
-                         transform hover:-translate-y-1 disabled:opacity-30 disabled:transform-none
-                         disabled:shadow-none disabled:hover:bg-black"
-                aria-label="Next Haiku"
-                disabled={!isSolved}
+                         transform hover:-translate-y-1"
+                aria-label="Previous Haiku"
               >
-                <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
+                <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
               </Button>
-            </div>
-          )}
+            )}
+            <Button 
+              onClick={handleNextHaiku}
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 shadow-lg hover:shadow-xl 
+                       transition-all duration-200 bg-black hover:bg-gray-900 
+                       transform hover:-translate-y-1 disabled:opacity-30 disabled:transform-none
+                       disabled:shadow-none disabled:hover:bg-black"
+              aria-label="Next Haiku"
+              disabled={!isSolved}
+            >
+              <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
+            </Button>
+          </div>
         </>
       )}
     </div>
