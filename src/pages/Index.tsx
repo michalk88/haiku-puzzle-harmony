@@ -6,7 +6,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="container py-6">
+      <main className="container py-2">
         <HaikuPuzzle />
       </main>
     </div>
