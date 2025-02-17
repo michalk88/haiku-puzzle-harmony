@@ -45,20 +45,30 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
     const word = e.dataTransfer.getData("text/plain");
     if (!word) return;
 
-    onWordUse(word);
+    // Only call onWordUse if the word isn't already in any line
+    const isWordInLines = lines.some(line => line.includes(word));
+    if (!isWordInLines) {
+      onWordUse(word);
+    }
+
+    // Remove the word from any other line where it might exist
     setLines(prev => prev.map((line, i) => 
-      i === index ? [...line, word] : line
+      i === index ? [...line, word] : line.filter(w => w !== word)
     ));
   };
 
   const handleWordDrop = (lineIndex: number) => (draggedWord: string, dropIndex: number) => {
-    setLines(prev => prev.map((line, i) => 
-      i === lineIndex ? [
-        ...line.slice(0, dropIndex),
+    // Remove the word from its original position in any line
+    setLines(prev => {
+      const newLines = prev.map(line => line.filter(w => w !== draggedWord));
+      // Add the word at the new position
+      newLines[lineIndex] = [
+        ...newLines[lineIndex].slice(0, dropIndex),
         draggedWord,
-        ...line.slice(dropIndex + 1)
-      ] : line
-    ));
+        ...newLines[lineIndex].slice(dropIndex)
+      ];
+      return newLines;
+    });
   };
 
   const handleWordReturn = (word: string) => {
