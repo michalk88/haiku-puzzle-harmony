@@ -146,7 +146,7 @@ const HaikuPuzzle: React.FC = () => {
               completedHaiku?.line3_arrangement || currentHaiku.line3_words
             ]}
           />
-          {!isLastHaiku && isSolved && (
+          {!isLastHaiku && (
             <div className="mt-6 sm:mt-8 flex justify-center">
               <Button 
                 onClick={handleNextHaiku}
@@ -182,6 +182,22 @@ const HaikuPuzzle: React.FC = () => {
               onWordReturn={handleWordReturn}
             />
           </div>
+
+          {!isLastHaiku && (
+            <div className="mt-6 sm:mt-8 flex justify-center">
+              <Button 
+                onClick={handleNextHaiku}
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 shadow-lg hover:shadow-xl 
+                         transition-all duration-200 bg-black hover:bg-gray-900 
+                         transform hover:-translate-y-1 disabled:opacity-30 disabled:transform-none
+                         disabled:shadow-none disabled:hover:bg-black"
+                aria-label="Next Haiku"
+                disabled={!isSolved}
+              >
+                <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8 text-white" strokeWidth={3} />
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>
