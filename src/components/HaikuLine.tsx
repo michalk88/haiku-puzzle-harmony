@@ -40,7 +40,8 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
       onDrop={onDrop}
       onDragOver={handleDragOver}
       className={cn(
-        "min-h-[40px] w-full border-b-2 border-haiku-border mb-6 flex gap-2 items-center",
+        "min-h-[72px] w-full border-b-2 border-haiku-border mb-6",
+        "flex flex-wrap gap-2 items-start p-2",
         className
       )}
     >
@@ -55,7 +56,8 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
           onDrop={(e) => handleWordDrop(e, index)}
           className="bg-black text-white px-3 py-1 rounded-lg cursor-move 
                     shadow-lg hover:shadow-xl transition-all duration-200
-                    transform hover:-translate-y-1 hover:bg-gray-900"
+                    transform hover:-translate-y-1 hover:bg-gray-900
+                    text-sm sm:text-base"
         >
           {word}
         </div>

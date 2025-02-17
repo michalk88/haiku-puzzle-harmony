@@ -1,3 +1,4 @@
+
 import React from "react";
 import WordTile from "./WordTile";
 
@@ -18,7 +19,8 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
 
   return (
     <div 
-      className="flex flex-wrap gap-3 justify-center p-4 border-2 border-dashed border-haiku-border rounded-lg"
+      className="flex flex-wrap gap-2 sm:gap-3 justify-center p-3 sm:p-4 
+                 border-2 border-dashed border-haiku-border rounded-lg"
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
