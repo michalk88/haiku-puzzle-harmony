@@ -69,6 +69,11 @@ const HaikuPuzzle: React.FC = () => {
     }
   });
 
+  const handleDragStart = (e: React.DragEvent, word: string) => {
+    e.dataTransfer.setData("text/plain", word);
+    setDraggedWord(word);
+  };
+
   const handleWordUse = (word: string) => {
     setUsedWords(prev => new Set([...prev, word]));
   };
