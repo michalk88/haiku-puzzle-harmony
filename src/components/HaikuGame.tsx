@@ -81,9 +81,14 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
   };
 
   const handleWordReturn = (word: string) => {
-    // Remove the word from all lines
-    setLines(prev => prev.map(line => line.filter(w => w !== word)));
-    onWordReturn(word);
+    // First check if the word is actually in any line
+    const isWordInLines = lines.some(line => line.includes(word));
+    if (isWordInLines) {
+      // Remove the word from all lines
+      setLines(prev => prev.map(line => line.filter(w => w !== word)));
+      // Return the word to the pool
+      onWordReturn(word);
+    }
   };
 
   return (

@@ -12,7 +12,8 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const word = e.dataTransfer.getData("text/plain");
-    if (word && !words.includes(word)) {
+    if (word) {
+      // Always try to return the word - the HaikuGame component will handle the validation
       onWordReturn(word);
     }
   };
