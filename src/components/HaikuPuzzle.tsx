@@ -1,123 +1,38 @@
 
-import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import React from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
 import BottomNavigation from "./BottomNavigation";
+import { useHaikuData } from "@/hooks/useHaikuData";
+import { useHaikuGame } from "@/hooks/useHaikuGame";
 
 const HaikuPuzzle: React.FC = () => {
-  const [draggedWord, setDraggedWord] = useState<string>("");
-  const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
-  const [currentHaikuIndex, setCurrentHaikuIndex] = useState(0);
-  const [isSolved, setIsSolved] = useState(false);
-  const [encouragingMessage, setEncouragingMessage] = useState<string>("");
-  const [isMessageVisible, setIsMessageVisible] = useState(false);
-  const queryClient = useQueryClient();
+  const {
+    haikus,
+    completedHaikus,
+    isLoadingHaikus,
+    isLoadingCompleted,
+    resetMutation
+  } = useHaikuData();
 
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    if (encouragingMessage) {
-      setIsMessageVisible(true);
-      timeout = setTimeout(() => {
-        setIsMessageVisible(false);
-      }, 2000);
-    }
-    return () => clearTimeout(timeout);
-  }, [encouragingMessage]);
-
-  const { data: haikus, isLoading: isLoadingHaikus } = useQuery({
-    queryKey: ['haikus'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('haikus')
-        .select('*');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const { data: completedHaikus, isLoading: isLoadingCompleted } = useQuery({
-    queryKey: ['completed_haikus'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('completed_haikus')
-        .select('*');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const resetMutation = useMutation({
-    mutationFn: async (haikuId: string) => {
-      const { error } = await supabase
-        .from('completed_haikus')
-        .delete()
-        .eq('haiku_id', haikuId);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['completed_haikus'] });
-      setIsSolved(false);
-      setUsedWords(new Set());
-      setEncouragingMessage("");
-    }
-  });
-
-  const handleDragStart = (e: React.DragEvent, word: string) => {
-    e.dataTransfer.setData("text/plain", word);
-    setDraggedWord(word);
-  };
-
-  const handleWordUse = (word: string) => {
-    setUsedWords(prev => new Set([...prev, word]));
-  };
-
-  const handleWordReturn = (word: string) => {
-    setUsedWords(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(word);
-      return newSet;
-    });
-  };
-
-  const handleNextHaiku = () => {
-    if (haikus && currentHaikuIndex < haikus.length - 1) {
-      setCurrentHaikuIndex(prev => prev + 1);
-      setUsedWords(new Set());
-      setIsSolved(false);
-      setEncouragingMessage("");
-      setIsMessageVisible(false);
-    }
-  };
-
-  const handlePreviousHaiku = () => {
-    if (currentHaikuIndex > 0) {
-      setCurrentHaikuIndex(prev => prev - 1);
-      setUsedWords(new Set());
-      setIsSolved(false);
-      setEncouragingMessage("");
-      setIsMessageVisible(false);
-    }
-  };
-
-  const handleReset = () => {
-    setUsedWords(new Set());
-    setIsSolved(false);
-    setEncouragingMessage("");
-    setIsMessageVisible(false);
-  };
-
-  const handleSolved = (message: string) => {
-    setIsSolved(true);
-    setEncouragingMessage(message);
-  };
+  const {
+    draggedWord,
+    usedWords,
+    currentHaikuIndex,
+    isSolved,
+    encouragingMessage,
+    isMessageVisible,
+    handleDragStart,
+    handleWordUse,
+    handleWordReturn,
+    handleReset,
+    handleSolved,
+    handleNextHaiku,
+    handlePreviousHaiku
+  } = useHaikuGame();
 
   if (isLoadingHaikus || isLoadingCompleted) {
     return <LoadingState />;
