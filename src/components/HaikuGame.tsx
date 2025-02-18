@@ -41,7 +41,6 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
       setIsCorrect(true);
       const randomMessage = encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)];
       
-      // Delay the transition to solved state by 2 seconds
       setTimeout(() => {
         onSolved(randomMessage);
       }, 2000);
@@ -53,35 +52,38 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
     const word = e.dataTransfer.getData("text/plain");
     if (!word) return;
 
-    // Only call onWordUse if the word isn't already in any line
+    // Remove the word from all lines first
+    const newLines = lines.map(line => line.filter(w => w !== word));
+    
+    // Add the word to the target line
+    newLines[index] = [...newLines[index], word];
+    setLines(newLines);
+
+    // Only call onWordUse if the word isn't in any line
     const isWordInLines = lines.some(line => line.includes(word));
     if (!isWordInLines) {
       onWordUse(word);
     }
-
-    // Remove the word from any other line where it might exist
-    setLines(prev => prev.map((line, i) => 
-      i === index ? [...line, word] : line.filter(w => w !== word)
-    ));
   };
 
   const handleWordDrop = (lineIndex: number) => (draggedWord: string, dropIndex: number) => {
-    // Remove the word from its original position in any line
-    setLines(prev => {
-      const newLines = prev.map(line => line.filter(w => w !== draggedWord));
-      // Add the word at the new position
-      newLines[lineIndex] = [
-        ...newLines[lineIndex].slice(0, dropIndex),
-        draggedWord,
-        ...newLines[lineIndex].slice(dropIndex)
-      ];
-      return newLines;
-    });
+    // Remove the word from all lines first
+    const newLines = lines.map(line => line.filter(w => w !== draggedWord));
+    
+    // Add the word at the specific position in the target line
+    newLines[lineIndex] = [
+      ...newLines[lineIndex].slice(0, dropIndex),
+      draggedWord,
+      ...newLines[lineIndex].slice(dropIndex)
+    ];
+    
+    setLines(newLines);
   };
 
   const handleWordReturn = (word: string) => {
-    onWordReturn(word);
+    // Remove the word from all lines
     setLines(prev => prev.map(line => line.filter(w => w !== word)));
+    onWordReturn(word);
   };
 
   return (

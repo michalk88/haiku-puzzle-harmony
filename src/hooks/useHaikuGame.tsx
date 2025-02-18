@@ -26,7 +26,10 @@ export const useHaikuGame = () => {
   };
 
   const handleWordUse = (word: string) => {
-    setUsedWords(prev => new Set([...prev, word]));
+    // Only add the word if it's not already used
+    if (!usedWords.has(word)) {
+      setUsedWords(prev => new Set([...prev, word]));
+    }
   };
 
   const handleWordReturn = (word: string) => {

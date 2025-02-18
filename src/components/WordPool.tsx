@@ -12,7 +12,7 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const word = e.dataTransfer.getData("text/plain");
-    if (word) {
+    if (word && !words.includes(word)) {
       onWordReturn(word);
     }
   };
