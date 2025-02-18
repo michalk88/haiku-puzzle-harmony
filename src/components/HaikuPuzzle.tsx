@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,7 +140,7 @@ const HaikuPuzzle: React.FC = () => {
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 sm:px-8 py-4 sm:py-8 pb-28">
+    <div className="min-h-[calc(100vh-5rem)] w-full max-w-2xl mx-auto px-4 sm:px-8 py-4 sm:py-8 pb-28">
       <HaikuHeader
         title={currentHaiku.title}
         isCompleted={isCompleted}
@@ -174,7 +175,7 @@ const HaikuPuzzle: React.FC = () => {
             onSolved={handleSolved}
           />
           
-          <div className="mt-6 sm:mt-8">
+          <div className="mt-6 sm:mt-8 mb-24">
             <WordPool
               words={remainingWords}
               onDragStart={handleDragStart}

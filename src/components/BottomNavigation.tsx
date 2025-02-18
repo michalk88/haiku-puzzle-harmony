@@ -21,7 +21,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   isResetting
 }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/50 backdrop-blur-sm border-t border-gray-200">
+    <div className="fixed bottom-0 left-0 right-0 bg-white/50 backdrop-blur-sm border-t border-gray-200 z-50">
       <div className="container mx-auto px-4 h-20 flex items-center justify-center gap-4">
         {showPrevious && (
           <Button 
