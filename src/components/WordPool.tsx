@@ -13,12 +13,18 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
     e.preventDefault();
     const word = e.dataTransfer.getData("text/plain");
     const lineIndex = e.dataTransfer.getData("lineIndex");
-    if (!word) return;
+    
+    console.log("WordPool handleDrop - Received word:", word);
+    console.log("WordPool handleDrop - Received lineIndex:", lineIndex);
+    
+    if (!word) {
+      console.log("WordPool handleDrop - No word data received");
+      return;
+    }
 
-    // Handle word return in the parent component
+    console.log("WordPool handleDrop - Calling onWordReturn with:", { word, lineIndex: lineIndex ? parseInt(lineIndex) : undefined });
     onWordReturn(word, lineIndex ? parseInt(lineIndex) : undefined);
     
-    // Clear the drag data
     e.dataTransfer.clearData();
   };
 

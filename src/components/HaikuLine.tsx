@@ -60,8 +60,10 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
           key={`${word}-${index}`}
           draggable
           onDragStart={(e) => {
+            console.log(`HaikuLine onDragStart - Word: ${word}, LineIndex: ${lineIndex}`);
             e.dataTransfer.setData("text/plain", word);
             e.dataTransfer.setData("lineIndex", lineIndex.toString());
+            console.log("HaikuLine onDragStart - Data set in dataTransfer");
           }}
           onDragOver={(e) => handleWordDragOver(e, index)}
           onDrop={(e) => handleWordDrop(e, index)}
