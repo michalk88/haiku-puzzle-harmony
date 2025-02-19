@@ -97,22 +97,14 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
     console.log("HaikuGame handleWordReturn - Word being returned:", word);
     console.log("HaikuGame handleWordReturn - Current lines state:", JSON.stringify(lines));
 
-    // First check if the word is actually in any line
-    const isWordInLines = lines.some(line => line.includes(word));
-    console.log("HaikuGame handleWordReturn - Is word in lines?", isWordInLines);
-
     setLines(prev => {
       console.log("HaikuGame handleWordReturn - Previous state:", JSON.stringify(prev));
       const newLines = prev.map(line => line.filter(w => w !== word));
       console.log("HaikuGame handleWordReturn - New state after removal:", JSON.stringify(newLines));
       
-      // Only return the word to pool if it was actually removed
-      if (JSON.stringify(newLines) !== JSON.stringify(prev)) {
-        console.log("HaikuGame handleWordReturn - Word was removed, calling onWordReturn");
-        onWordReturn(word);
-      } else {
-        console.log("HaikuGame handleWordReturn - No changes in lines state");
-      }
+      // Call onWordReturn regardless of whether the word was in lines
+      onWordReturn(word);
+      
       return newLines;
     });
   };

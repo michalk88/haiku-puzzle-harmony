@@ -21,26 +21,28 @@ export const useHaikuGame = () => {
   }, [encouragingMessage]);
 
   const handleDragStart = (e: React.DragEvent, word: string) => {
+    console.log("useHaikuGame handleDragStart - Setting dragged word:", word);
     e.dataTransfer.setData("text/plain", word);
     setDraggedWord(word);
   };
 
   const handleWordUse = (word: string) => {
-    // Only add the word if it's not already used
-    if (!usedWords.has(word)) {
-      setUsedWords(prev => new Set([...prev, word]));
-    }
+    console.log("useHaikuGame handleWordUse - Adding word to usedWords:", word);
+    setUsedWords(prev => new Set([...prev, word]));
   };
 
   const handleWordReturn = (word: string) => {
+    console.log("useHaikuGame handleWordReturn - Removing word from usedWords:", word);
     setUsedWords(prev => {
       const newSet = new Set(prev);
       newSet.delete(word);
+      console.log("useHaikuGame handleWordReturn - New usedWords set:", Array.from(newSet));
       return newSet;
     });
   };
 
   const handleReset = () => {
+    console.log("useHaikuGame handleReset - Resetting game state");
     setUsedWords(new Set());
     setIsSolved(false);
     setEncouragingMessage("");
@@ -48,6 +50,7 @@ export const useHaikuGame = () => {
   };
 
   const handleSolved = (message: string) => {
+    console.log("useHaikuGame handleSolved - Setting game as solved with message:", message);
     setIsSolved(true);
     setEncouragingMessage(message);
   };
