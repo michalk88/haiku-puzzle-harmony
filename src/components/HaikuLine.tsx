@@ -8,6 +8,7 @@ interface HaikuLineProps {
   onWordDrop: (draggedWord: string, dropIndex: number) => void;
   onWordReturnToPool: (word: string) => void;
   className?: string;
+  lineIndex: number;
 }
 
 const HaikuLine: React.FC<HaikuLineProps> = ({ 
@@ -15,7 +16,8 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
   onDrop, 
   onWordDrop, 
   onWordReturnToPool,
-  className 
+  className,
+  lineIndex
 }) => {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -59,6 +61,7 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
           draggable
           onDragStart={(e) => {
             e.dataTransfer.setData("text/plain", word);
+            e.dataTransfer.setData("lineIndex", lineIndex.toString());
           }}
           onDragOver={(e) => handleWordDragOver(e, index)}
           onDrop={(e) => handleWordDrop(e, index)}

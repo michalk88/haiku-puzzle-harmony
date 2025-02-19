@@ -52,29 +52,21 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
     const word = e.dataTransfer.getData("text/plain");
     if (!word) return;
 
-    console.log("handleDrop - Word being added:", word);
-    console.log("handleDrop - Current lines state:", lines);
-
     // Remove the word from all lines first
     const newLines = lines.map(line => line.filter(w => w !== word));
     
     // Add the word to the target line
     newLines[index] = [...newLines[index], word];
-    console.log("handleDrop - New lines state:", newLines);
     setLines(newLines);
 
     // Only call onWordUse if the word isn't in any line
     const isWordInLines = lines.some(line => line.includes(word));
-    console.log("handleDrop - Is word already in lines?", isWordInLines);
     if (!isWordInLines) {
       onWordUse(word);
     }
   };
 
   const handleWordDrop = (lineIndex: number) => (draggedWord: string, dropIndex: number) => {
-    console.log("handleWordDrop - Word being reordered:", draggedWord);
-    console.log("handleWordDrop - Current lines state:", lines);
-
     // Remove the word from all lines first
     const newLines = lines.map(line => line.filter(w => w !== draggedWord));
     
@@ -85,35 +77,16 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
       ...newLines[lineIndex].slice(dropIndex)
     ];
     
-    console.log("handleWordDrop - New lines state:", newLines);
     setLines(newLines);
   };
 
   const handleWordReturn = (word: string) => {
-    console.log("handleWordReturn - Word being returned:", word);
-    console.log("handleWordReturn - Current lines state:", lines);
-
-    // First check if the word is actually in any line
-    const isWordInLines = lines.some(line => line.includes(word));
-    console.log("handleWordReturn - Is word in lines?", isWordInLines);
-
-    if (!isWordInLines) {
-      console.log("handleWordReturn - Word not found in lines, returning early");
-      return;
-    }
-
-    // Remove the word from all lines and update state
     setLines(prev => {
-      console.log("handleWordReturn - Previous lines state:", prev);
       const newLines = prev.map(line => line.filter(w => w !== word));
-      console.log("handleWordReturn - New lines state after removal:", newLines);
       
       // Only return the word to pool if it was actually removed
       if (JSON.stringify(newLines) !== JSON.stringify(prev)) {
-        console.log("handleWordReturn - Word was removed, returning to pool");
         onWordReturn(word);
-      } else {
-        console.log("handleWordReturn - No changes in lines state");
       }
       return newLines;
     });
@@ -128,6 +101,7 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
           onDrop={handleDrop(index)}
           onWordDrop={handleWordDrop(index)}
           onWordReturnToPool={handleWordReturn}
+          lineIndex={index}
         />
       ))}
     </div>

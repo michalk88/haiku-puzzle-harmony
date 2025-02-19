@@ -12,10 +12,11 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const word = e.dataTransfer.getData("text/plain");
+    const lineIndex = e.dataTransfer.getData("lineIndex");
     if (!word) return;
 
     // Handle word return in the parent component
-    onWordReturn(word);
+    onWordReturn(word, lineIndex ? parseInt(lineIndex) : undefined);
     
     // Clear the drag data
     e.dataTransfer.clearData();
