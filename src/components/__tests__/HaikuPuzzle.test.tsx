@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import HaikuPuzzle from '../HaikuPuzzle';
 import { useHaikuData } from '@/hooks/useHaikuData';
 import { useHaikuGame } from '@/hooks/useHaikuGame';
@@ -47,10 +48,10 @@ describe('HaikuPuzzle', () => {
     mockUsedWords.clear();
 
     // Mock useHaikuData implementation
-    (useHaikuData as jest.Mock).mockReturnValue(mockHaikuData);
+    (useHaikuData as ReturnType<typeof vi.fn>).mockReturnValue(mockHaikuData);
 
     // Mock useHaikuGame implementation
-    (useHaikuGame as jest.Mock).mockReturnValue({
+    (useHaikuGame as ReturnType<typeof vi.fn>).mockReturnValue({
       draggedWord: '',
       usedWords: mockUsedWords,
       currentHaikuIndex: 0,
