@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
@@ -8,6 +8,7 @@ import LoadingState from "./haiku/LoadingState";
 import BottomNavigation from "./BottomNavigation";
 import { useHaikuData } from "@/hooks/useHaikuData";
 import { useHaikuGame } from "@/hooks/useHaikuGame";
+import { shuffleArray } from "@/lib/utils";
 
 const HaikuPuzzle: React.FC = () => {
   const gameRef = useRef<{ 
@@ -51,11 +52,15 @@ const HaikuPuzzle: React.FC = () => {
   const isCompleted = completedHaikus?.some(ch => ch.haiku_id === currentHaiku.id);
   const completedHaiku = completedHaikus?.find(ch => ch.haiku_id === currentHaiku.id);
 
-  const availableWords = [
-    ...currentHaiku.line1_words,
-    ...currentHaiku.line2_words,
-    ...currentHaiku.line3_words
-  ];
+  // Create shuffled available words using useMemo to prevent re-shuffling on every render
+  const availableWords = useMemo(() => {
+    const words = [
+      ...currentHaiku.line1_words,
+      ...currentHaiku.line2_words,
+      ...currentHaiku.line3_words
+    ];
+    return shuffleArray(words);
+  }, [currentHaiku]); // Only re-shuffle when currentHaiku changes
 
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
