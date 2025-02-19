@@ -40,6 +40,19 @@ const HaikuPuzzle: React.FC = () => {
     handlePreviousHaiku
   } = useHaikuGame();
 
+  // Create shuffled available words using useMemo
+  const availableWords = useMemo(() => {
+    if (!haikus || haikus.length === 0) return [];
+    
+    const currentHaiku = haikus[currentHaikuIndex];
+    const words = [
+      ...currentHaiku.line1_words,
+      ...currentHaiku.line2_words,
+      ...currentHaiku.line3_words
+    ];
+    return shuffleArray(words);
+  }, [haikus, currentHaikuIndex]);
+
   if (isLoadingHaikus || isLoadingCompleted) {
     return <LoadingState />;
   }
@@ -51,16 +64,6 @@ const HaikuPuzzle: React.FC = () => {
   const currentHaiku = haikus[currentHaikuIndex];
   const isCompleted = completedHaikus?.some(ch => ch.haiku_id === currentHaiku.id);
   const completedHaiku = completedHaikus?.find(ch => ch.haiku_id === currentHaiku.id);
-
-  // Create shuffled available words using useMemo to prevent re-shuffling on every render
-  const availableWords = useMemo(() => {
-    const words = [
-      ...currentHaiku.line1_words,
-      ...currentHaiku.line2_words,
-      ...currentHaiku.line3_words
-    ];
-    return shuffleArray(words);
-  }, [currentHaiku]); // Only re-shuffle when currentHaiku changes
 
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
