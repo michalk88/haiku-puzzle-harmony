@@ -9,7 +9,27 @@ interface WordTileProps {
 
 const WordTile: React.FC<WordTileProps> = ({ word, onDragStart, size = "base" }) => {
   const handleDragStart = (e: React.DragEvent) => {
+    // Prevent scrolling during drag on mobile
+    document.body.style.overflow = 'hidden';
+    // Add touch feedback
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = '0.6';
+    }
     onDragStart(e, word);
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    // Re-enable scrolling
+    document.body.style.overflow = '';
+    // Remove touch feedback
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = '';
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Prevent page scrolling during drag
+    e.preventDefault();
   };
 
   const sizeClasses = {
@@ -22,9 +42,12 @@ const WordTile: React.FC<WordTileProps> = ({ word, onDragStart, size = "base" })
     <div
       draggable
       onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onTouchMove={handleTouchMove}
       className={`bg-black text-white rounded-lg cursor-move 
+                touch-none select-none
                 shadow-lg hover:shadow-xl transition-all duration-200
-                transform hover:-translate-y-1 hover:bg-gray-900
+                transform hover:-translate-y-1 hover:bg-gray-900 active:scale-95
                 ${sizeClasses[size]}`}
     >
       {word}
