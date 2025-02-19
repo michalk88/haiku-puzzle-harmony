@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import HaikuLine from "./HaikuLine";
 
@@ -100,20 +101,15 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
   const handleWordReturn = (word: string) => {
     console.log("HaikuGame handleWordReturn - Word being returned:", word);
     
-    // Use ref to ensure we're working with latest state
-    const currentLines = linesRef.current;
-    const isInLines = currentLines.some(line => line.includes(word));
+    // Always remove the word from lines when it's returned to the pool
+    setLines(prev => {
+      const newLines = prev.map(line => line.filter(w => w !== word));
+      console.log("HaikuGame handleWordReturn - New lines state:", JSON.stringify(newLines));
+      return newLines;
+    });
     
-    console.log("HaikuGame handleWordReturn - Word is in lines:", isInLines);
-    
-    if (isInLines) {
-      setLines(prev => {
-        const newLines = prev.map(line => line.filter(w => w !== word));
-        console.log("HaikuGame handleWordReturn - New lines state:", JSON.stringify(newLines));
-        return newLines;
-      });
-      onWordReturn(word);
-    }
+    // Always call onWordReturn to update usedWords in the parent
+    onWordReturn(word);
   };
 
   return (
