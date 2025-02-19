@@ -48,7 +48,7 @@ const HaikuGame = forwardRef<{
     handleWordReturn: (word: string) => {
       console.log("HaikuGame handleWordReturn - Word being returned:", word);
       setLines(prev => {
-        const newLines = prev.map(line => line.filter(w => isValidWord(w)));
+        const newLines = prev.map(line => line.filter(w => w !== word));
         console.log("HaikuGame handleWordReturn - New lines state:", JSON.stringify(newLines));
         return newLines;
       });
@@ -92,7 +92,7 @@ const HaikuGame = forwardRef<{
 
     console.log("HaikuGame handleDrop - Current lines state:", JSON.stringify(lines));
 
-    // Remove the word from all lines first
+    // Remove the word from all lines first to prevent duplicates
     const newLines = lines.map(line => line.filter(w => w !== word));
     
     // Add the word to the target line
@@ -117,15 +117,8 @@ const HaikuGame = forwardRef<{
       return;
     }
 
-    // Check if the word is already in any line
-    const isWordInLines = lines.some(line => line.includes(draggedWord));
-    if (!isWordInLines) {
-      // If the word is not in any line, add it to usedWords
-      onWordUse(draggedWord);
-    }
-
-    // Remove the word from all lines first
-    const newLines = lines.map(line => line.filter(w => isValidWord(w) && w !== draggedWord));
+    // Remove the word from all lines first to prevent duplicates
+    const newLines = lines.map(line => line.filter(w => w !== draggedWord));
     
     // Add the word at the specific position in the target line
     newLines[lineIndex] = [
@@ -136,6 +129,13 @@ const HaikuGame = forwardRef<{
     
     console.log("HaikuGame handleWordDrop - New lines:", JSON.stringify(newLines));
     setLines(newLines);
+
+    // Check if the word is already in any line
+    const isWordInLines = lines.some(line => line.includes(draggedWord));
+    if (!isWordInLines) {
+      // If the word is not in any line, add it to usedWords
+      onWordUse(draggedWord);
+    }
   };
 
   return (
