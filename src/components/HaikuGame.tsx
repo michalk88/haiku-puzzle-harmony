@@ -107,6 +107,13 @@ const HaikuGame = forwardRef<{
     console.log("HaikuGame handleWordDrop - Word:", draggedWord, "Line:", lineIndex, "Position:", dropIndex);
     console.log("HaikuGame handleWordDrop - Current lines:", JSON.stringify(lines));
 
+    // Check if the word is already in any line
+    const isWordInLines = lines.some(line => line.includes(draggedWord));
+    if (!isWordInLines) {
+      // If the word is not in any line, add it to usedWords
+      onWordUse(draggedWord);
+    }
+
     // Remove the word from all lines first
     const newLines = lines.map(line => line.filter(w => w !== draggedWord));
     
