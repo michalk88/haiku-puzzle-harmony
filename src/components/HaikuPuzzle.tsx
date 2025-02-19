@@ -54,6 +54,9 @@ const HaikuPuzzle: React.FC = () => {
 
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
+  console.log("HaikuPuzzle render - handleWordReturn function:", handleWordReturn);
+  console.log("HaikuPuzzle render - usedWords set:", Array.from(usedWords));
+
   return (
     <div className="min-h-[calc(100vh-5rem)] w-full max-w-2xl mx-auto px-4 sm:px-8 py-4 sm:py-8 pb-28">
       <HaikuHeader
