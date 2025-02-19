@@ -12,10 +12,13 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const word = e.dataTransfer.getData("text/plain");
-    if (word) {
-      // Always try to return the word - the HaikuGame component will handle the validation
-      onWordReturn(word);
-    }
+    if (!word) return;
+
+    // Handle word return in the parent component
+    onWordReturn(word);
+    
+    // Clear the drag data
+    e.dataTransfer.clearData();
   };
 
   // Calculate word size based on average word length
