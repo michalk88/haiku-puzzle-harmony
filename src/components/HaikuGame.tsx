@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import HaikuLine from "./HaikuLine";
 
 interface HaikuGameProps {
@@ -21,13 +21,13 @@ const encouragingMessages = [
   "Wonderful!"
 ];
 
-const HaikuGame: React.FC<HaikuGameProps> = ({
+const HaikuGame = forwardRef<{ handleWordReturn: (word: string) => void }, HaikuGameProps>(({
   solution,
   usedWords,
   onWordUse,
   onWordReturn,
   onSolved,
-}) => {
+}, ref) => {
   const [lines, setLines] = useState<string[][]>([[], [], []]);
   const [isCorrect, setIsCorrect] = useState(false);
   const linesRef = useRef(lines);
@@ -35,6 +35,17 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
   useEffect(() => {
     linesRef.current = lines;
   }, [lines]);
+
+  useImperativeHandle(ref, () => ({
+    handleWordReturn: (word: string) => {
+      console.log("HaikuGame handleWordReturn - Word being returned:", word);
+      setLines(prev => {
+        const newLines = prev.map(line => line.filter(w => w !== word));
+        console.log("HaikuGame handleWordReturn - New lines state:", JSON.stringify(newLines));
+        return newLines;
+      });
+    }
+  }));
 
   useEffect(() => {
     const isSolved = lines.every((line, i) => 
@@ -98,20 +109,6 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
     setLines(newLines);
   };
 
-  const handleWordReturn = (word: string) => {
-    console.log("HaikuGame handleWordReturn - Word being returned:", word);
-    
-    // Always remove the word from lines when it's returned to the pool
-    setLines(prev => {
-      const newLines = prev.map(line => line.filter(w => w !== word));
-      console.log("HaikuGame handleWordReturn - New lines state:", JSON.stringify(newLines));
-      return newLines;
-    });
-    
-    // Always call onWordReturn to update usedWords in the parent
-    onWordReturn(word);
-  };
-
   return (
     <div className="space-y-4">
       {solution.map((_, index) => (
@@ -120,12 +117,14 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
           words={lines[index]}
           onDrop={handleDrop(index)}
           onWordDrop={handleWordDrop(index)}
-          onWordReturnToPool={handleWordReturn}
+          onWordReturnToPool={onWordReturn}
           lineIndex={index}
         />
       ))}
     </div>
   );
-};
+});
+
+HaikuGame.displayName = "HaikuGame";
 
 export default HaikuGame;

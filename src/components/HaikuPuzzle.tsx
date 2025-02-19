@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useRef } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
@@ -10,6 +10,8 @@ import { useHaikuData } from "@/hooks/useHaikuData";
 import { useHaikuGame } from "@/hooks/useHaikuGame";
 
 const HaikuPuzzle: React.FC = () => {
+  const gameRef = useRef<{ handleWordReturn: (word: string) => void } | null>(null);
+  
   const {
     haikus,
     completedHaikus,
@@ -54,6 +56,14 @@ const HaikuPuzzle: React.FC = () => {
 
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
+  const handleWordReturnToPool = (word: string, lineIndex?: number) => {
+    console.log("HaikuPuzzle - Word returned to pool:", word, "from line:", lineIndex);
+    // First update the game's internal state
+    gameRef.current?.handleWordReturn(word);
+    // Then update the usedWords set
+    handleWordReturn(word);
+  };
+
   return (
     <div className="min-h-[calc(100vh-5rem)] w-full max-w-2xl mx-auto px-4 sm:px-8 py-4 sm:py-8 pb-28">
       <HaikuHeader
@@ -78,6 +88,7 @@ const HaikuPuzzle: React.FC = () => {
       ) : (
         <>
           <HaikuGame
+            ref={gameRef}
             key={currentHaikuIndex}
             solution={[
               currentHaiku.line1_words,
@@ -86,7 +97,7 @@ const HaikuPuzzle: React.FC = () => {
             ]}
             usedWords={usedWords}
             onWordUse={handleWordUse}
-            onWordReturn={handleWordReturn}
+            onWordReturn={handleWordReturnToPool}
             onSolved={handleSolved}
           />
           
@@ -94,10 +105,7 @@ const HaikuPuzzle: React.FC = () => {
             <WordPool
               words={remainingWords}
               onDragStart={handleDragStart}
-              onWordReturn={(word, lineIndex) => {
-                console.log("HaikuPuzzle - Word returned to pool:", word, "from line:", lineIndex);
-                handleWordReturn(word);
-              }}
+              onWordReturn={handleWordReturnToPool}
             />
           </div>
         </>
