@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import HaikuLine from "./HaikuLine";
 
 interface HaikuGameProps {
@@ -30,6 +29,11 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
 }) => {
   const [lines, setLines] = useState<string[][]>([[], [], []]);
   const [isCorrect, setIsCorrect] = useState(false);
+  const linesRef = useRef(lines);
+
+  useEffect(() => {
+    linesRef.current = lines;
+  }, [lines]);
 
   useEffect(() => {
     const isSolved = lines.every((line, i) => 
@@ -95,18 +99,21 @@ const HaikuGame: React.FC<HaikuGameProps> = ({
 
   const handleWordReturn = (word: string) => {
     console.log("HaikuGame handleWordReturn - Word being returned:", word);
-    console.log("HaikuGame handleWordReturn - Current lines state:", JSON.stringify(lines));
-
-    setLines(prev => {
-      console.log("HaikuGame handleWordReturn - Previous state:", JSON.stringify(prev));
-      const newLines = prev.map(line => line.filter(w => w !== word));
-      console.log("HaikuGame handleWordReturn - New state after removal:", JSON.stringify(newLines));
-      
-      // Call onWordReturn regardless of whether the word was in lines
+    
+    // Use ref to ensure we're working with latest state
+    const currentLines = linesRef.current;
+    const isInLines = currentLines.some(line => line.includes(word));
+    
+    console.log("HaikuGame handleWordReturn - Word is in lines:", isInLines);
+    
+    if (isInLines) {
+      setLines(prev => {
+        const newLines = prev.map(line => line.filter(w => w !== word));
+        console.log("HaikuGame handleWordReturn - New lines state:", JSON.stringify(newLines));
+        return newLines;
+      });
       onWordReturn(word);
-      
-      return newLines;
-    });
+    }
   };
 
   return (
