@@ -10,7 +10,10 @@ import { useHaikuData } from "@/hooks/useHaikuData";
 import { useHaikuGame } from "@/hooks/useHaikuGame";
 
 const HaikuPuzzle: React.FC = () => {
-  const gameRef = useRef<{ handleWordReturn: (word: string) => void } | null>(null);
+  const gameRef = useRef<{ 
+    handleWordReturn: (word: string) => void;
+    handleReset: () => void;
+  } | null>(null);
   
   const {
     haikus,
@@ -30,7 +33,7 @@ const HaikuPuzzle: React.FC = () => {
     handleDragStart,
     handleWordUse,
     handleWordReturn,
-    handleReset,
+    handleReset: handleGameReset,
     handleSolved,
     handleNextHaiku,
     handlePreviousHaiku
@@ -62,6 +65,14 @@ const HaikuPuzzle: React.FC = () => {
     gameRef.current?.handleWordReturn(word);
     // Then update the usedWords set
     handleWordReturn(word);
+  };
+
+  const handleResetClick = () => {
+    console.log("HaikuPuzzle - Reset clicked");
+    // First reset the game's internal state
+    gameRef.current?.handleReset();
+    // Then reset the game state in useHaikuGame
+    handleGameReset();
   };
 
   return (
@@ -114,7 +125,7 @@ const HaikuPuzzle: React.FC = () => {
       <BottomNavigation
         onPrevious={handlePreviousHaiku}
         onNext={handleNextHaiku}
-        onReset={handleReset}
+        onReset={handleResetClick}
         showPrevious={currentHaikuIndex > 0}
         isNextDisabled={!isSolved && !isCompleted}
         isResetting={resetMutation.isPending}

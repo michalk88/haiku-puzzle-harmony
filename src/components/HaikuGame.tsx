@@ -21,7 +21,10 @@ const encouragingMessages = [
   "Wonderful!"
 ];
 
-const HaikuGame = forwardRef<{ handleWordReturn: (word: string) => void }, HaikuGameProps>(({
+const HaikuGame = forwardRef<{ 
+  handleWordReturn: (word: string) => void;
+  handleReset: () => void;
+}, HaikuGameProps>(({
   solution,
   usedWords,
   onWordUse,
@@ -44,6 +47,15 @@ const HaikuGame = forwardRef<{ handleWordReturn: (word: string) => void }, Haiku
         console.log("HaikuGame handleWordReturn - New lines state:", JSON.stringify(newLines));
         return newLines;
       });
+    },
+    handleReset: () => {
+      console.log("HaikuGame handleReset - Resetting all lines");
+      // Return all words to the pool before clearing lines
+      lines.flat().forEach(word => {
+        onWordReturn(word);
+      });
+      setLines([[], [], []]);
+      setIsCorrect(false);
     }
   }));
 
