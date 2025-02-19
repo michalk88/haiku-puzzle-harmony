@@ -21,6 +21,11 @@ const encouragingMessages = [
   "Wonderful!"
 ];
 
+// Helper function to validate words
+const isValidWord = (word: string): boolean => {
+  return Boolean(word && word.trim() && !word.includes("\r") && !word.includes("\n"));
+};
+
 const HaikuGame = forwardRef<{ 
   handleWordReturn: (word: string) => void;
   handleReset: () => void;
@@ -43,7 +48,7 @@ const HaikuGame = forwardRef<{
     handleWordReturn: (word: string) => {
       console.log("HaikuGame handleWordReturn - Word being returned:", word);
       setLines(prev => {
-        const newLines = prev.map(line => line.filter(w => w !== word));
+        const newLines = prev.map(line => line.filter(w => isValidWord(w)));
         console.log("HaikuGame handleWordReturn - New lines state:", JSON.stringify(newLines));
         return newLines;
       });
@@ -51,7 +56,7 @@ const HaikuGame = forwardRef<{
     handleReset: () => {
       console.log("HaikuGame handleReset - Resetting all lines");
       // Return all words to the pool before clearing lines
-      lines.flat().forEach(word => {
+      lines.flat().filter(isValidWord).forEach(word => {
         onWordReturn(word);
       });
       setLines([[], [], []]);
@@ -80,8 +85,8 @@ const HaikuGame = forwardRef<{
     const word = e.dataTransfer.getData("text/plain");
     console.log("HaikuGame handleDrop - Word:", word, "Target line index:", index);
     
-    if (!word) {
-      console.log("HaikuGame handleDrop - No word data received");
+    if (!word || !isValidWord(word)) {
+      console.log("HaikuGame handleDrop - No valid word data received");
       return;
     }
 
@@ -107,6 +112,11 @@ const HaikuGame = forwardRef<{
     console.log("HaikuGame handleWordDrop - Word:", draggedWord, "Line:", lineIndex, "Position:", dropIndex);
     console.log("HaikuGame handleWordDrop - Current lines:", JSON.stringify(lines));
 
+    if (!isValidWord(draggedWord)) {
+      console.log("HaikuGame handleWordDrop - Invalid word:", draggedWord);
+      return;
+    }
+
     // Check if the word is already in any line
     const isWordInLines = lines.some(line => line.includes(draggedWord));
     if (!isWordInLines) {
@@ -115,7 +125,7 @@ const HaikuGame = forwardRef<{
     }
 
     // Remove the word from all lines first
-    const newLines = lines.map(line => line.filter(w => w !== draggedWord));
+    const newLines = lines.map(line => line.filter(w => isValidWord(w) && w !== draggedWord));
     
     // Add the word at the specific position in the target line
     newLines[lineIndex] = [
@@ -133,7 +143,7 @@ const HaikuGame = forwardRef<{
       {solution.map((_, index) => (
         <HaikuLine
           key={index}
-          words={lines[index]}
+          words={lines[index].filter(isValidWord)}
           onDrop={handleDrop(index)}
           onWordDrop={handleWordDrop(index)}
           onWordReturnToPool={onWordReturn}
