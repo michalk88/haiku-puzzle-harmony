@@ -14,7 +14,7 @@ const HaikuPuzzle: React.FC = () => {
   const gameRef = useRef<{ 
     handleWordReturn: (word: string) => void;
     handleReset: () => void;
-    getCurrentLines: () => string[];
+    getCurrentLines: () => string[][];
   } | null>(null);
   
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
@@ -96,6 +96,7 @@ const HaikuPuzzle: React.FC = () => {
     // Save to session when solved with the actual arranged lines
     const currentLines = gameRef.current?.getCurrentLines();
     if (currentLines) {
+      console.log("Saving to session - Current lines:", currentLines);
       saveHaikuToSession({
         id: currentHaiku.id,
         line1_arrangement: currentLines[0],
