@@ -79,18 +79,20 @@ const HaikuPuzzle: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full mx-auto px-2 sm:px-4 py-4 sm:py-8 pb-28">
-      <div className="max-w-2xl mx-auto">
-        <HaikuHeader
-          title={currentHaiku.title}
-          isCompleted={isCompleted}
-          isSolved={isSolved}
-          isLastHaiku={currentHaikuIndex === haikus.length - 1}
-          onReset={() => resetMutation.mutate(currentHaiku.id)}
-          onNextHaiku={handleNextHaiku}
-          isResetting={resetMutation.isPending}
-          encouragingMessage={isMessageVisible ? encouragingMessage : ""}
-        />
+    <div className="relative min-h-[calc(100vh-3.5rem)] flex flex-col">
+      <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-2 sm:py-4 flex-1 overflow-y-auto">
+        <div className="mb-2">
+          <HaikuHeader
+            title={currentHaiku.title}
+            isCompleted={isCompleted}
+            isSolved={isSolved}
+            isLastHaiku={currentHaikuIndex === haikus.length - 1}
+            onReset={() => resetMutation.mutate(currentHaiku.id)}
+            onNextHaiku={handleNextHaiku}
+            isResetting={resetMutation.isPending}
+            encouragingMessage={isMessageVisible ? encouragingMessage : ""}
+          />
+        </div>
 
         {isCompleted || isSolved ? (
           <CompletedHaiku
@@ -118,7 +120,7 @@ const HaikuPuzzle: React.FC = () => {
               />
             </div>
             
-            <div className="mt-6 sm:mt-8 mb-24">
+            <div className="mt-4 sm:mt-6 mb-20">
               <WordPool
                 words={remainingWords}
                 onDragStart={handleDragStart}
@@ -127,7 +129,9 @@ const HaikuPuzzle: React.FC = () => {
             </div>
           </>
         )}
+      </div>
 
+      <div className="sticky bottom-0 left-0 right-0 z-50">
         <BottomNavigation
           onPrevious={handlePreviousHaiku}
           onNext={handleNextHaiku}
