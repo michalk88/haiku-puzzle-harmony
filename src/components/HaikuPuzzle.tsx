@@ -1,4 +1,3 @@
-
 import React, { useRef, useMemo, useState } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
@@ -15,6 +14,7 @@ const HaikuPuzzle: React.FC = () => {
   const gameRef = useRef<{ 
     handleWordReturn: (word: string) => void;
     handleReset: () => void;
+    getCurrentLines: () => string[];
   } | null>(null);
   
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
@@ -93,13 +93,16 @@ const HaikuPuzzle: React.FC = () => {
 
   const handleHaikuSolved = (message: string) => {
     handleSolved(message);
-    // Save to session when solved
-    saveHaikuToSession({
-      id: currentHaiku.id,
-      line1_arrangement: currentHaiku.line1_words,
-      line2_arrangement: currentHaiku.line2_words,
-      line3_arrangement: currentHaiku.line3_words
-    });
+    // Save to session when solved with the actual arranged lines
+    const currentLines = gameRef.current?.getCurrentLines();
+    if (currentLines) {
+      saveHaikuToSession({
+        id: currentHaiku.id,
+        line1_arrangement: currentLines[0],
+        line2_arrangement: currentLines[1],
+        line3_arrangement: currentLines[2]
+      });
+    }
   };
 
   const showSolvedState = isCompleted || isSolved || (sessionHaiku && isPreviewVisible);

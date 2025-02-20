@@ -29,6 +29,7 @@ const isValidWord = (word: string): boolean => {
 const HaikuGame = forwardRef<{ 
   handleWordReturn: (word: string) => void;
   handleReset: () => void;
+  getCurrentLines: () => string[][];
 }, HaikuGameProps>(({
   solution,
   usedWords,
@@ -61,7 +62,8 @@ const HaikuGame = forwardRef<{
       });
       setLines([[], [], []]);
       setIsCorrect(false);
-    }
+    },
+    getCurrentLines: () => linesRef.current
   }));
 
   useEffect(() => {
