@@ -1,3 +1,4 @@
+
 import React, { useRef, useMemo, useState } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
@@ -5,10 +6,10 @@ import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
 import BottomNavigation from "./BottomNavigation";
-import { useHaikuData } from "@/hooks/useHaikuData";
-import { useHaikuGame } from "@/hooks/useHaikuGame";
-import { useHaikuSession } from "@/hooks/useHaikuSession";
-import { shuffleArray } from "@/lib/utils";
+import { useHaikuData } from "../hooks/useHaikuData";
+import { useHaikuGame } from "../hooks/useHaikuGame";
+import { useHaikuSession } from "../hooks/useHaikuSession";
+import { shuffleArray } from "../lib/utils";
 
 const HaikuPuzzle: React.FC = () => {
   const gameRef = useRef<{ 
