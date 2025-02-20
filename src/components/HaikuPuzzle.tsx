@@ -1,4 +1,3 @@
-
 import React, { useRef, useMemo } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
@@ -40,7 +39,6 @@ const HaikuPuzzle: React.FC = () => {
     handlePreviousHaiku
   } = useHaikuGame();
 
-  // Create shuffled available words using useMemo
   const availableWords = useMemo(() => {
     if (!haikus || haikus.length === 0) return [];
     
@@ -69,22 +67,18 @@ const HaikuPuzzle: React.FC = () => {
 
   const handleWordReturnToPool = (word: string, lineIndex?: number) => {
     console.log("HaikuPuzzle - Word returned to pool:", word, "from line:", lineIndex);
-    // First update the game's internal state
     gameRef.current?.handleWordReturn(word);
-    // Then update the usedWords set
     handleWordReturn(word);
   };
 
   const handleResetClick = () => {
     console.log("HaikuPuzzle - Reset clicked");
-    // First reset the game's internal state
     gameRef.current?.handleReset();
-    // Then reset the game state in useHaikuGame
     handleGameReset();
   };
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] w-full max-w-2xl mx-auto px-4 sm:px-8 py-4 sm:py-8 pb-28">
+    <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8 pb-28">
       <HaikuHeader
         title={currentHaiku.title}
         isCompleted={isCompleted}
@@ -106,19 +100,21 @@ const HaikuPuzzle: React.FC = () => {
         />
       ) : (
         <>
-          <HaikuGame
-            ref={gameRef}
-            key={currentHaikuIndex}
-            solution={[
-              currentHaiku.line1_words,
-              currentHaiku.line2_words,
-              currentHaiku.line3_words
-            ]}
-            usedWords={usedWords}
-            onWordUse={handleWordUse}
-            onWordReturn={handleWordReturnToPool}
-            onSolved={handleSolved}
-          />
+          <div className="w-full max-w-xl mx-auto">
+            <HaikuGame
+              ref={gameRef}
+              key={currentHaikuIndex}
+              solution={[
+                currentHaiku.line1_words,
+                currentHaiku.line2_words,
+                currentHaiku.line3_words
+              ]}
+              usedWords={usedWords}
+              onWordUse={handleWordUse}
+              onWordReturn={handleWordReturnToPool}
+              onSolved={handleSolved}
+            />
+          </div>
           
           <div className="mt-6 sm:mt-8 mb-24">
             <WordPool

@@ -38,7 +38,6 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    // Prevent page scrolling during drag
     e.preventDefault();
   };
 
@@ -60,11 +59,11 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
       onTouchMove={handleTouchMove}
       className={cn(
         "min-h-[64px] sm:min-h-[96px] w-full border-b-2 border-haiku-border mb-4 sm:mb-6",
-        "flex flex-nowrap overflow-x-hidden items-center p-3 sm:p-4 touch-none",
+        "flex items-center justify-center p-2 sm:p-3 touch-none",
         className
       )}
     >
-      <div className="flex flex-nowrap gap-1.5 sm:gap-2 mx-auto">
+      <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2 w-full max-w-[95%] justify-center">
         {words.map((word, index) => (
           <div
             key={`${word}-${index}`}
@@ -73,14 +72,11 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
               console.log(`HaikuLine onDragStart - Word: ${word}, LineIndex: ${lineIndex}`);
               e.dataTransfer.setData("text/plain", word);
               e.dataTransfer.setData("lineIndex", lineIndex.toString());
-              // Add touch feedback
               if (e.currentTarget instanceof HTMLElement) {
                 e.currentTarget.style.opacity = '0.6';
               }
-              console.log("HaikuLine onDragStart - Data set in dataTransfer");
             }}
             onDragEnd={(e) => {
-              // Remove touch feedback
               if (e.currentTarget instanceof HTMLElement) {
                 e.currentTarget.style.opacity = '';
               }
@@ -89,7 +85,7 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
             onDrop={(e) => handleWordDrop(e, index)}
             onTouchMove={handleTouchMove}
             className={`bg-black text-white rounded-lg cursor-move 
-                      touch-none select-none whitespace-nowrap
+                      touch-none select-none whitespace-nowrap shrink-0
                       shadow-lg hover:shadow-xl transition-all duration-200
                       transform hover:-translate-y-1 hover:bg-gray-900 active:scale-95
                       ${wordSize === "xs" ? "text-xs sm:text-sm px-2 py-1" :
