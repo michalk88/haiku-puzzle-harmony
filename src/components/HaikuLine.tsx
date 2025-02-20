@@ -47,8 +47,8 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
     const wordCount = words.length;
     
     // More aggressive size reduction for longer content
-    if (wordCount >= 4 || totalLength > 20) return "xs";
-    if (wordCount >= 3 || totalLength > 15) return "sm";
+    if (wordCount >= 6) return "xs";
+    if (wordCount >= 4 || totalLength > 20) return "sm";
     return "base";
   }, [words]) as "xs" | "sm" | "base";
 
@@ -59,11 +59,11 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
       onTouchMove={handleTouchMove}
       className={cn(
         "min-h-[64px] sm:min-h-[96px] w-full border-b-2 border-haiku-border mb-4 sm:mb-6",
-        "flex items-center justify-center p-2 sm:p-3 touch-none",
+        "flex items-center justify-center px-1 py-2 sm:p-3 touch-none overflow-visible",
         className
       )}
     >
-      <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2 w-full max-w-[95%] justify-center">
+      <div className="w-full max-w-[98%] flex flex-nowrap items-center justify-center gap-1 sm:gap-2">
         {words.map((word, index) => (
           <div
             key={`${word}-${index}`}
@@ -88,9 +88,9 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
                       touch-none select-none whitespace-nowrap shrink-0
                       shadow-lg hover:shadow-xl transition-all duration-200
                       transform hover:-translate-y-1 hover:bg-gray-900 active:scale-95
-                      ${wordSize === "xs" ? "text-xs sm:text-sm px-2 py-1" :
-                        wordSize === "sm" ? "text-sm sm:text-base px-2.5 py-1" :
-                        "text-base sm:text-lg px-3 py-1.5"}`}
+                      ${wordSize === "xs" ? "text-xs sm:text-sm px-1.5 py-0.5" :
+                        wordSize === "sm" ? "text-sm sm:text-base px-2 py-0.75" :
+                        "text-base sm:text-lg px-2.5 py-1"}`}
           >
             {word}
           </div>

@@ -1,3 +1,4 @@
+
 import React, { useRef, useMemo } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
@@ -78,62 +79,64 @@ const HaikuPuzzle: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8 pb-28">
-      <HaikuHeader
-        title={currentHaiku.title}
-        isCompleted={isCompleted}
-        isSolved={isSolved}
-        isLastHaiku={currentHaikuIndex === haikus.length - 1}
-        onReset={() => resetMutation.mutate(currentHaiku.id)}
-        onNextHaiku={handleNextHaiku}
-        isResetting={resetMutation.isPending}
-        encouragingMessage={isMessageVisible ? encouragingMessage : ""}
-      />
-
-      {isCompleted || isSolved ? (
-        <CompletedHaiku
-          lines={[
-            completedHaiku?.line1_arrangement || currentHaiku.line1_words,
-            completedHaiku?.line2_arrangement || currentHaiku.line2_words,
-            completedHaiku?.line3_arrangement || currentHaiku.line3_words
-          ]}
+    <div className="relative w-full mx-auto px-2 sm:px-4 py-4 sm:py-8 pb-28">
+      <div className="max-w-2xl mx-auto">
+        <HaikuHeader
+          title={currentHaiku.title}
+          isCompleted={isCompleted}
+          isSolved={isSolved}
+          isLastHaiku={currentHaikuIndex === haikus.length - 1}
+          onReset={() => resetMutation.mutate(currentHaiku.id)}
+          onNextHaiku={handleNextHaiku}
+          isResetting={resetMutation.isPending}
+          encouragingMessage={isMessageVisible ? encouragingMessage : ""}
         />
-      ) : (
-        <>
-          <div className="w-full max-w-xl mx-auto">
-            <HaikuGame
-              ref={gameRef}
-              key={currentHaikuIndex}
-              solution={[
-                currentHaiku.line1_words,
-                currentHaiku.line2_words,
-                currentHaiku.line3_words
-              ]}
-              usedWords={usedWords}
-              onWordUse={handleWordUse}
-              onWordReturn={handleWordReturnToPool}
-              onSolved={handleSolved}
-            />
-          </div>
-          
-          <div className="mt-6 sm:mt-8 mb-24">
-            <WordPool
-              words={remainingWords}
-              onDragStart={handleDragStart}
-              onWordReturn={handleWordReturnToPool}
-            />
-          </div>
-        </>
-      )}
 
-      <BottomNavigation
-        onPrevious={handlePreviousHaiku}
-        onNext={handleNextHaiku}
-        onReset={handleResetClick}
-        showPrevious={currentHaikuIndex > 0}
-        isNextDisabled={!isSolved && !isCompleted}
-        isResetting={resetMutation.isPending}
-      />
+        {isCompleted || isSolved ? (
+          <CompletedHaiku
+            lines={[
+              completedHaiku?.line1_arrangement || currentHaiku.line1_words,
+              completedHaiku?.line2_arrangement || currentHaiku.line2_words,
+              completedHaiku?.line3_arrangement || currentHaiku.line3_words
+            ]}
+          />
+        ) : (
+          <>
+            <div className="w-full overflow-visible">
+              <HaikuGame
+                ref={gameRef}
+                key={currentHaikuIndex}
+                solution={[
+                  currentHaiku.line1_words,
+                  currentHaiku.line2_words,
+                  currentHaiku.line3_words
+                ]}
+                usedWords={usedWords}
+                onWordUse={handleWordUse}
+                onWordReturn={handleWordReturnToPool}
+                onSolved={handleSolved}
+              />
+            </div>
+            
+            <div className="mt-6 sm:mt-8 mb-24">
+              <WordPool
+                words={remainingWords}
+                onDragStart={handleDragStart}
+                onWordReturn={handleWordReturnToPool}
+              />
+            </div>
+          </>
+        )}
+
+        <BottomNavigation
+          onPrevious={handlePreviousHaiku}
+          onNext={handleNextHaiku}
+          onReset={handleResetClick}
+          showPrevious={currentHaikuIndex > 0}
+          isNextDisabled={!isSolved && !isCompleted}
+          isResetting={resetMutation.isPending}
+        />
+      </div>
     </div>
   );
 };
