@@ -1,5 +1,5 @@
 
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useState } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
@@ -8,6 +8,7 @@ import LoadingState from "./haiku/LoadingState";
 import BottomNavigation from "./BottomNavigation";
 import { useHaikuData } from "@/hooks/useHaikuData";
 import { useHaikuGame } from "@/hooks/useHaikuGame";
+import { useHaikuSession } from "@/hooks/useHaikuSession";
 import { shuffleArray } from "@/lib/utils";
 
 const HaikuPuzzle: React.FC = () => {
@@ -15,6 +16,8 @@ const HaikuPuzzle: React.FC = () => {
     handleWordReturn: (word: string) => void;
     handleReset: () => void;
   } | null>(null);
+  
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   
   const {
     haikus,
@@ -40,6 +43,13 @@ const HaikuPuzzle: React.FC = () => {
     handlePreviousHaiku
   } = useHaikuGame();
 
+  const {
+    sessionHaikus,
+    saveHaikuToSession,
+    removeHaikuFromSession,
+    getSessionHaiku
+  } = useHaikuSession();
+
   const availableWords = useMemo(() => {
     if (!haikus || haikus.length === 0) return [];
     
@@ -63,6 +73,7 @@ const HaikuPuzzle: React.FC = () => {
   const currentHaiku = haikus[currentHaikuIndex];
   const isCompleted = completedHaikus?.some(ch => ch.haiku_id === currentHaiku.id);
   const completedHaiku = completedHaikus?.find(ch => ch.haiku_id === currentHaiku.id);
+  const sessionHaiku = getSessionHaiku(currentHaiku.id);
 
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
@@ -76,7 +87,22 @@ const HaikuPuzzle: React.FC = () => {
     console.log("HaikuPuzzle - Reset clicked");
     gameRef.current?.handleReset();
     handleGameReset();
+    setIsPreviewVisible(false);
+    removeHaikuFromSession(currentHaiku.id);
   };
+
+  const handleHaikuSolved = (message: string) => {
+    handleSolved(message);
+    // Save to session when solved
+    saveHaikuToSession({
+      id: currentHaiku.id,
+      line1_arrangement: currentHaiku.line1_words,
+      line2_arrangement: currentHaiku.line2_words,
+      line3_arrangement: currentHaiku.line3_words
+    });
+  };
+
+  const showSolvedState = isCompleted || isSolved || (sessionHaiku && isPreviewVisible);
 
   return (
     <div className="relative min-h-[calc(100vh-3.5rem)] flex flex-col">
@@ -91,15 +117,18 @@ const HaikuPuzzle: React.FC = () => {
             onNextHaiku={handleNextHaiku}
             isResetting={resetMutation.isPending}
             encouragingMessage={isMessageVisible ? encouragingMessage : ""}
+            showPreviewButton={sessionHaiku && !isCompleted && !isSolved}
+            isPreviewVisible={isPreviewVisible}
+            onPreviewToggle={() => setIsPreviewVisible(!isPreviewVisible)}
           />
         </div>
 
-        {isCompleted || isSolved ? (
+        {showSolvedState ? (
           <CompletedHaiku
             lines={[
-              completedHaiku?.line1_arrangement || currentHaiku.line1_words,
-              completedHaiku?.line2_arrangement || currentHaiku.line2_words,
-              completedHaiku?.line3_arrangement || currentHaiku.line3_words
+              completedHaiku?.line1_arrangement || sessionHaiku?.line1_arrangement || currentHaiku.line1_words,
+              completedHaiku?.line2_arrangement || sessionHaiku?.line2_arrangement || currentHaiku.line2_words,
+              completedHaiku?.line3_arrangement || sessionHaiku?.line3_arrangement || currentHaiku.line3_words
             ]}
           />
         ) : (
@@ -116,7 +145,7 @@ const HaikuPuzzle: React.FC = () => {
                 usedWords={usedWords}
                 onWordUse={handleWordUse}
                 onWordReturn={handleWordReturnToPool}
-                onSolved={handleSolved}
+                onSolved={handleHaikuSolved}
               />
             </div>
             

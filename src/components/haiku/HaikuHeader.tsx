@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 interface HaikuHeaderProps {
   title: string;
@@ -12,6 +12,9 @@ interface HaikuHeaderProps {
   onNextHaiku: () => void;
   isResetting: boolean;
   encouragingMessage?: string;
+  showPreviewButton?: boolean;
+  isPreviewVisible?: boolean;
+  onPreviewToggle?: () => void;
 }
 
 const HaikuHeader: React.FC<HaikuHeaderProps> = ({
@@ -23,6 +26,9 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
   onNextHaiku,
   isResetting,
   encouragingMessage,
+  showPreviewButton,
+  isPreviewVisible,
+  onPreviewToggle,
 }) => {
   return (
     <div className="mb-2 sm:mb-4">
@@ -34,13 +40,25 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
         )}
       </div>
       <div className="flex justify-between items-center">
-        {(isCompleted || isSolved) && (
-          <h2 className="text-lg sm:text-xl font-medium text-gray-600 text-center w-full mx-auto">
-            {title}
-          </h2>
-        )}
-        {isCompleted && (
-          <div className="flex gap-2 ml-4">
+        <h2 className="text-lg sm:text-xl font-medium text-gray-600 text-center flex-1">
+          {title}
+        </h2>
+        <div className="flex gap-2 ml-4">
+          {showPreviewButton && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onPreviewToggle}
+              className="w-9 h-9"
+            >
+              {isPreviewVisible ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+          {(isCompleted || isSolved) && (
             <Button 
               variant="outline"
               onClick={onReset}
@@ -52,8 +70,8 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
                 'Reset'
               )}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
