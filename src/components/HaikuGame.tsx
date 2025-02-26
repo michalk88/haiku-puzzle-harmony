@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import HaikuLine from "./HaikuLine";
 
@@ -56,10 +55,6 @@ const HaikuGame = forwardRef<{
     },
     handleReset: () => {
       console.log("HaikuGame handleReset - Resetting all lines");
-      // Return all words to the pool before clearing lines
-      lines.flat().filter(isValidWord).forEach(word => {
-        onWordReturn(word);
-      });
       setLines([[], [], []]);
       setIsCorrect(false);
     },

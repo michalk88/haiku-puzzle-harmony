@@ -12,6 +12,7 @@ import { shuffleArray } from "../lib/utils";
 const HaikuPuzzle: React.FC = () => {
   const gameRef = useRef<{ 
     handleWordReturn: (word: string) => void;
+    handleReset: () => void;
     getCurrentLines: () => string[][];
   } | null>(null);
   
