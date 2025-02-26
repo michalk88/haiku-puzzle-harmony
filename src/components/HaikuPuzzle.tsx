@@ -1,4 +1,3 @@
-
 import React, { useRef, useMemo } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
@@ -71,6 +70,10 @@ const HaikuPuzzle: React.FC = () => {
     handleWordReturn(word);
   };
 
+  const handleVerification = (currentLines: string[][], solution: string[][]) => {
+    handleVerify(currentLines, solution);
+  };
+
   const showSolvedState = isCompleted || isSolved;
 
   return (
@@ -110,7 +113,7 @@ const HaikuPuzzle: React.FC = () => {
                 usedWords={usedWords}
                 onWordUse={handleWordUse}
                 onWordReturn={handleWordReturnToPool}
-                onVerify={handleVerify}
+                onVerify={handleVerification}
                 incorrectWords={incorrectWords}
                 verificationState={verificationState}
               />

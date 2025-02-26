@@ -9,7 +9,7 @@ interface HaikuGameProps {
   usedWords: Set<string>;
   onWordUse: (word: string) => void;
   onWordReturn: (word: string) => void;
-  onVerify: (lines: string[][]) => void;
+  onVerify: (currentLines: string[][], solution: string[][]) => void;
   incorrectWords?: Set<string>;
   verificationState: 'idle' | 'checking' | 'correct' | 'incorrect' | 'continue';
 }
@@ -123,7 +123,7 @@ const HaikuGame = forwardRef<{
       {isComplete && (
         <div className="flex justify-center mt-8">
           <Button
-            onClick={() => verificationState === 'continue' ? undefined : onVerify(lines)}
+            onClick={() => verificationState === 'continue' ? undefined : onVerify(lines, solution)}
             disabled={verificationState === 'checking'}
             className={cn(
               "transition-all duration-300",
