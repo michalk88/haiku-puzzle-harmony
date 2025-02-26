@@ -9,6 +9,7 @@ interface HaikuLineProps {
   onWordReturnToPool: (word: string) => void;
   className?: string;
   lineIndex: number;
+  incorrectWords?: Set<string>;
 }
 
 const HaikuLine: React.FC<HaikuLineProps> = ({ 
@@ -17,7 +18,8 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
   onWordDrop, 
   onWordReturnToPool,
   className,
-  lineIndex
+  lineIndex,
+  incorrectWords = new Set()
 }) => {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -69,7 +71,6 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
             key={`${word}-${index}`}
             draggable
             onDragStart={(e) => {
-              console.log(`HaikuLine onDragStart - Word: ${word}, LineIndex: ${lineIndex}`);
               e.dataTransfer.setData("text/plain", word);
               e.dataTransfer.setData("lineIndex", lineIndex.toString());
               if (e.currentTarget instanceof HTMLElement) {
@@ -84,13 +85,17 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
             onDragOver={(e) => handleWordDragOver(e, index)}
             onDrop={(e) => handleWordDrop(e, index)}
             onTouchMove={handleTouchMove}
-            className={`bg-black text-white rounded-lg cursor-move 
-                      touch-none select-none whitespace-nowrap shrink-0
-                      shadow-lg hover:shadow-xl transition-all duration-200
-                      transform hover:-translate-y-1 hover:bg-gray-900 active:scale-95
-                      ${wordSize === "xs" ? "text-xs sm:text-sm px-1.5 py-0.5" :
-                        wordSize === "sm" ? "text-sm sm:text-base px-2 py-0.75" :
-                        "text-base sm:text-lg px-2.5 py-1"}`}
+            className={cn(
+              `cursor-move touch-none select-none whitespace-nowrap shrink-0
+              shadow-lg hover:shadow-xl transition-all duration-200
+              transform hover:-translate-y-1 active:scale-95 rounded-lg`,
+              incorrectWords.has(word) 
+                ? "bg-orange-500 hover:bg-orange-600"
+                : "bg-black hover:bg-gray-900",
+              wordSize === "xs" ? "text-xs sm:text-sm px-1.5 py-0.5" :
+              wordSize === "sm" ? "text-sm sm:text-base px-2 py-0.75" :
+              "text-base sm:text-lg px-2.5 py-1"
+            )}
           >
             {word}
           </div>
