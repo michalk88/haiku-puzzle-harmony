@@ -12,6 +12,7 @@ export const useHaikuGame = () => {
   const [verificationState, setVerificationState] = useState<VerificationState>('idle');
   const [incorrectWords, setIncorrectWords] = useState<Set<string>>(new Set());
   const [solvedCount, setSolvedCount] = useState(0);
+  const [isSolved, setIsSolved] = useState(false);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -57,6 +58,7 @@ export const useHaikuGame = () => {
     if (isCorrect) {
       setVerificationState('correct');
       setSolvedCount(prev => prev + 1);
+      setIsSolved(true);
       setTimeout(() => {
         setVerificationState('continue');
       }, 1500);
@@ -83,6 +85,7 @@ export const useHaikuGame = () => {
     setVerificationState('idle');
     setUsedWords(new Set());
     setIncorrectWords(new Set());
+    setIsSolved(false);
   };
 
   return {
@@ -94,6 +97,7 @@ export const useHaikuGame = () => {
     verificationState,
     incorrectWords,
     solvedCount,
+    isSolved,
     handleDragStart,
     handleWordUse,
     handleWordReturn,

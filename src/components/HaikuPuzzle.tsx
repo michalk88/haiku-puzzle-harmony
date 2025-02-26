@@ -30,10 +30,12 @@ const HaikuPuzzle: React.FC = () => {
     isSolved,
     encouragingMessage,
     isMessageVisible,
+    verificationState,
+    incorrectWords,
     handleDragStart,
     handleWordUse,
     handleWordReturn,
-    handleSolved,
+    handleVerify,
     handleNextHaiku,
   } = useHaikuGame();
 
@@ -67,10 +69,6 @@ const HaikuPuzzle: React.FC = () => {
     console.log("HaikuPuzzle - Word returned to pool:", word, "from line:", lineIndex);
     gameRef.current?.handleWordReturn(word);
     handleWordReturn(word);
-  };
-
-  const handleHaikuSolved = (message: string) => {
-    handleSolved(message);
   };
 
   const showSolvedState = isCompleted || isSolved;
@@ -112,7 +110,9 @@ const HaikuPuzzle: React.FC = () => {
                 usedWords={usedWords}
                 onWordUse={handleWordUse}
                 onWordReturn={handleWordReturnToPool}
-                onSolved={handleHaikuSolved}
+                onVerify={handleVerify}
+                incorrectWords={incorrectWords}
+                verificationState={verificationState}
               />
             </div>
             

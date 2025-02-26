@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import HaikuLine from "./HaikuLine";
 import { Button } from "./ui/button";
@@ -46,6 +47,45 @@ const HaikuGame = forwardRef<{
     getCurrentLines: () => linesRef.current
   }));
 
+  const handleDrop = (index: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    const word = e.dataTransfer.getData("text/plain");
+    
+    if (!word) {
+      return;
+    }
+
+    const newLines = lines.map(line => line.filter(w => w !== word));
+    newLines[index] = [...newLines[index], word];
+    setLines(newLines);
+
+    const isWordInLines = lines.some(line => line.includes(word));
+    if (!isWordInLines) {
+      onWordUse(word);
+    }
+  };
+
+  const handleWordDrop = (lineIndex: number) => (draggedWord: string, dropIndex: number) => {
+    if (!draggedWord) {
+      return;
+    }
+
+    const newLines = lines.map(line => line.filter(w => w !== draggedWord));
+    
+    newLines[lineIndex] = [
+      ...newLines[lineIndex].slice(0, dropIndex),
+      draggedWord,
+      ...newLines[lineIndex].slice(dropIndex)
+    ];
+    
+    setLines(newLines);
+
+    const isWordInLines = lines.some(line => line.includes(draggedWord));
+    if (!isWordInLines) {
+      onWordUse(draggedWord);
+    }
+  };
+
   const isComplete = lines.every((line, i) => line.length === solution[i].length);
 
   const buttonStyles = {
@@ -62,57 +102,6 @@ const HaikuGame = forwardRef<{
     correct: "Correct!",
     incorrect: "Incorrect!",
     continue: "Continue"
-  };
-
-  const handleDrop = (index: number) => (e: React.DragEvent) => {
-    e.preventDefault();
-    const word = e.dataTransfer.getData("text/plain");
-    console.log("HaikuGame handleDrop - Word:", word, "Target line index:", index);
-    
-    if (!word || !isValidWord(word)) {
-      console.log("HaikuGame handleDrop - No valid word data received");
-      return;
-    }
-
-    console.log("HaikuGame handleDrop - Current lines state:", JSON.stringify(lines));
-
-    const newLines = lines.map(line => line.filter(w => w !== word));
-    
-    newLines[index] = [...newLines[index], word];
-    console.log("HaikuGame handleDrop - New lines state:", JSON.stringify(newLines));
-    setLines(newLines);
-
-    const isWordInLines = lines.some(line => line.includes(word));
-    console.log("HaikuGame handleDrop - Is word already in lines?", isWordInLines);
-    if (!isWordInLines) {
-      onWordUse(word);
-    }
-  };
-
-  const handleWordDrop = (lineIndex: number) => (draggedWord: string, dropIndex: number) => {
-    console.log("HaikuGame handleWordDrop - Word:", draggedWord, "Line:", lineIndex, "Position:", dropIndex);
-    console.log("HaikuGame handleWordDrop - Current lines:", JSON.stringify(lines));
-
-    if (!isValidWord(draggedWord)) {
-      console.log("HaikuGame handleWordDrop - Invalid word:", draggedWord);
-      return;
-    }
-
-    const newLines = lines.map(line => line.filter(w => w !== draggedWord));
-    
-    newLines[lineIndex] = [
-      ...newLines[lineIndex].slice(0, dropIndex),
-      draggedWord,
-      ...newLines[lineIndex].slice(dropIndex)
-    ];
-    
-    console.log("HaikuGame handleWordDrop - New lines:", JSON.stringify(newLines));
-    setLines(newLines);
-
-    const isWordInLines = lines.some(line => line.includes(draggedWord));
-    if (!isWordInLines) {
-      onWordUse(draggedWord);
-    }
   };
 
   return (
