@@ -1,5 +1,5 @@
 
-import React, { useRef, useMemo, useState } from "react";
+import React, { useRef, useMemo } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
@@ -7,24 +7,19 @@ import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
 import { useHaikuData } from "../hooks/useHaikuData";
 import { useHaikuGame } from "../hooks/useHaikuGame";
-import { useHaikuSession } from "../hooks/useHaikuSession";
 import { shuffleArray } from "../lib/utils";
 
 const HaikuPuzzle: React.FC = () => {
   const gameRef = useRef<{ 
     handleWordReturn: (word: string) => void;
-    handleReset: () => void;
     getCurrentLines: () => string[][];
   } | null>(null);
-  
-  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   
   const {
     haikus,
     completedHaikus,
     isLoadingHaikus,
     isLoadingCompleted,
-    resetMutation
   } = useHaikuData();
 
   const {
@@ -37,17 +32,9 @@ const HaikuPuzzle: React.FC = () => {
     handleDragStart,
     handleWordUse,
     handleWordReturn,
-    handleReset: handleGameReset,
     handleSolved,
     handleNextHaiku,
   } = useHaikuGame();
-
-  const {
-    sessionHaikus,
-    saveHaikuToSession,
-    removeHaikuFromSession,
-    getSessionHaiku
-  } = useHaikuSession();
 
   const availableWords = useMemo(() => {
     if (!haikus || haikus.length === 0) return [];
@@ -72,7 +59,6 @@ const HaikuPuzzle: React.FC = () => {
   const currentHaiku = haikus[currentHaikuIndex];
   const isCompleted = completedHaikus?.some(ch => ch.haiku_id === currentHaiku.id);
   const completedHaiku = completedHaikus?.find(ch => ch.haiku_id === currentHaiku.id);
-  const sessionHaiku = getSessionHaiku(currentHaiku.id);
 
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
@@ -82,29 +68,11 @@ const HaikuPuzzle: React.FC = () => {
     handleWordReturn(word);
   };
 
-  const handleResetClick = () => {
-    console.log("HaikuPuzzle - Reset clicked");
-    gameRef.current?.handleReset();
-    handleGameReset();
-    setIsPreviewVisible(false);
-    removeHaikuFromSession(currentHaiku.id);
-  };
-
   const handleHaikuSolved = (message: string) => {
     handleSolved(message);
-    const currentLines = gameRef.current?.getCurrentLines();
-    if (currentLines) {
-      console.log("Saving to session - Current lines:", currentLines);
-      saveHaikuToSession({
-        id: currentHaiku.id,
-        line1_arrangement: currentLines[0],
-        line2_arrangement: currentLines[1],
-        line3_arrangement: currentLines[2]
-      });
-    }
   };
 
-  const showSolvedState = isCompleted || isSolved || (sessionHaiku && isPreviewVisible);
+  const showSolvedState = isCompleted || isSolved;
 
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -115,13 +83,8 @@ const HaikuPuzzle: React.FC = () => {
             isCompleted={isCompleted}
             isSolved={isSolved}
             isLastHaiku={currentHaikuIndex === haikus.length - 1}
-            onReset={handleResetClick}
             onNextHaiku={handleNextHaiku}
-            isResetting={resetMutation.isPending}
             encouragingMessage={isMessageVisible ? encouragingMessage : ""}
-            showPreviewButton={sessionHaiku && !isCompleted && !isSolved}
-            isPreviewVisible={isPreviewVisible}
-            onPreviewToggle={() => setIsPreviewVisible(!isPreviewVisible)}
             isNextDisabled={!isSolved && !isCompleted}
           />
         </div>
@@ -129,9 +92,9 @@ const HaikuPuzzle: React.FC = () => {
         {showSolvedState ? (
           <CompletedHaiku
             lines={[
-              completedHaiku?.line1_arrangement || sessionHaiku?.line1_arrangement || currentHaiku.line1_words,
-              completedHaiku?.line2_arrangement || sessionHaiku?.line2_arrangement || currentHaiku.line2_words,
-              completedHaiku?.line3_arrangement || sessionHaiku?.line3_arrangement || currentHaiku.line3_words
+              completedHaiku?.line1_arrangement || currentHaiku.line1_words,
+              completedHaiku?.line2_arrangement || currentHaiku.line2_words,
+              completedHaiku?.line3_arrangement || currentHaiku.line3_words
             ]}
           />
         ) : (

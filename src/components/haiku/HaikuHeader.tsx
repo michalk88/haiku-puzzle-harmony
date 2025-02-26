@@ -1,20 +1,15 @@
 
 import React from "react";
 import { Button } from "../ui/button";
-import { Loader2, Eye, EyeOff, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 interface HaikuHeaderProps {
   title: string;
   isCompleted: boolean;
   isSolved: boolean;
   isLastHaiku: boolean;
-  onReset: () => void;
   onNextHaiku: () => void;
-  isResetting: boolean;
   encouragingMessage?: string;
-  showPreviewButton?: boolean;
-  isPreviewVisible?: boolean;
-  onPreviewToggle?: () => void;
   isNextDisabled?: boolean;
 }
 
@@ -23,13 +18,8 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
   isCompleted,
   isSolved,
   isLastHaiku,
-  onReset,
   onNextHaiku,
-  isResetting,
   encouragingMessage,
-  showPreviewButton,
-  isPreviewVisible,
-  onPreviewToggle,
   isNextDisabled
 }) => {
   return (
@@ -46,42 +36,15 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
           {title}
         </h2>
         <div className="flex gap-2 ml-4">
-          {showPreviewButton && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onPreviewToggle}
-              className="w-9 h-9"
-            >
-              {isPreviewVisible ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </Button>
-          )}
           {(isCompleted || isSolved) && (
-            <>
-              <Button 
-                variant="outline"
-                onClick={onReset}
-                disabled={isResetting}
-              >
-                {isResetting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  'Reset'
-                )}
-              </Button>
-              <Button
-                onClick={onNextHaiku}
-                disabled={isNextDisabled}
-                className="bg-black hover:bg-gray-900"
-              >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </>
+            <Button
+              onClick={onNextHaiku}
+              disabled={isNextDisabled}
+              className="bg-black hover:bg-gray-900"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           )}
         </div>
       </div>
