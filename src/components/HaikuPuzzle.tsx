@@ -5,7 +5,6 @@ import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
-import BottomNavigation from "./BottomNavigation";
 import { useHaikuData } from "../hooks/useHaikuData";
 import { useHaikuGame } from "../hooks/useHaikuGame";
 import { useHaikuSession } from "../hooks/useHaikuSession";
@@ -41,7 +40,6 @@ const HaikuPuzzle: React.FC = () => {
     handleReset: handleGameReset,
     handleSolved,
     handleNextHaiku,
-    handlePreviousHaiku
   } = useHaikuGame();
 
   const {
@@ -94,7 +92,6 @@ const HaikuPuzzle: React.FC = () => {
 
   const handleHaikuSolved = (message: string) => {
     handleSolved(message);
-    // Save to session when solved with the actual arranged lines
     const currentLines = gameRef.current?.getCurrentLines();
     if (currentLines) {
       console.log("Saving to session - Current lines:", currentLines);
@@ -110,21 +107,22 @@ const HaikuPuzzle: React.FC = () => {
   const showSolvedState = isCompleted || isSolved || (sessionHaiku && isPreviewVisible);
 
   return (
-    <div className="relative min-h-[calc(100vh-3.5rem)] flex flex-col">
-      <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-2 sm:py-4 flex-1 overflow-y-auto">
+    <div className="relative min-h-screen flex flex-col">
+      <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-2 sm:py-4 flex-1">
         <div className="mb-2">
           <HaikuHeader
             title={currentHaiku.title}
             isCompleted={isCompleted}
             isSolved={isSolved}
             isLastHaiku={currentHaikuIndex === haikus.length - 1}
-            onReset={() => resetMutation.mutate(currentHaiku.id)}
+            onReset={handleResetClick}
             onNextHaiku={handleNextHaiku}
             isResetting={resetMutation.isPending}
             encouragingMessage={isMessageVisible ? encouragingMessage : ""}
             showPreviewButton={sessionHaiku && !isCompleted && !isSolved}
             isPreviewVisible={isPreviewVisible}
             onPreviewToggle={() => setIsPreviewVisible(!isPreviewVisible)}
+            isNextDisabled={!isSolved && !isCompleted}
           />
         </div>
 
@@ -163,17 +161,6 @@ const HaikuPuzzle: React.FC = () => {
             </div>
           </>
         )}
-      </div>
-
-      <div className="sticky bottom-0 left-0 right-0 z-50">
-        <BottomNavigation
-          onPrevious={handlePreviousHaiku}
-          onNext={handleNextHaiku}
-          onReset={handleResetClick}
-          showPrevious={currentHaikuIndex > 0}
-          isNextDisabled={!isSolved && !isCompleted}
-          isResetting={resetMutation.isPending}
-        />
       </div>
     </div>
   );

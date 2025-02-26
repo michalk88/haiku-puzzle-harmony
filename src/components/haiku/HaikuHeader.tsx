@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "../ui/button";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, ChevronRight } from "lucide-react";
 
 interface HaikuHeaderProps {
   title: string;
@@ -15,6 +15,7 @@ interface HaikuHeaderProps {
   showPreviewButton?: boolean;
   isPreviewVisible?: boolean;
   onPreviewToggle?: () => void;
+  isNextDisabled?: boolean;
 }
 
 const HaikuHeader: React.FC<HaikuHeaderProps> = ({
@@ -29,6 +30,7 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
   showPreviewButton,
   isPreviewVisible,
   onPreviewToggle,
+  isNextDisabled
 }) => {
   return (
     <div className="mb-2 sm:mb-4">
@@ -59,17 +61,27 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
             </Button>
           )}
           {(isCompleted || isSolved) && (
-            <Button 
-              variant="outline"
-              onClick={onReset}
-              disabled={isResetting}
-            >
-              {isResetting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                'Reset'
-              )}
-            </Button>
+            <>
+              <Button 
+                variant="outline"
+                onClick={onReset}
+                disabled={isResetting}
+              >
+                {isResetting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  'Reset'
+                )}
+              </Button>
+              <Button
+                onClick={onNextHaiku}
+                disabled={isNextDisabled}
+                className="bg-black hover:bg-gray-900"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </>
           )}
         </div>
       </div>
