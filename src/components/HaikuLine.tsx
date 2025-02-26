@@ -87,11 +87,11 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
             onTouchMove={handleTouchMove}
             className={cn(
               `cursor-move touch-none select-none whitespace-nowrap shrink-0
-              shadow-lg hover:shadow-xl transition-all duration-200
+              shadow-lg hover:shadow-xl transition-all duration-200 text-white
               transform hover:-translate-y-1 active:scale-95 rounded-lg`,
               incorrectWords.has(word) 
                 ? "bg-orange-500 hover:bg-orange-600"
-                : "bg-black hover:bg-gray-900",
+                : "bg-indigo-600 hover:bg-indigo-700",
               wordSize === "xs" ? "text-xs sm:text-sm px-1.5 py-0.5" :
               wordSize === "sm" ? "text-sm sm:text-base px-2 py-0.75" :
               "text-base sm:text-lg px-2.5 py-1"

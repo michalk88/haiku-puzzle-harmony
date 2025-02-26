@@ -89,11 +89,11 @@ const HaikuGame = forwardRef<{
   const isComplete = lines.every((line, i) => line.length === solution[i].length);
 
   const buttonStyles = {
-    idle: "bg-black hover:bg-gray-900",
-    checking: "bg-black opacity-50",
-    correct: "bg-green-500 hover:bg-green-600",
+    idle: "bg-indigo-600 hover:bg-indigo-700",
+    checking: "bg-indigo-600 opacity-50",
+    correct: "bg-emerald-500 hover:bg-emerald-600",
     incorrect: "bg-orange-500 hover:bg-orange-600",
-    continue: "bg-green-500 hover:bg-green-600"
+    continue: "bg-emerald-500 hover:bg-emerald-600"
   };
 
   const buttonText = {
@@ -126,7 +126,7 @@ const HaikuGame = forwardRef<{
             onClick={() => verificationState === 'continue' ? undefined : onVerify(lines, solution)}
             disabled={verificationState === 'checking'}
             className={cn(
-              "transition-all duration-300",
+              "transition-all duration-300 text-white",
               buttonStyles[verificationState]
             )}
           >
