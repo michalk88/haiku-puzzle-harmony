@@ -15,15 +15,10 @@ interface HaikuHeaderProps {
 
 const HaikuHeader: React.FC<HaikuHeaderProps> = ({
   title,
-  isCompleted,
-  isSolved,
-  isLastHaiku,
-  onNextHaiku,
   encouragingMessage,
-  isNextDisabled
 }) => {
   return (
-    <div className="mb-2 sm:mb-4">
+    <div className="mb-8 sm:mb-12">
       <div className="h-6 mb-1">
         {encouragingMessage && (
           <div className="text-lg font-medium text-green-500 text-center animate-in fade-in slide-in-from-top-4 duration-300">
@@ -31,23 +26,9 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
           </div>
         )}
       </div>
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg sm:text-xl font-medium text-gray-600 text-center flex-1">
-          {title}
-        </h2>
-        <div className="flex gap-2 ml-4">
-          {(isCompleted || isSolved) && (
-            <Button
-              onClick={onNextHaiku}
-              disabled={isNextDisabled}
-              className="bg-black hover:bg-gray-900"
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </div>
+      <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 text-center">
+        {title}
+      </h2>
     </div>
   );
 };

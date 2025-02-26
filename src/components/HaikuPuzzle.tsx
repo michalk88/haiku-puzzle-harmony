@@ -4,6 +4,7 @@ import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
+import Navigation from "./Navigation";
 import { useHaikuData } from "../hooks/useHaikuData";
 import { useHaikuGame } from "../hooks/useHaikuGame";
 import { shuffleArray } from "../lib/utils";
@@ -31,6 +32,7 @@ const HaikuPuzzle: React.FC = () => {
     isMessageVisible,
     verificationState,
     incorrectWords,
+    solvedCount,
     handleDragStart,
     handleWordUse,
     handleWordReturn,
@@ -77,8 +79,9 @@ const HaikuPuzzle: React.FC = () => {
   const showSolvedState = isCompleted || isSolved;
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-2 sm:py-4 flex-1">
+    <div className="relative min-h-screen flex flex-col bg-white">
+      <Navigation solvedCount={solvedCount} />
+      <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-6 sm:py-8 flex-1">
         <div className="mb-2">
           <HaikuHeader
             title={currentHaiku.title}
@@ -98,6 +101,7 @@ const HaikuPuzzle: React.FC = () => {
               completedHaiku?.line2_arrangement || currentHaiku.line2_words,
               completedHaiku?.line3_arrangement || currentHaiku.line3_words
             ]}
+            onNextHaiku={handleNextHaiku}
           />
         ) : (
           <>
