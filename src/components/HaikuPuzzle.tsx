@@ -1,10 +1,10 @@
+
 import React, { useRef, useMemo } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
-import Navigation from "./Navigation";
 import { useHaikuData } from "../hooks/useHaikuData";
 import { useHaikuGame } from "../hooks/useHaikuGame";
 import { shuffleArray } from "../lib/utils";
@@ -80,7 +80,6 @@ const HaikuPuzzle: React.FC = () => {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-white">
-      <Navigation solvedCount={solvedCount} />
       <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-6 sm:py-8 flex-1">
         <div className="mb-2">
           <HaikuHeader
