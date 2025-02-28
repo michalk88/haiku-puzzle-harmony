@@ -10,6 +10,11 @@ interface SessionHaiku {
 
 export const useHaikuSession = () => {
   const [sessionHaikus, setSessionHaikus] = useState<SessionHaiku[]>([]);
+  const [solvedCount, setSolvedCount] = useState(() => {
+    // Initialize from sessionStorage if available
+    const savedCount = sessionStorage.getItem('haiku_solved_count');
+    return savedCount ? parseInt(savedCount, 10) : 0;
+  });
   
   useEffect(() => {
     // Load saved haikus from session storage on mount
@@ -18,6 +23,11 @@ export const useHaikuSession = () => {
       setSessionHaikus(JSON.parse(saved));
     }
   }, []);
+
+  // Update sessionStorage whenever solvedCount changes
+  useEffect(() => {
+    sessionStorage.setItem('haiku_solved_count', solvedCount.toString());
+  }, [solvedCount]);
 
   const saveHaikuToSession = (haiku: SessionHaiku) => {
     const updatedHaikus = [...sessionHaikus.filter(h => h.id !== haiku.id), haiku];
@@ -39,6 +49,8 @@ export const useHaikuSession = () => {
     sessionHaikus,
     saveHaikuToSession,
     removeHaikuFromSession,
-    getSessionHaiku
+    getSessionHaiku,
+    solvedCount,
+    setSolvedCount
   };
 };
