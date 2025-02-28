@@ -44,6 +44,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     handleNextHaiku,
   } = useHaikuGame();
 
+  // Sync the solvedCount with the parent component
   useEffect(() => {
     if (onSolvedCountChange) {
       onSolvedCountChange(solvedCount);
