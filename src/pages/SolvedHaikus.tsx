@@ -1,17 +1,15 @@
 
 import React from 'react';
 import Navigation from '@/components/Navigation';
-import { useHaikuData } from '@/hooks/useHaikuData';
 import LoadingState from '@/components/haiku/LoadingState';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useHaikuSession } from '@/hooks/useHaikuSession';
 
 const SolvedHaikus = () => {
-  const { completedHaikus, haikus, isLoadingHaikus, isLoadingCompleted } = useHaikuData();
-  const { solvedCount } = useHaikuSession();
+  const { sessionHaikus, solvedCount } = useHaikuSession();
 
-  if (isLoadingHaikus || isLoadingCompleted) {
+  if (!sessionHaikus) {
     return <LoadingState />;
   }
 
@@ -26,23 +24,20 @@ const SolvedHaikus = () => {
         </div>
         
         <div className="mt-8 pb-20 space-y-16">
-          {completedHaikus?.map((completed) => {
-            const haiku = haikus?.find(h => h.id === completed.haiku_id);
-            if (!haiku) return null;
-            
-            return (
-              <div key={completed.haiku_id} className="space-y-8 animate-fade-in">
-                <h2 className="text-2xl font-medium text-center">{haiku.title}</h2>
-                <div className="text-xl text-center space-y-3">
-                  <p>{completed.line1_arrangement?.join(' ')}</p>
-                  <p>{completed.line2_arrangement?.join(' ')}</p>
-                  <p>{completed.line3_arrangement?.join(' ')}</p>
+          {sessionHaikus.length > 0 ? (
+            sessionHaikus.map((haiku) => {
+              return (
+                <div key={haiku.id} className="space-y-8 animate-fade-in">
+                  <h2 className="text-2xl font-medium text-center">Haiku #{haiku.id.substring(0, 8)}</h2>
+                  <div className="text-xl text-center space-y-3">
+                    <p>{haiku.line1_arrangement?.join(' ')}</p>
+                    <p>{haiku.line2_arrangement?.join(' ')}</p>
+                    <p>{haiku.line3_arrangement?.join(' ')}</p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-          
-          {completedHaikus?.length === 0 && (
+              );
+            })
+          ) : (
             <div className="text-center py-10 text-gray-500">
               <p>You haven't solved any haikus yet.</p>
             </div>

@@ -7,6 +7,7 @@ import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
 import { useHaikuData } from "../hooks/useHaikuData";
 import { useHaikuGame } from "../hooks/useHaikuGame";
+import { useHaikuSession } from "../hooks/useHaikuSession";
 import { shuffleArray } from "../lib/utils";
 
 interface HaikuPuzzleProps {
@@ -27,6 +28,8 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     isLoadingCompleted,
   } = useHaikuData();
 
+  const { saveHaikuToSession, solvedCount, setSolvedCount } = useHaikuSession();
+
   const {
     draggedWord,
     usedWords,
@@ -36,7 +39,6 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     isMessageVisible,
     verificationState,
     incorrectWords,
-    solvedCount,
     handleDragStart,
     handleWordUse,
     handleWordReturn,
@@ -50,6 +52,24 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
       onSolvedCountChange(solvedCount);
     }
   }, [solvedCount, onSolvedCountChange]);
+
+  // Save the current haiku to session when it's solved
+  useEffect(() => {
+    if (isSolved && haikus && haikus.length > 0) {
+      const currentHaiku = haikus[currentHaikuIndex];
+      const currentLines = gameRef.current?.getCurrentLines() || [[], [], []];
+      
+      saveHaikuToSession({
+        id: currentHaiku.id,
+        line1_arrangement: currentLines[0],
+        line2_arrangement: currentLines[1],
+        line3_arrangement: currentLines[2]
+      });
+
+      // Update the solved count
+      setSolvedCount(solvedCount + 1);
+    }
+  }, [isSolved, haikus, currentHaikuIndex, saveHaikuToSession, solvedCount, setSolvedCount]);
 
   const availableWords = useMemo(() => {
     if (!haikus || haikus.length === 0) return [];
