@@ -1,5 +1,5 @@
 
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
@@ -9,7 +9,11 @@ import { useHaikuData } from "../hooks/useHaikuData";
 import { useHaikuGame } from "../hooks/useHaikuGame";
 import { shuffleArray } from "../lib/utils";
 
-const HaikuPuzzle: React.FC = () => {
+interface HaikuPuzzleProps {
+  onSolvedCountChange?: (count: number) => void;
+}
+
+const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   const gameRef = useRef<{ 
     handleWordReturn: (word: string) => void;
     handleReset: () => void;
@@ -39,6 +43,12 @@ const HaikuPuzzle: React.FC = () => {
     handleVerify,
     handleNextHaiku,
   } = useHaikuGame();
+
+  useEffect(() => {
+    if (onSolvedCountChange) {
+      onSolvedCountChange(solvedCount);
+    }
+  }, [solvedCount, onSolvedCountChange]);
 
   const availableWords = useMemo(() => {
     if (!haikus || haikus.length === 0) return [];
