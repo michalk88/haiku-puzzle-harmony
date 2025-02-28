@@ -15,9 +15,9 @@ const Navigation = ({ solvedCount }: NavigationProps) => {
           <span className="text-lg font-medium">Haiku Puzzle</span>
         </div>
         {solvedCount !== undefined && (
-          <div className="text-emerald-600 font-medium">
+          <Link to="/solved" className="text-emerald-600 font-medium hover:underline">
             {solvedCount} {solvedCount === 1 ? 'Haiku' : 'Haikus'} Solved
-          </div>
+          </Link>
         )}
       </div>
     </nav>
