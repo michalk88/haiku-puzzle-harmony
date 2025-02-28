@@ -5,15 +5,15 @@ import { useHaikuData } from '@/hooks/useHaikuData';
 import LoadingState from '@/components/haiku/LoadingState';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useHaikuSession } from '@/hooks/useHaikuSession';
 
 const SolvedHaikus = () => {
   const { completedHaikus, haikus, isLoadingHaikus, isLoadingCompleted } = useHaikuData();
+  const { solvedCount } = useHaikuSession();
 
   if (isLoadingHaikus || isLoadingCompleted) {
     return <LoadingState />;
   }
-
-  const solvedCount = completedHaikus?.length || 0;
 
   return (
     <div className="min-h-screen bg-background">

@@ -1,10 +1,10 @@
 
-import { useState } from "react";
 import HaikuPuzzle from "@/components/HaikuPuzzle";
 import Navigation from "@/components/Navigation";
+import { useHaikuSession } from "@/hooks/useHaikuSession";
 
 const Index = () => {
-  const [solvedCount, setSolvedCount] = useState(0);
+  const { solvedCount, setSolvedCount } = useHaikuSession();
 
   return (
     <div className="min-h-screen bg-background">
