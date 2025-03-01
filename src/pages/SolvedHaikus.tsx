@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import LoadingState from '@/components/haiku/LoadingState';
 import { ArrowLeft } from 'lucide-react';
@@ -8,6 +8,11 @@ import { useHaikuSession } from '@/hooks/useHaikuSession';
 
 const SolvedHaikus = () => {
   const { sessionHaikus, solvedCount } = useHaikuSession();
+
+  useEffect(() => {
+    // Debug: Check what's in the sessionHaikus
+    console.log("Session haikus:", sessionHaikus);
+  }, [sessionHaikus]);
 
   if (!sessionHaikus) {
     return <LoadingState />;
@@ -41,9 +46,15 @@ const SolvedHaikus = () => {
                     Haiku #{index + 1}
                   </h2>
                   <div className="text-xl text-center space-y-3">
-                    <p>{haiku.line1_arrangement?.join(' ')}</p>
-                    <p>{haiku.line2_arrangement?.join(' ')}</p>
-                    <p>{haiku.line3_arrangement?.join(' ')}</p>
+                    {haiku.line1_arrangement && haiku.line1_arrangement.length > 0 && (
+                      <p>{haiku.line1_arrangement.join(' ')}</p>
+                    )}
+                    {haiku.line2_arrangement && haiku.line2_arrangement.length > 0 && (
+                      <p>{haiku.line2_arrangement.join(' ')}</p>
+                    )}
+                    {haiku.line3_arrangement && haiku.line3_arrangement.length > 0 && (
+                      <p>{haiku.line3_arrangement.join(' ')}</p>
+                    )}
                   </div>
                 </div>
               );
