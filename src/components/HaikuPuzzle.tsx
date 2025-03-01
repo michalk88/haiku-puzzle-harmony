@@ -53,32 +53,6 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     }
   }, [solvedCount, onSolvedCountChange]);
 
-  // Save the current haiku to session when it's solved
-  useEffect(() => {
-    if (isSolved && haikus && haikus.length > 0 && !didSaveCurrentHaiku.current) {
-      const currentHaiku = haikus[currentHaikuIndex];
-      const currentLines = gameRef.current?.getCurrentLines() || [[], [], []];
-      
-      // Only save if the currentLines have content
-      if (currentLines.some(line => line.length > 0)) {
-        // Save reference to avoid repeatedly calling this effect
-        didSaveCurrentHaiku.current = true;
-        
-        console.log("Saving haiku with lines:", currentLines);
-        
-        saveHaikuToSession({
-          id: currentHaiku.id,
-          line1_arrangement: currentLines[0],
-          line2_arrangement: currentLines[1],
-          line3_arrangement: currentLines[2]
-        });
-
-        // Update the solved count only once per solved haiku
-        setSolvedCount(prevCount => prevCount + 1);
-      }
-    }
-  }, [isSolved, haikus, currentHaikuIndex, saveHaikuToSession, setSolvedCount]);
-
   // Ref to track if we've already saved the current haiku to avoid duplicates
   const didSaveCurrentHaiku = useRef(false);
   
@@ -86,6 +60,39 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   useEffect(() => {
     didSaveCurrentHaiku.current = false;
   }, [currentHaikuIndex]);
+
+  // Save the current haiku to session when it's solved
+  useEffect(() => {
+    if (isSolved && haikus && haikus.length > 0 && !didSaveCurrentHaiku.current) {
+      const currentHaiku = haikus[currentHaikuIndex];
+      const currentLines = gameRef.current?.getCurrentLines() || [[], [], []];
+      
+      console.log("Current lines for haiku:", currentLines);
+      
+      // Check if we have actual content in the lines
+      const hasContent = currentLines.some(line => line.length > 0);
+      
+      if (hasContent) {
+        console.log("Saving solved haiku with lines:", currentLines);
+        
+        // Mark as saved to avoid duplicate saves
+        didSaveCurrentHaiku.current = true;
+        
+        // Save the haiku to session
+        saveHaikuToSession({
+          id: currentHaiku.id,
+          line1_arrangement: currentLines[0] || [],
+          line2_arrangement: currentLines[1] || [],
+          line3_arrangement: currentLines[2] || []
+        });
+
+        // Update the solved count only once per solved haiku
+        setSolvedCount(prevCount => prevCount + 1);
+      } else {
+        console.warn("Not saving haiku - lines are empty");
+      }
+    }
+  }, [isSolved, haikus, currentHaikuIndex, saveHaikuToSession, setSolvedCount]);
 
   const availableWords = useMemo(() => {
     if (!haikus || haikus.length === 0) return [];

@@ -11,7 +11,7 @@ const SolvedHaikus = () => {
 
   useEffect(() => {
     // Debug: Check what's in the sessionHaikus
-    console.log("Session haikus:", sessionHaikus);
+    console.log("Session haikus on solved page:", sessionHaikus);
   }, [sessionHaikus]);
 
   if (!sessionHaikus) {
@@ -21,10 +21,12 @@ const SolvedHaikus = () => {
   // Filter out haikus with empty arrangement arrays
   const validHaikus = sessionHaikus.filter(
     haiku => 
-      haiku.line1_arrangement?.length > 0 || 
-      haiku.line2_arrangement?.length > 0 || 
-      haiku.line3_arrangement?.length > 0
+      (haiku.line1_arrangement && haiku.line1_arrangement.length > 0) || 
+      (haiku.line2_arrangement && haiku.line2_arrangement.length > 0) || 
+      (haiku.line3_arrangement && haiku.line3_arrangement.length > 0)
   );
+
+  console.log("Valid haikus for display:", validHaikus);
 
   return (
     <div className="min-h-screen bg-background">
