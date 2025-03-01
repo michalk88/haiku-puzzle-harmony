@@ -18,6 +18,14 @@ const SolvedHaikus = () => {
     return <LoadingState />;
   }
 
+  // Filter out haikus with empty arrangement arrays
+  const validHaikus = sessionHaikus.filter(
+    haiku => 
+      haiku.line1_arrangement?.length > 0 || 
+      haiku.line2_arrangement?.length > 0 || 
+      haiku.line3_arrangement?.length > 0
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation solvedCount={solvedCount} />
@@ -30,35 +38,28 @@ const SolvedHaikus = () => {
         </div>
         
         <div className="mt-8 pb-20 space-y-16">
-          {sessionHaikus.length > 0 ? (
-            sessionHaikus.map((haiku, index) => {
-              // Only render haikus that have arrangements
-              if (!haiku.line1_arrangement || !haiku.line2_arrangement || !haiku.line3_arrangement) {
-                return null;
-              }
-              
-              return (
-                <div 
-                  key={haiku.id} 
-                  className="space-y-8 animate-fade-in border border-gray-200 rounded-xl p-8 shadow-sm"
-                >
-                  <h2 className="text-2xl font-medium text-center">
-                    Haiku #{index + 1}
-                  </h2>
-                  <div className="text-xl text-center space-y-3">
-                    {haiku.line1_arrangement && haiku.line1_arrangement.length > 0 && (
-                      <p>{haiku.line1_arrangement.join(' ')}</p>
-                    )}
-                    {haiku.line2_arrangement && haiku.line2_arrangement.length > 0 && (
-                      <p>{haiku.line2_arrangement.join(' ')}</p>
-                    )}
-                    {haiku.line3_arrangement && haiku.line3_arrangement.length > 0 && (
-                      <p>{haiku.line3_arrangement.join(' ')}</p>
-                    )}
-                  </div>
+          {validHaikus.length > 0 ? (
+            validHaikus.map((haiku, index) => (
+              <div 
+                key={haiku.id} 
+                className="space-y-8 animate-fade-in border border-gray-200 rounded-xl p-8 shadow-sm"
+              >
+                <h2 className="text-2xl font-medium text-center">
+                  Haiku #{index + 1}
+                </h2>
+                <div className="text-xl text-center space-y-3">
+                  {haiku.line1_arrangement && haiku.line1_arrangement.length > 0 && (
+                    <p>{haiku.line1_arrangement.join(' ')}</p>
+                  )}
+                  {haiku.line2_arrangement && haiku.line2_arrangement.length > 0 && (
+                    <p>{haiku.line2_arrangement.join(' ')}</p>
+                  )}
+                  {haiku.line3_arrangement && haiku.line3_arrangement.length > 0 && (
+                    <p>{haiku.line3_arrangement.join(' ')}</p>
+                  )}
                 </div>
-              );
-            }).filter(Boolean)
+              </div>
+            ))
           ) : (
             <div className="text-center py-10 text-gray-500">
               <p>You haven't solved any haikus yet.</p>

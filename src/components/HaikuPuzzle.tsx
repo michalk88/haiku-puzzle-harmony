@@ -59,18 +59,23 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
       const currentHaiku = haikus[currentHaikuIndex];
       const currentLines = gameRef.current?.getCurrentLines() || [[], [], []];
       
-      // Save reference to avoid repeatedly calling this effect
-      didSaveCurrentHaiku.current = true;
-      
-      saveHaikuToSession({
-        id: currentHaiku.id,
-        line1_arrangement: currentLines[0],
-        line2_arrangement: currentLines[1],
-        line3_arrangement: currentLines[2]
-      });
+      // Only save if the currentLines have content
+      if (currentLines.some(line => line.length > 0)) {
+        // Save reference to avoid repeatedly calling this effect
+        didSaveCurrentHaiku.current = true;
+        
+        console.log("Saving haiku with lines:", currentLines);
+        
+        saveHaikuToSession({
+          id: currentHaiku.id,
+          line1_arrangement: currentLines[0],
+          line2_arrangement: currentLines[1],
+          line3_arrangement: currentLines[2]
+        });
 
-      // Update the solved count only once per solved haiku
-      setSolvedCount(prevCount => prevCount + 1);
+        // Update the solved count only once per solved haiku
+        setSolvedCount(prevCount => prevCount + 1);
+      }
     }
   }, [isSolved, haikus, currentHaikuIndex, saveHaikuToSession, setSolvedCount]);
 
