@@ -142,6 +142,13 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   };
 
   const showSolvedState = isCompleted || isSolved;
+  
+  // Store the solved haiku lines for display in the completed state
+  const solvedLines = completedHaiku ? [
+    completedHaiku.line1_arrangement || [],
+    completedHaiku.line2_arrangement || [],
+    completedHaiku.line3_arrangement || []
+  ] : gameRef.current?.getCurrentLines() || [[], [], []];
 
   return (
     <div className="relative min-h-screen flex flex-col bg-white">
@@ -160,11 +167,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
 
         {showSolvedState ? (
           <CompletedHaiku
-            lines={[
-              completedHaiku?.line1_arrangement || currentLines[0] || [],
-              completedHaiku?.line2_arrangement || currentLines[1] || [],
-              completedHaiku?.line3_arrangement || currentLines[2] || []
-            ]}
+            lines={solvedLines}
             onNextHaiku={handleNextHaiku}
           />
         ) : (
@@ -202,3 +205,4 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
 };
 
 export default HaikuPuzzle;
+
