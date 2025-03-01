@@ -1,36 +1,40 @@
 
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import LoadingState from '@/components/haiku/LoadingState';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useHaikuSession } from '@/hooks/useHaikuSession';
+import { useHaikuData } from '@/hooks/useHaikuData';
+import { useAuth } from '@/context/AuthContext';
 
 const SolvedHaikus = () => {
-  const { sessionHaikus, solvedCount } = useHaikuSession();
+  const { completedHaikus, isLoadingCompleted } = useHaikuData();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // Debug: Check what's in the sessionHaikus
-    console.log("Session haikus on solved page:", sessionHaikus);
-  }, [sessionHaikus]);
+    // Redirect to login if not authenticated
+    if (!user && !isLoadingCompleted) {
+      navigate('/auth');
+    }
+  }, [user, isLoadingCompleted, navigate]);
 
-  if (!sessionHaikus) {
+  if (isLoadingCompleted) {
     return <LoadingState />;
   }
 
   // Filter out haikus with empty arrangement arrays
-  const validHaikus = sessionHaikus.filter(
+  const validHaikus = completedHaikus?.filter(
     haiku => 
       (haiku.line1_arrangement && haiku.line1_arrangement.length > 0) || 
       (haiku.line2_arrangement && haiku.line2_arrangement.length > 0) || 
       (haiku.line3_arrangement && haiku.line3_arrangement.length > 0)
-  );
-
-  console.log("Valid haikus for display:", validHaikus);
+  ) || [];
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation solvedCount={solvedCount} />
+      <Navigation solvedCount={validHaikus.length} />
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center">
           <Link to="/" className="text-gray-600 hover:text-gray-900">

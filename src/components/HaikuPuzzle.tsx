@@ -1,5 +1,6 @@
 
 import React, { useRef, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
@@ -7,8 +8,8 @@ import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
 import { useHaikuData } from "../hooks/useHaikuData";
 import { useHaikuGame } from "../hooks/useHaikuGame";
-import { useHaikuSession } from "../hooks/useHaikuSession";
 import { shuffleArray } from "../lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 interface HaikuPuzzleProps {
   onSolvedCountChange?: (count: number) => void;
@@ -24,11 +25,24 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   const {
     haikus,
     completedHaikus,
+    saveCompletedHaiku,
     isLoadingHaikus,
     isLoadingCompleted,
   } = useHaikuData();
 
-  const { saveHaikuToSession, solvedCount, setSolvedCount } = useHaikuSession();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!user && !isLoadingHaikus) {
+        navigate('/auth');
+      }
+    }, 1000); // Short delay to prevent flickering during initial load
+    
+    return () => clearTimeout(timer);
+  }, [user, isLoadingHaikus, navigate]);
 
   const {
     draggedWord,
@@ -48,10 +62,10 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
 
   // Sync the solvedCount with the parent component
   useEffect(() => {
-    if (onSolvedCountChange) {
-      onSolvedCountChange(solvedCount);
+    if (onSolvedCountChange && completedHaikus) {
+      onSolvedCountChange(completedHaikus.length);
     }
-  }, [solvedCount, onSolvedCountChange]);
+  }, [completedHaikus, onSolvedCountChange]);
 
   // Ref to track if we've already saved the current haiku to avoid duplicates
   const didSaveCurrentHaiku = useRef(false);
@@ -61,9 +75,9 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     didSaveCurrentHaiku.current = false;
   }, [currentHaikuIndex]);
 
-  // Save the current haiku to session when it's solved
+  // Save the current haiku to Supabase when it's solved
   useEffect(() => {
-    if (isSolved && haikus && haikus.length > 0 && !didSaveCurrentHaiku.current) {
+    if (isSolved && haikus && haikus.length > 0 && !didSaveCurrentHaiku.current && user) {
       const currentHaiku = haikus[currentHaikuIndex];
       const currentLines = gameRef.current?.getCurrentLines() || [[], [], []];
       
@@ -78,21 +92,18 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
         // Mark as saved to avoid duplicate saves
         didSaveCurrentHaiku.current = true;
         
-        // Save the haiku to session
-        saveHaikuToSession({
-          id: currentHaiku.id,
+        // Save the haiku to Supabase
+        saveCompletedHaiku.mutate({
+          haiku_id: currentHaiku.id,
           line1_arrangement: currentLines[0] || [],
           line2_arrangement: currentLines[1] || [],
           line3_arrangement: currentLines[2] || []
         });
-
-        // Update the solved count only once per solved haiku
-        setSolvedCount(prevCount => prevCount + 1);
       } else {
         console.warn("Not saving haiku - lines are empty");
       }
     }
-  }, [isSolved, haikus, currentHaikuIndex, saveHaikuToSession, setSolvedCount]);
+  }, [isSolved, haikus, currentHaikuIndex, saveCompletedHaiku, user]);
 
   const availableWords = useMemo(() => {
     if (!haikus || haikus.length === 0) return [];
@@ -150,9 +161,9 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
         {showSolvedState ? (
           <CompletedHaiku
             lines={[
-              completedHaiku?.line1_arrangement || currentHaiku.line1_words,
-              completedHaiku?.line2_arrangement || currentHaiku.line2_words,
-              completedHaiku?.line3_arrangement || currentHaiku.line3_words
+              completedHaiku?.line1_arrangement || currentLines[0] || [],
+              completedHaiku?.line2_arrangement || currentLines[1] || [],
+              completedHaiku?.line3_arrangement || currentLines[2] || []
             ]}
             onNextHaiku={handleNextHaiku}
           />
