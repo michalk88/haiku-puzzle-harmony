@@ -21,14 +21,25 @@ const SolvedHaikus = () => {
           <Link to="/" className="text-gray-600 hover:text-gray-900">
             <ArrowLeft className="h-6 w-6" />
           </Link>
+          <h1 className="ml-4 text-2xl font-semibold">Your Solved Haikus</h1>
         </div>
         
         <div className="mt-8 pb-20 space-y-16">
           {sessionHaikus.length > 0 ? (
-            sessionHaikus.map((haiku) => {
+            sessionHaikus.map((haiku, index) => {
+              // Only render haikus that have arrangements
+              if (!haiku.line1_arrangement || !haiku.line2_arrangement || !haiku.line3_arrangement) {
+                return null;
+              }
+              
               return (
-                <div key={haiku.id} className="space-y-8 animate-fade-in">
-                  <h2 className="text-2xl font-medium text-center">Haiku #{haiku.id.substring(0, 8)}</h2>
+                <div 
+                  key={haiku.id} 
+                  className="space-y-8 animate-fade-in border border-gray-200 rounded-xl p-8 shadow-sm"
+                >
+                  <h2 className="text-2xl font-medium text-center">
+                    Haiku #{index + 1}
+                  </h2>
                   <div className="text-xl text-center space-y-3">
                     <p>{haiku.line1_arrangement?.join(' ')}</p>
                     <p>{haiku.line2_arrangement?.join(' ')}</p>
@@ -36,10 +47,16 @@ const SolvedHaikus = () => {
                   </div>
                 </div>
               );
-            })
+            }).filter(Boolean)
           ) : (
             <div className="text-center py-10 text-gray-500">
               <p>You haven't solved any haikus yet.</p>
+              <Link 
+                to="/" 
+                className="mt-4 inline-block text-emerald-500 hover:text-emerald-600 font-medium"
+              >
+                Go back to solve your first haiku!
+              </Link>
             </div>
           )}
         </div>

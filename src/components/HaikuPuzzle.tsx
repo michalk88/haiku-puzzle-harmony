@@ -55,9 +55,12 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
 
   // Save the current haiku to session when it's solved
   useEffect(() => {
-    if (isSolved && haikus && haikus.length > 0) {
+    if (isSolved && haikus && haikus.length > 0 && !didSaveCurrentHaiku.current) {
       const currentHaiku = haikus[currentHaikuIndex];
       const currentLines = gameRef.current?.getCurrentLines() || [[], [], []];
+      
+      // Save reference to avoid repeatedly calling this effect
+      didSaveCurrentHaiku.current = true;
       
       saveHaikuToSession({
         id: currentHaiku.id,
@@ -66,10 +69,18 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
         line3_arrangement: currentLines[2]
       });
 
-      // Update the solved count
-      setSolvedCount(solvedCount + 1);
+      // Update the solved count only once per solved haiku
+      setSolvedCount(prevCount => prevCount + 1);
     }
-  }, [isSolved, haikus, currentHaikuIndex, saveHaikuToSession, solvedCount, setSolvedCount]);
+  }, [isSolved, haikus, currentHaikuIndex, saveHaikuToSession, setSolvedCount]);
+
+  // Ref to track if we've already saved the current haiku to avoid duplicates
+  const didSaveCurrentHaiku = useRef(false);
+  
+  // Reset the save tracking when moving to a new haiku
+  useEffect(() => {
+    didSaveCurrentHaiku.current = false;
+  }, [currentHaikuIndex]);
 
   const availableWords = useMemo(() => {
     if (!haikus || haikus.length === 0) return [];
