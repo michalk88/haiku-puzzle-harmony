@@ -16,6 +16,11 @@ interface HaikuHeaderProps {
 const HaikuHeader: React.FC<HaikuHeaderProps> = ({
   title,
   encouragingMessage,
+  isCompleted,
+  isSolved,
+  isLastHaiku,
+  onNextHaiku,
+  isNextDisabled,
 }) => {
   return (
     <div className="mb-8 sm:mb-12">
@@ -26,9 +31,21 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
           </div>
         )}
       </div>
-      <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 text-center">
-        {title}
-      </h2>
+      <div className="flex flex-col items-center">
+        <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 text-center mb-2">
+          {title}
+        </h2>
+        
+        {(isCompleted || isSolved) && !isLastHaiku && (
+          <Button
+            onClick={onNextHaiku}
+            className="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white"
+            disabled={isNextDisabled}
+          >
+            Next Haiku <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

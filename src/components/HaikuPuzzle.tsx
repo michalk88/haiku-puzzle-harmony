@@ -1,15 +1,17 @@
 
-import React, { useRef, useMemo, useEffect } from "react";
+import React, { useRef, useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HaikuGame from "./HaikuGame";
 import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
+import NoHaikusAvailable from "./haiku/NoHaikusAvailable";
 import { useHaikuData } from "../hooks/useHaikuData";
 import { useHaikuGame } from "../hooks/useHaikuGame";
 import { shuffleArray } from "../lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface HaikuPuzzleProps {
   onSolvedCountChange?: (count: number) => void;
@@ -32,6 +34,8 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
 
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [availableHaikus, setAvailableHaikus] = useState<any[]>([]);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -43,6 +47,15 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     
     return () => clearTimeout(timer);
   }, [user, isLoadingHaikus, navigate]);
+
+  // Filter out completed haikus to get available ones
+  useEffect(() => {
+    if (haikus && completedHaikus) {
+      const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
+      const available = haikus.filter(haiku => !completedIds.has(haiku.id));
+      setAvailableHaikus(available);
+    }
+  }, [haikus, completedHaikus]);
 
   const {
     draggedWord,
@@ -58,6 +71,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     handleWordReturn,
     handleVerify,
     handleNextHaiku,
+    setCurrentHaikuIndex,
   } = useHaikuGame();
 
   // Sync the solvedCount with the parent component
@@ -98,12 +112,66 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
           line1_arrangement: currentLines[0] || [],
           line2_arrangement: currentLines[1] || [],
           line3_arrangement: currentLines[2] || []
+        }, {
+          onSuccess: () => {
+            toast({
+              title: "Haiku saved!",
+              description: "Your solution has been saved.",
+            });
+          },
+          onError: (error) => {
+            console.error("Error saving haiku:", error);
+            toast({
+              title: "Error saving haiku",
+              description: "There was an error saving your solution.",
+              variant: "destructive"
+            });
+          }
         });
       } else {
         console.warn("Not saving haiku - lines are empty");
       }
     }
-  }, [isSolved, haikus, currentHaikuIndex, saveCompletedHaiku, user]);
+  }, [isSolved, haikus, currentHaikuIndex, saveCompletedHaiku, user, toast]);
+
+  // Handle next haiku logic - find the next unsolved haiku
+  const goToNextUnsolved = () => {
+    if (!haikus || !completedHaikus) return;
+    
+    const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
+    
+    // Find the next unsolved haiku index
+    let nextIndex = currentHaikuIndex;
+    let foundUnsolved = false;
+    
+    // Try to find an unsolved haiku after the current one
+    for (let i = currentHaikuIndex + 1; i < haikus.length; i++) {
+      if (!completedIds.has(haikus[i].id)) {
+        nextIndex = i;
+        foundUnsolved = true;
+        break;
+      }
+    }
+    
+    // If no unsolved haiku found after the current one, start from the beginning
+    if (!foundUnsolved && haikus.length > 0) {
+      for (let i = 0; i < currentHaikuIndex; i++) {
+        if (!completedIds.has(haikus[i].id)) {
+          nextIndex = i;
+          foundUnsolved = true;
+          break;
+        }
+      }
+    }
+    
+    if (foundUnsolved) {
+      setCurrentHaikuIndex(nextIndex);
+      handleNextHaiku();
+    } else {
+      // All haikus are solved, show a message or redirect
+      navigate('/solved');
+    }
+  };
 
   const availableWords = useMemo(() => {
     if (!haikus || haikus.length === 0) return [];
@@ -125,9 +193,22 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     return <div>No haikus available</div>;
   }
 
+  // Check if there are any unsolved haikus
+  if (availableHaikus.length === 0 && !isLoadingHaikus && !isLoadingCompleted) {
+    return <NoHaikusAvailable />;
+  }
+
   const currentHaiku = haikus[currentHaikuIndex];
   const isCompleted = completedHaikus?.some(ch => ch.haiku_id === currentHaiku.id);
   const completedHaiku = completedHaikus?.find(ch => ch.haiku_id === currentHaiku.id);
+
+  // If the current haiku is already completed, go to the next unsolved one
+  if (isCompleted && !isSolved && availableHaikus.length > 0 && !isLoadingHaikus) {
+    // Set a small timeout to avoid infinite loops during state updates
+    setTimeout(() => {
+      goToNextUnsolved();
+    }, 0);
+  }
 
   const remainingWords = availableWords.filter(word => !usedWords.has(word));
 
@@ -158,8 +239,8 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
             title={currentHaiku.title}
             isCompleted={isCompleted}
             isSolved={isSolved}
-            isLastHaiku={currentHaikuIndex === haikus.length - 1}
-            onNextHaiku={handleNextHaiku}
+            isLastHaiku={availableHaikus.length === 0}
+            onNextHaiku={goToNextUnsolved}
             encouragingMessage={isMessageVisible ? encouragingMessage : ""}
             isNextDisabled={!isSolved && !isCompleted}
           />
@@ -168,7 +249,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
         {showSolvedState ? (
           <CompletedHaiku
             lines={solvedLines}
-            onNextHaiku={handleNextHaiku}
+            onNextHaiku={goToNextUnsolved}
           />
         ) : (
           <>
@@ -205,4 +286,3 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
 };
 
 export default HaikuPuzzle;
-

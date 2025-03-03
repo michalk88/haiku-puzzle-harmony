@@ -57,6 +57,7 @@ export const useHaikuGame = () => {
     if (isCorrect) {
       setVerificationState('correct');
       setIsSolved(true);
+      setEncouragingMessage("Great job!");
       setTimeout(() => {
         setVerificationState('continue');
       }, 1500);
@@ -79,7 +80,6 @@ export const useHaikuGame = () => {
   };
 
   const handleNextHaiku = () => {
-    setCurrentHaikuIndex(prev => prev + 1);
     setVerificationState('idle');
     setUsedWords(new Set());
     setIncorrectWords(new Set());
@@ -100,5 +100,6 @@ export const useHaikuGame = () => {
     handleWordReturn,
     handleVerify,
     handleNextHaiku,
+    setCurrentHaikuIndex,
   };
 };

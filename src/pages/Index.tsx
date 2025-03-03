@@ -1,7 +1,7 @@
 
+import { useEffect, useState } from "react";
 import HaikuPuzzle from "@/components/HaikuPuzzle";
 import Navigation from "@/components/Navigation";
-import { useState } from "react";
 import { useHaikuData } from "@/hooks/useHaikuData";
 
 const Index = () => {
@@ -9,11 +9,11 @@ const Index = () => {
   const { completedHaikus } = useHaikuData();
 
   // Initialize solved count from completed haikus
-  useState(() => {
+  useEffect(() => {
     if (completedHaikus) {
       setSolvedCount(completedHaikus.length);
     }
-  });
+  }, [completedHaikus]);
 
   return (
     <div className="min-h-screen bg-background">

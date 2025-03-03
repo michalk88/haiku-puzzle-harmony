@@ -9,7 +9,7 @@ import { useHaikuData } from '@/hooks/useHaikuData';
 import { useAuth } from '@/context/AuthContext';
 
 const SolvedHaikus = () => {
-  const { completedHaikus, isLoadingCompleted } = useHaikuData();
+  const { completedHaikus, haikus, isLoadingCompleted, isLoadingHaikus } = useHaikuData();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -20,8 +20,13 @@ const SolvedHaikus = () => {
     }
   }, [user, isLoadingCompleted, navigate]);
 
-  if (isLoadingCompleted) {
-    return <LoadingState />;
+  if (isLoadingCompleted || isLoadingHaikus) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation solvedCount={completedHaikus?.length || 0} />
+        <LoadingState />
+      </div>
+    );
   }
 
   // Filter out haikus with empty arrangement arrays
@@ -31,6 +36,15 @@ const SolvedHaikus = () => {
       (haiku.line2_arrangement && haiku.line2_arrangement.length > 0) || 
       (haiku.line3_arrangement && haiku.line3_arrangement.length > 0)
   ) || [];
+
+  // Add titles to haikus
+  const haikuWithTitles = validHaikus.map(haiku => {
+    const matchingHaiku = haikus?.find(h => h.id === haiku.haiku_id);
+    return {
+      ...haiku,
+      title: matchingHaiku?.title || "Untitled Haiku"
+    };
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -44,14 +58,14 @@ const SolvedHaikus = () => {
         </div>
         
         <div className="mt-8 pb-20 space-y-16">
-          {validHaikus.length > 0 ? (
-            validHaikus.map((haiku, index) => (
+          {haikuWithTitles.length > 0 ? (
+            haikuWithTitles.map((haiku, index) => (
               <div 
                 key={haiku.id} 
                 className="space-y-8 animate-fade-in border border-gray-200 rounded-xl p-8 shadow-sm"
               >
                 <h2 className="text-2xl font-medium text-center">
-                  Haiku #{index + 1}
+                  {haiku.title}
                 </h2>
                 <div className="text-xl text-center space-y-3">
                   {haiku.line1_arrangement && haiku.line1_arrangement.length > 0 && (
