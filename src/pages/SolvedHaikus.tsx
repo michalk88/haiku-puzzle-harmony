@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom';
 import { useHaikuData } from '@/hooks/useHaikuData';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardContent } from '@/components/ui/card';
 
 const SolvedHaikus = () => {
   const { completedHaikus, haikus, isLoadingCompleted, isLoadingHaikus, refetchCompletedHaikus } = useHaikuData();
@@ -79,48 +81,56 @@ const SolvedHaikus = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col h-screen bg-background">
       <Navigation solvedCount={validHaikus.length} />
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center">
-          <Link to="/" className="text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="h-6 w-6" />
-          </Link>
-          <h1 className="ml-4 text-2xl font-semibold">Your Solved Haikus</h1>
-        </div>
-        
-        <div className="mt-8 pb-20 space-y-16">
+      <div className="flex-1 overflow-hidden">
+        <div className="container mx-auto px-4 py-6 h-full flex flex-col">
+          <div className="flex items-center mb-6">
+            <Link to="/" className="text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="h-6 w-6" />
+            </Link>
+            <h1 className="ml-4 text-2xl font-semibold">Your Solved Haikus</h1>
+          </div>
+          
           {haikuWithTitles.length > 0 ? (
-            haikuWithTitles.map((haiku, index) => (
-              <div 
-                key={haiku.id} 
-                className="space-y-8 animate-fade-in border border-gray-200 rounded-xl p-8 shadow-sm"
-              >
-                <h2 className="text-2xl font-medium text-center">
-                  {haiku.title}
-                </h2>
-                <div className="text-xl text-center space-y-3">
-                  {haiku.line1_arrangement && haiku.line1_arrangement.length > 0 && (
-                    <p>{haiku.line1_arrangement.join(' ')}</p>
-                  )}
-                  {haiku.line2_arrangement && haiku.line2_arrangement.length > 0 && (
-                    <p>{haiku.line2_arrangement.join(' ')}</p>
-                  )}
-                  {haiku.line3_arrangement && haiku.line3_arrangement.length > 0 && (
-                    <p>{haiku.line3_arrangement.join(' ')}</p>
-                  )}
-                </div>
+            <ScrollArea className="flex-1 pb-20">
+              <div className="space-y-8">
+                {haikuWithTitles.map((haiku, index) => (
+                  <Card 
+                    key={haiku.id} 
+                    className="animate-fade-in border border-gray-200 rounded-xl shadow-sm"
+                  >
+                    <CardContent className="p-8 space-y-8">
+                      <h2 className="text-2xl font-medium text-center">
+                        {haiku.title}
+                      </h2>
+                      <div className="text-xl text-center space-y-3">
+                        {haiku.line1_arrangement && haiku.line1_arrangement.length > 0 && (
+                          <p>{haiku.line1_arrangement.join(' ')}</p>
+                        )}
+                        {haiku.line2_arrangement && haiku.line2_arrangement.length > 0 && (
+                          <p>{haiku.line2_arrangement.join(' ')}</p>
+                        )}
+                        {haiku.line3_arrangement && haiku.line3_arrangement.length > 0 && (
+                          <p>{haiku.line3_arrangement.join(' ')}</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            ))
+            </ScrollArea>
           ) : (
-            <div className="text-center py-10 text-gray-500">
-              <p>You haven't solved any haikus yet.</p>
-              <Link 
-                to="/" 
-                className="mt-4 inline-block text-emerald-500 hover:text-emerald-600 font-medium"
-              >
-                Go back to solve your first haiku!
-              </Link>
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center py-10 text-gray-500">
+                <p>You haven't solved any haikus yet.</p>
+                <Link 
+                  to="/" 
+                  className="mt-4 inline-block text-emerald-500 hover:text-emerald-600 font-medium"
+                >
+                  Go back to solve your first haiku!
+                </Link>
+              </div>
             </div>
           )}
         </div>
