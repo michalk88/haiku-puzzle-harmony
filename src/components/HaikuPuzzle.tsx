@@ -1,42 +1,36 @@
 
-import React, { useRef, useMemo, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import HaikuGame from "./HaikuGame";
-import WordPool from "./WordPool";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
 import NoHaikusAvailable from "./haiku/NoHaikusAvailable";
-import { useHaikuData } from "../hooks/useHaikuData";
-import { useHaikuGame } from "../hooks/useHaikuGame";
-import { shuffleArray } from "../lib/utils";
+import HaikuGameplay from "./haiku/HaikuGameplay";
+import { useHaikuNavigation } from "../hooks/useHaikuNavigation";
+import { useHaikuSolver } from "../hooks/useHaikuSolver";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 
 interface HaikuPuzzleProps {
   onSolvedCountChange?: (count: number) => void;
 }
 
 const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
-  const gameRef = useRef<{ 
-    handleWordReturn: (word: string) => void;
-    handleReset: () => void;
-    getCurrentLines: () => string[][];
-  } | null>(null);
-  
-  const {
-    haikus,
-    completedHaikus,
-    saveCompletedHaiku,
-    isLoadingHaikus,
-    isLoadingCompleted,
-    refetchCompletedHaikus
-  } = useHaikuData();
-
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [availableHaikus, setAvailableHaikus] = useState<any[]>([]);
+  
+  // Hook for haiku navigation and selection
+  const {
+    currentHaiku,
+    availableHaikus,
+    isCompleted,
+    completedHaiku,
+    isLoadingHaikus,
+    isLoadingCompleted,
+    completedHaikus,
+    saveCompletedHaiku,
+    refetchCompletedHaikus,
+    goToNextUnsolved
+  } = useHaikuNavigation({ onSolvedCountChange });
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -49,172 +43,38 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     return () => clearTimeout(timer);
   }, [user, isLoadingHaikus, navigate]);
 
-  // Filter out completed haikus to get available ones
-  useEffect(() => {
-    if (haikus && completedHaikus) {
-      console.log("Filtering available haikus...");
-      console.log("All haikus:", haikus.length);
-      console.log("Completed haikus:", completedHaikus.length);
-      
-      const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
-      console.log("Completed IDs:", Array.from(completedIds));
-      
-      const available = haikus.filter(haiku => !completedIds.has(haiku.id));
-      console.log("Available haikus after filtering:", available.length);
-      
-      setAvailableHaikus(available);
-    }
-  }, [haikus, completedHaikus]);
-
+  // Hook for haiku solving and completion
   const {
-    draggedWord,
-    usedWords,
-    currentHaikuIndex,
+    gameRef,
     isSolved,
+    usedWords,
     encouragingMessage,
     isMessageVisible,
     verificationState,
     incorrectWords,
-    solvedLines,
+    remainingWords,
+    displayLines,
     handleDragStart,
     handleWordUse,
-    handleWordReturn,
-    handleVerify,
-    handleNextHaiku,
-    setCurrentHaikuIndex,
-    setSolvedLines
-  } = useHaikuGame();
+    handleWordReturnToPool,
+    handleVerification,
+    handleContinue
+  } = useHaikuSolver({
+    currentHaiku,
+    isCompleted: !!isCompleted,
+    completedHaiku,
+    saveCompletedHaiku,
+    refetchCompletedHaikus,
+    goToNextUnsolved
+  });
 
-  // Sync the solvedCount with the parent component
-  useEffect(() => {
-    if (onSolvedCountChange && completedHaikus) {
-      console.log("Updating solved count to:", completedHaikus.length);
-      onSolvedCountChange(completedHaikus.length);
-    }
-  }, [completedHaikus, onSolvedCountChange]);
-
-  // Ref to track if we've already saved the current haiku to avoid duplicates
-  const didSaveCurrentHaiku = useRef(false);
-  
-  // Reset the save tracking when moving to a new haiku
-  useEffect(() => {
-    didSaveCurrentHaiku.current = false;
-  }, [currentHaikuIndex]);
-
-  // Save the current haiku to Supabase when it's solved
-  useEffect(() => {
-    const saveHaiku = async () => {
-      if (isSolved && haikus && haikus.length > 0 && !didSaveCurrentHaiku.current && user) {
-        const currentHaiku = haikus[currentHaikuIndex];
-        if (!currentHaiku) {
-          console.error("No haiku found at index:", currentHaikuIndex);
-          return;
-        }
-        
-        // Get the current lines from the game ref
-        const currentLines = gameRef.current?.getCurrentLines() || solvedLines;
-        console.log("Current lines for haiku:", currentLines);
-        
-        // Check if we have actual content in the lines
-        const hasContent = currentLines.some(line => line && line.length > 0);
-        
-        if (hasContent) {
-          console.log("Saving solved haiku with ID:", currentHaiku.id);
-          console.log("Saving solved haiku with lines:", currentLines);
-          
-          // Mark as saved to avoid duplicate saves
-          didSaveCurrentHaiku.current = true;
-          
-          // Update solvedLines in state for display
-          setSolvedLines([...currentLines]);
-          
-          try {
-            // Save the haiku to Supabase
-            await saveCompletedHaiku.mutateAsync({
-              haiku_id: currentHaiku.id,
-              line1_arrangement: currentLines[0] || [],
-              line2_arrangement: currentLines[1] || [],
-              line3_arrangement: currentLines[2] || []
-            });
-            
-            toast({
-              title: "Haiku saved!",
-              description: "Your solution has been saved.",
-            });
-            
-            // Force refetch completed haikus to update the count
-            await refetchCompletedHaikus();
-            
-            console.log("Haiku saved successfully");
-          } catch (error) {
-            console.error("Error saving haiku:", error);
-            didSaveCurrentHaiku.current = false;
-            toast({
-              title: "Error saving haiku",
-              description: "There was an error saving your solution.",
-              variant: "destructive"
-            });
-          }
-        } else {
-          console.warn("Not saving haiku - lines are empty");
-        }
-      }
-    };
-    
-    saveHaiku();
-  }, [isSolved, haikus, currentHaikuIndex, saveCompletedHaiku, user, toast, solvedLines, setSolvedLines, refetchCompletedHaikus]);
-
-  // Handle next haiku logic - find the next unsolved haiku
-  const goToNextUnsolved = () => {
-    if (!haikus || !completedHaikus) return;
-    
-    const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
-    console.log("Going to next unsolved. Current index:", currentHaikuIndex);
-    console.log("Available haikus:", availableHaikus.length);
-    
-    // Find the next unsolved haiku index
-    let foundUnsolved = false;
-    
-    // Try to find an unsolved haiku
-    for (let i = 0; i < haikus.length; i++) {
-      if (!completedIds.has(haikus[i].id)) {
-        console.log("Found next unsolved at index:", i);
-        setCurrentHaikuIndex(i);
-        handleNextHaiku();
-        foundUnsolved = true;
-        break;
-      }
-    }
-    
-    if (!foundUnsolved) {
-      // All haikus are solved, show a message or redirect
-      console.log("All haikus are solved");
-      // We'll stay on the current page but display the NoHaikusAvailable component
-    }
-  };
-
-  const availableWords = useMemo(() => {
-    if (!haikus || haikus.length === 0) return [];
-    
-    const currentHaiku = haikus[currentHaikuIndex];
-    if (!currentHaiku) {
-      console.warn("No haiku found at index:", currentHaikuIndex);
-      return [];
-    }
-    
-    const words = [
-      ...currentHaiku.line1_words,
-      ...currentHaiku.line2_words,
-      ...currentHaiku.line3_words
-    ];
-    return shuffleArray(words);
-  }, [haikus, currentHaikuIndex]);
-
+  // Loading state
   if (isLoadingHaikus || isLoadingCompleted) {
     return <LoadingState />;
   }
 
-  if (!haikus || haikus.length === 0) {
+  // Handle no haikus
+  if (!currentHaiku) {
     return <div>No haikus available</div>;
   }
 
@@ -222,16 +82,6 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   if (availableHaikus.length === 0 && !isLoadingHaikus && !isLoadingCompleted) {
     return <NoHaikusAvailable />;
   }
-
-  // Now that we have haikus, get the current one
-  const currentHaiku = haikus[currentHaikuIndex];
-  if (!currentHaiku) {
-    console.warn("No haiku found at index:", currentHaikuIndex);
-    return <div>Haiku not found</div>;
-  }
-  
-  const isCompleted = completedHaikus?.some(ch => ch.haiku_id === currentHaiku.id);
-  const completedHaiku = completedHaikus?.find(ch => ch.haiku_id === currentHaiku.id);
 
   // If the current haiku is already completed, go to the next unsolved one
   if (isCompleted && !isSolved && availableHaikus.length > 0 && !isLoadingHaikus) {
@@ -242,42 +92,15 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     }, 0);
   }
 
-  const remainingWords = availableWords.filter(word => !usedWords.has(word));
-
-  const handleWordReturnToPool = (word: string, lineIndex?: number) => {
-    console.log("HaikuPuzzle - Word returned to pool:", word, "from line:", lineIndex);
-    gameRef.current?.handleWordReturn(word);
-    handleWordReturn(word);
-  };
-
-  const handleVerification = (currentLines: string[][], solution: string[][]) => {
-    console.log("Handling verification with lines:", currentLines);
-    setSolvedLines([...currentLines]);
-    handleVerify(currentLines, solution);
-  };
-
   const showSolvedState = isCompleted || isSolved;
   
-  // Get the correct display lines
-  const displayLines = isSolved 
-    ? solvedLines 
-    : completedHaiku 
-      ? [
-          completedHaiku.line1_arrangement || [],
-          completedHaiku.line2_arrangement || [],
-          completedHaiku.line3_arrangement || []
-        ] 
-      : [[], [], []];
-
-  console.log("Display lines for solved haiku:", displayLines);
-
   return (
     <div className="relative min-h-screen flex flex-col bg-white">
       <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-6 sm:py-8 flex-1">
         <div className="mb-2">
           <HaikuHeader
             title={currentHaiku.title}
-            isCompleted={isCompleted}
+            isCompleted={!!isCompleted}
             isSolved={isSolved}
             isLastHaiku={availableHaikus.length === 0}
             onNextHaiku={goToNextUnsolved}
@@ -289,36 +112,21 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
         {showSolvedState ? (
           <CompletedHaiku
             lines={displayLines}
-            onNextHaiku={goToNextUnsolved}
+            onNextHaiku={handleContinue}
           />
         ) : (
-          <>
-            <div className="w-full overflow-visible">
-              <HaikuGame
-                ref={gameRef}
-                key={currentHaikuIndex}
-                solution={[
-                  currentHaiku.line1_words,
-                  currentHaiku.line2_words,
-                  currentHaiku.line3_words
-                ]}
-                usedWords={usedWords}
-                onWordUse={handleWordUse}
-                onWordReturn={handleWordReturnToPool}
-                onVerify={handleVerification}
-                incorrectWords={incorrectWords}
-                verificationState={verificationState}
-              />
-            </div>
-            
-            <div className="mt-4 sm:mt-6 mb-20">
-              <WordPool
-                words={remainingWords}
-                onDragStart={handleDragStart}
-                onWordReturn={handleWordReturnToPool}
-              />
-            </div>
-          </>
+          <HaikuGameplay
+            currentHaiku={currentHaiku}
+            gameRef={gameRef}
+            usedWords={usedWords}
+            remainingWords={remainingWords}
+            verificationState={verificationState}
+            incorrectWords={incorrectWords}
+            onWordUse={handleWordUse}
+            onWordReturn={handleWordReturnToPool}
+            onVerify={handleVerification}
+            onDragStart={handleDragStart}
+          />
         )}
       </div>
     </div>
