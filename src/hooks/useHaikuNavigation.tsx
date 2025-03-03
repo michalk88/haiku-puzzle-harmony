@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useHaikuData } from "./useHaikuData";
 
@@ -33,6 +32,11 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       console.log("Available haikus after filtering:", available.length);
       
       setAvailableHaikus(available);
+
+      // If current haiku is completed, move to next available one
+      if (currentHaikuIndex >= 0 && haikus[currentHaikuIndex] && completedIds.has(haikus[currentHaikuIndex].id)) {
+        goToNextUnsolved();
+      }
     }
   }, [haikus, completedHaikus]);
 
@@ -52,21 +56,22 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
     console.log("Going to next unsolved. Current index:", currentHaikuIndex);
     console.log("Available haikus:", availableHaikus.length);
     
-    // Find the next unsolved haiku index
+    // Start from the current index + 1
+    let nextIndex = currentHaikuIndex + 1;
     let foundUnsolved = false;
     
-    // Try to find an unsolved haiku
+    // Look through all haikus starting from the next index
     for (let i = 0; i < haikus.length; i++) {
-      if (!completedIds.has(haikus[i].id)) {
-        console.log("Found next unsolved at index:", i);
-        setCurrentHaikuIndex(i);
+      const checkIndex = (nextIndex + i) % haikus.length;
+      if (!completedIds.has(haikus[checkIndex].id)) {
+        console.log("Found next unsolved at index:", checkIndex);
+        setCurrentHaikuIndex(checkIndex);
         foundUnsolved = true;
         break;
       }
     }
     
     if (!foundUnsolved) {
-      // All haikus are solved, show a message or redirect
       console.log("All haikus are solved");
       // We'll stay on the current page but display the NoHaikusAvailable component
     }

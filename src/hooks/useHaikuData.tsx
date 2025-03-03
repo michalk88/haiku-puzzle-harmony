@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -68,7 +67,7 @@ export const useHaikuData = () => {
       if (!user) {
         throw new Error("User must be authenticated");
       }
-      
+
       // Validate lines to make sure we have content
       const hasContent = 
         (haiku.line1_arrangement && haiku.line1_arrangement.length > 0) ||
@@ -90,26 +89,31 @@ export const useHaikuData = () => {
           line1_arrangement: haiku.line1_arrangement,
           line2_arrangement: haiku.line2_arrangement,
           line3_arrangement: haiku.line3_arrangement
-        }, { onConflict: 'user_id, haiku_id' })
-        .select();
+        })
+        .select()
+        .single();
         
       if (error) {
         console.error("Error saving completed haiku:", error);
         throw error;
       }
       
-      console.log("Successfully saved completed haiku:", data);
       return data;
     },
     onSuccess: () => {
-      console.log("Invalidating completed_haikus query after save");
+      console.log("Successfully saved haiku, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ['completed_haikus', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['haikus'] });
+      toast({
+        title: "Haiku saved!",
+        description: "Your solution has been saved successfully.",
+      });
     },
     onError: (error) => {
       console.error("Error in saveCompletedHaiku mutation:", error);
       toast({
-        title: "Error saving your progress",
-        description: "Please try again later.",
+        title: "Error saving haiku",
+        description: "There was an error saving your solution. Please try again.",
         variant: "destructive"
       });
     }
