@@ -36,15 +36,7 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
           {title}
         </h2>
         
-        {(isCompleted || isSolved) && !isLastHaiku && (
-          <Button
-            onClick={onNextHaiku}
-            className="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white"
-            disabled={isNextDisabled}
-          >
-            Next Haiku <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        )}
+        {/* Remove the Next button from here; it's in CompletedHaiku component */}
       </div>
     </div>
   );

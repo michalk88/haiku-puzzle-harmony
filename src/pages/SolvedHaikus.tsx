@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import LoadingState from '@/components/haiku/LoadingState';
@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 
 const SolvedHaikus = () => {
   const { completedHaikus, haikus, isLoadingCompleted, isLoadingHaikus } = useHaikuData();
+  const [solvedCount, setSolvedCount] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -20,10 +21,18 @@ const SolvedHaikus = () => {
     }
   }, [user, isLoadingCompleted, navigate]);
 
+  // Update the solved count for the navigation
+  useEffect(() => {
+    if (completedHaikus) {
+      console.log("SolvedHaikus: Setting solved count to", completedHaikus.length);
+      setSolvedCount(completedHaikus.length);
+    }
+  }, [completedHaikus]);
+
   if (isLoadingCompleted || isLoadingHaikus) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation solvedCount={completedHaikus?.length || 0} />
+        <Navigation solvedCount={solvedCount} />
         <LoadingState />
       </div>
     );
@@ -36,6 +45,9 @@ const SolvedHaikus = () => {
       (haiku.line2_arrangement && haiku.line2_arrangement.length > 0) || 
       (haiku.line3_arrangement && haiku.line3_arrangement.length > 0)
   ) || [];
+
+  console.log("SolvedHaikus: Valid haikus count:", validHaikus.length);
+  console.log("SolvedHaikus: Completed haikus data:", completedHaikus);
 
   // Add titles to haikus
   const haikuWithTitles = validHaikus.map(haiku => {
