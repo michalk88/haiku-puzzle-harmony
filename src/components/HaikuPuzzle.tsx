@@ -30,13 +30,13 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     saveCompletedHaiku,
     isLoadingHaikus,
     isLoadingCompleted,
+    refetchCompletedHaikus
   } = useHaikuData();
 
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [availableHaikus, setAvailableHaikus] = useState<any[]>([]);
-  const [solvedLines, setSolvedLines] = useState<string[][]>([[], [], []]);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -75,12 +75,14 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     isMessageVisible,
     verificationState,
     incorrectWords,
+    solvedLines,
     handleDragStart,
     handleWordUse,
     handleWordReturn,
     handleVerify,
     handleNextHaiku,
     setCurrentHaikuIndex,
+    setSolvedLines
   } = useHaikuGame();
 
   // Sync the solvedCount with the parent component
@@ -101,46 +103,50 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
 
   // Save the current haiku to Supabase when it's solved
   useEffect(() => {
-    if (isSolved && haikus && haikus.length > 0 && !didSaveCurrentHaiku.current && user) {
-      const currentHaiku = haikus[currentHaikuIndex];
-      if (!currentHaiku) {
-        console.error("No haiku found at index:", currentHaikuIndex);
-        return;
-      }
-      
-      // Important: we need to get the current lines from the game ref or use the saved solution
-      const currentLines = gameRef.current?.getCurrentLines() || [[], [], []];
-      
-      console.log("Current lines for haiku:", currentLines);
-      
-      // Check if we have actual content in the lines
-      const hasContent = currentLines.some(line => line.length > 0);
-      
-      if (hasContent) {
-        console.log("Saving solved haiku with ID:", currentHaiku.id);
-        console.log("Saving solved haiku with lines:", currentLines);
+    const saveHaiku = async () => {
+      if (isSolved && haikus && haikus.length > 0 && !didSaveCurrentHaiku.current && user) {
+        const currentHaiku = haikus[currentHaikuIndex];
+        if (!currentHaiku) {
+          console.error("No haiku found at index:", currentHaikuIndex);
+          return;
+        }
         
-        // Store the solved lines for display
-        setSolvedLines([...currentLines]);
+        // Get the current lines from the game ref
+        const currentLines = gameRef.current?.getCurrentLines() || solvedLines;
+        console.log("Current lines for haiku:", currentLines);
         
-        // Mark as saved to avoid duplicate saves
-        didSaveCurrentHaiku.current = true;
+        // Check if we have actual content in the lines
+        const hasContent = currentLines.some(line => line && line.length > 0);
         
-        // Save the haiku to Supabase
-        saveCompletedHaiku.mutate({
-          haiku_id: currentHaiku.id,
-          line1_arrangement: currentLines[0] || [],
-          line2_arrangement: currentLines[1] || [],
-          line3_arrangement: currentLines[2] || []
-        }, {
-          onSuccess: () => {
+        if (hasContent) {
+          console.log("Saving solved haiku with ID:", currentHaiku.id);
+          console.log("Saving solved haiku with lines:", currentLines);
+          
+          // Mark as saved to avoid duplicate saves
+          didSaveCurrentHaiku.current = true;
+          
+          // Update solvedLines in state for display
+          setSolvedLines([...currentLines]);
+          
+          try {
+            // Save the haiku to Supabase
+            await saveCompletedHaiku.mutateAsync({
+              haiku_id: currentHaiku.id,
+              line1_arrangement: currentLines[0] || [],
+              line2_arrangement: currentLines[1] || [],
+              line3_arrangement: currentLines[2] || []
+            });
+            
             toast({
               title: "Haiku saved!",
               description: "Your solution has been saved.",
             });
+            
+            // Force refetch completed haikus to update the count
+            await refetchCompletedHaikus();
+            
             console.log("Haiku saved successfully");
-          },
-          onError: (error) => {
+          } catch (error) {
             console.error("Error saving haiku:", error);
             didSaveCurrentHaiku.current = false;
             toast({
@@ -149,12 +155,14 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
               variant: "destructive"
             });
           }
-        });
-      } else {
-        console.warn("Not saving haiku - lines are empty");
+        } else {
+          console.warn("Not saving haiku - lines are empty");
+        }
       }
-    }
-  }, [isSolved, haikus, currentHaikuIndex, saveCompletedHaiku, user, toast]);
+    };
+    
+    saveHaiku();
+  }, [isSolved, haikus, currentHaikuIndex, saveCompletedHaiku, user, toast, solvedLines, setSolvedLines, refetchCompletedHaikus]);
 
   // Handle next haiku logic - find the next unsolved haiku
   const goToNextUnsolved = () => {
@@ -165,27 +173,23 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     console.log("Available haikus:", availableHaikus.length);
     
     // Find the next unsolved haiku index
-    let nextIndex = currentHaikuIndex;
     let foundUnsolved = false;
     
-    // Try to find an unsolved haiku after the current one
+    // Try to find an unsolved haiku
     for (let i = 0; i < haikus.length; i++) {
       if (!completedIds.has(haikus[i].id)) {
-        nextIndex = i;
+        console.log("Found next unsolved at index:", i);
+        setCurrentHaikuIndex(i);
+        handleNextHaiku();
         foundUnsolved = true;
-        console.log("Found next unsolved at index:", nextIndex);
         break;
       }
     }
     
-    if (foundUnsolved) {
-      console.log("Setting current haiku index to:", nextIndex);
-      setCurrentHaikuIndex(nextIndex);
-      handleNextHaiku();
-    } else {
+    if (!foundUnsolved) {
       // All haikus are solved, show a message or redirect
-      console.log("All haikus are solved, redirecting to /solved");
-      navigate('/solved');
+      console.log("All haikus are solved");
+      // We'll stay on the current page but display the NoHaikusAvailable component
     }
   };
 
@@ -247,12 +251,14 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   };
 
   const handleVerification = (currentLines: string[][], solution: string[][]) => {
+    console.log("Handling verification with lines:", currentLines);
+    setSolvedLines([...currentLines]);
     handleVerify(currentLines, solution);
   };
 
   const showSolvedState = isCompleted || isSolved;
   
-  // Use the stored solved lines or get from completedHaiku if available
+  // Get the correct display lines
   const displayLines = isSolved 
     ? solvedLines 
     : completedHaiku 

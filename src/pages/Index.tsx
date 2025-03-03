@@ -6,7 +6,13 @@ import { useHaikuData } from "@/hooks/useHaikuData";
 
 const Index = () => {
   const [solvedCount, setSolvedCount] = useState(0);
-  const { completedHaikus, isLoadingCompleted } = useHaikuData();
+  const { completedHaikus, isLoadingCompleted, refetchCompletedHaikus } = useHaikuData();
+
+  // Force refetch when component mounts
+  useEffect(() => {
+    console.log("Index: Forcing refetch of completed haikus");
+    refetchCompletedHaikus();
+  }, [refetchCompletedHaikus]);
 
   // Initialize solved count from completed haikus
   useEffect(() => {

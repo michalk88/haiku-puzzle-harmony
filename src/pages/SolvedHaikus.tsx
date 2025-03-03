@@ -7,12 +7,22 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useHaikuData } from '@/hooks/useHaikuData';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const SolvedHaikus = () => {
-  const { completedHaikus, haikus, isLoadingCompleted, isLoadingHaikus } = useHaikuData();
+  const { completedHaikus, haikus, isLoadingCompleted, isLoadingHaikus, refetchCompletedHaikus } = useHaikuData();
   const [solvedCount, setSolvedCount] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
+
+  // Force refetch when component mounts
+  useEffect(() => {
+    if (user) {
+      console.log("SolvedHaikus: Forcing refetch of completed haikus");
+      refetchCompletedHaikus();
+    }
+  }, [user, refetchCompletedHaikus]);
 
   useEffect(() => {
     // Redirect to login if not authenticated
@@ -59,6 +69,14 @@ const SolvedHaikus = () => {
       title: matchingHaiku?.title || "Untitled Haiku"
     };
   });
+
+  if (validHaikus.length === 0 && !isLoadingCompleted) {
+    toast({
+      title: "No solved haikus found",
+      description: "You haven't solved any haikus yet.",
+      variant: "default"
+    });
+  }
 
   return (
     <div className="min-h-screen bg-background">

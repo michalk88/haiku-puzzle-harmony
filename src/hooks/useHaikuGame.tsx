@@ -12,6 +12,7 @@ export const useHaikuGame = () => {
   const [verificationState, setVerificationState] = useState<VerificationState>('idle');
   const [incorrectWords, setIncorrectWords] = useState<Set<string>>(new Set());
   const [isSolved, setIsSolved] = useState(false);
+  const [solvedLines, setSolvedLines] = useState<string[][]>([[], [], []]);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -47,6 +48,7 @@ export const useHaikuGame = () => {
   };
 
   const handleVerify = (currentLines: string[][], solution: string[][]) => {
+    console.log("Verifying haiku with lines:", currentLines);
     setVerificationState('checking');
     
     const isCorrect = currentLines.every((line, i) => 
@@ -57,6 +59,7 @@ export const useHaikuGame = () => {
     if (isCorrect) {
       setVerificationState('correct');
       setIsSolved(true);
+      setSolvedLines([...currentLines]);
       setEncouragingMessage("Great job!");
       setTimeout(() => {
         setVerificationState('continue');
@@ -84,6 +87,7 @@ export const useHaikuGame = () => {
     setUsedWords(new Set());
     setIncorrectWords(new Set());
     setIsSolved(false);
+    setSolvedLines([[], [], []]);
   };
 
   return {
@@ -95,11 +99,13 @@ export const useHaikuGame = () => {
     verificationState,
     incorrectWords,
     isSolved,
+    solvedLines,
     handleDragStart,
     handleWordUse,
     handleWordReturn,
     handleVerify,
     handleNextHaiku,
     setCurrentHaikuIndex,
+    setSolvedLines,
   };
 };

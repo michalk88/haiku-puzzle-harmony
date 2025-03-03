@@ -30,13 +30,17 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
     lg: "text-2xl sm:text-3xl"
   };
 
-  // Ensure we have valid lines to display
-  const validLines = lines.map(line => line && line.length > 0 ? line : null);
-  const hasValidLines = validLines.some(line => line !== null && line.length > 0);
+  // Filter out empty lines
+  const validLines = lines.map((line, index) => {
+    if (!line || line.length === 0) {
+      console.warn(`CompletedHaiku: Line ${index} is empty or null`);
+      return null;
+    }
+    return line;
+  });
 
-  if (!hasValidLines) {
-    console.warn("CompletedHaiku: No valid lines to display", lines);
-  }
+  const hasValidLines = validLines.some(line => line !== null && line.length > 0);
+  console.log("CompletedHaiku: hasValidLines:", hasValidLines);
 
   return (
     <div className="flex flex-col items-center">
@@ -53,14 +57,16 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
               animationDelay: `${index * 400}ms`
             }}
           >
-            {line && line.length > 0 ? line.map((word, wordIndex) => (
-              <span
-                key={`${word}-${wordIndex}`}
-                className={`${sizeClasses[sizes[index]]} text-gray-900 font-normal`}
-              >
-                {word}
-              </span>
-            )) : (
+            {line && line.length > 0 ? (
+              line.map((word, wordIndex) => (
+                <span
+                  key={`${word}-${wordIndex}`}
+                  className={`${sizeClasses[sizes[index]]} text-gray-900 font-normal`}
+                >
+                  {word}
+                </span>
+              ))
+            ) : (
               <span className="text-gray-400">Line {index+1}</span>
             )}
           </div>

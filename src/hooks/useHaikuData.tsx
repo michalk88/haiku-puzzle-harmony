@@ -9,7 +9,11 @@ export const useHaikuData = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const { data: haikus, isLoading: isLoadingHaikus } = useQuery({
+  const { 
+    data: haikus, 
+    isLoading: isLoadingHaikus,
+    refetch: refetchHaikus
+  } = useQuery({
     queryKey: ['haikus'],
     queryFn: async () => {
       console.log("Fetching haikus");
@@ -26,7 +30,11 @@ export const useHaikuData = () => {
     }
   });
 
-  const { data: completedHaikus, isLoading: isLoadingCompleted } = useQuery({
+  const { 
+    data: completedHaikus, 
+    isLoading: isLoadingCompleted,
+    refetch: refetchCompletedHaikus
+  } = useQuery({
     queryKey: ['completed_haikus', user?.id],
     queryFn: async () => {
       if (!user) {
@@ -59,6 +67,16 @@ export const useHaikuData = () => {
     }) => {
       if (!user) {
         throw new Error("User must be authenticated");
+      }
+      
+      // Validate lines to make sure we have content
+      const hasContent = 
+        (haiku.line1_arrangement && haiku.line1_arrangement.length > 0) ||
+        (haiku.line2_arrangement && haiku.line2_arrangement.length > 0) ||
+        (haiku.line3_arrangement && haiku.line3_arrangement.length > 0);
+      
+      if (!hasContent) {
+        throw new Error("Cannot save empty haiku solution");
       }
       
       console.log("Saving completed haiku:", haiku);
@@ -135,6 +153,8 @@ export const useHaikuData = () => {
     isLoadingHaikus,
     isLoadingCompleted,
     saveCompletedHaiku,
-    resetMutation
+    resetMutation,
+    refetchHaikus,
+    refetchCompletedHaikus
   };
 };
