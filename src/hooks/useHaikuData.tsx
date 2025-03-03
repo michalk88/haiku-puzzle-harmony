@@ -2,19 +2,26 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export const useHaikuData = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const { data: haikus, isLoading: isLoadingHaikus } = useQuery({
     queryKey: ['haikus'],
     queryFn: async () => {
+      console.log("Fetching haikus");
       const { data, error } = await supabase
         .from('haikus')
         .select('*');
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching haikus:", error);
+        throw error;
+      }
+      console.log("Fetched haikus:", data?.length);
       return data;
     }
   });
@@ -22,14 +29,22 @@ export const useHaikuData = () => {
   const { data: completedHaikus, isLoading: isLoadingCompleted } = useQuery({
     queryKey: ['completed_haikus', user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user) {
+        console.log("No user, not fetching completed haikus");
+        return [];
+      }
       
+      console.log("Fetching completed haikus for user:", user.id);
       const { data, error } = await supabase
         .from('completed_haikus')
         .select('*')
         .eq('user_id', user.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching completed haikus:", error);
+        throw error;
+      }
+      console.log("Fetched completed haikus:", data?.length);
       return data;
     },
     enabled: !!user
@@ -42,7 +57,12 @@ export const useHaikuData = () => {
       line2_arrangement: string[];
       line3_arrangement: string[];
     }) => {
-      if (!user) throw new Error("User must be authenticated");
+      if (!user) {
+        throw new Error("User must be authenticated");
+      }
+      
+      console.log("Saving completed haiku:", haiku);
+      console.log("User ID:", user.id);
       
       const { data, error } = await supabase
         .from('completed_haikus')
@@ -55,11 +75,25 @@ export const useHaikuData = () => {
         }, { onConflict: 'user_id, haiku_id' })
         .select();
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error saving completed haiku:", error);
+        throw error;
+      }
+      
+      console.log("Successfully saved completed haiku:", data);
       return data;
     },
     onSuccess: () => {
+      console.log("Invalidating completed_haikus query after save");
       queryClient.invalidateQueries({ queryKey: ['completed_haikus', user?.id] });
+    },
+    onError: (error) => {
+      console.error("Error in saveCompletedHaiku mutation:", error);
+      toast({
+        title: "Error saving your progress",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
     }
   });
 
@@ -67,16 +101,31 @@ export const useHaikuData = () => {
     mutationFn: async (haikuId: string) => {
       if (!user) throw new Error("User must be authenticated");
       
+      console.log("Resetting completed haiku:", haikuId);
       const { error } = await supabase
         .from('completed_haikus')
         .delete()
         .eq('haiku_id', haikuId)
         .eq('user_id', user.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error resetting completed haiku:", error);
+        throw error;
+      }
+      
+      console.log("Successfully reset completed haiku");
     },
     onSuccess: () => {
+      console.log("Invalidating completed_haikus query after reset");
       queryClient.invalidateQueries({ queryKey: ['completed_haikus', user?.id] });
+    },
+    onError: (error) => {
+      console.error("Error in resetMutation:", error);
+      toast({
+        title: "Error resetting haiku",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
     }
   });
 

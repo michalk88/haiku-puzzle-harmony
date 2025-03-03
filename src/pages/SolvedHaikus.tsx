@@ -38,6 +38,8 @@ const SolvedHaikus = () => {
     );
   }
 
+  console.log("SolvedHaikus: Completed haikus raw data:", completedHaikus);
+
   // Filter out haikus with empty arrangement arrays
   const validHaikus = completedHaikus?.filter(
     haiku => 
@@ -47,7 +49,7 @@ const SolvedHaikus = () => {
   ) || [];
 
   console.log("SolvedHaikus: Valid haikus count:", validHaikus.length);
-  console.log("SolvedHaikus: Completed haikus data:", completedHaikus);
+  console.log("SolvedHaikus: Valid haikus data:", validHaikus);
 
   // Add titles to haikus
   const haikuWithTitles = validHaikus.map(haiku => {

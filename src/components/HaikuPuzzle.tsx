@@ -103,6 +103,10 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   useEffect(() => {
     if (isSolved && haikus && haikus.length > 0 && !didSaveCurrentHaiku.current && user) {
       const currentHaiku = haikus[currentHaikuIndex];
+      if (!currentHaiku) {
+        console.error("No haiku found at index:", currentHaikuIndex);
+        return;
+      }
       
       // Important: we need to get the current lines from the game ref or use the saved solution
       const currentLines = gameRef.current?.getCurrentLines() || [[], [], []];
@@ -113,6 +117,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
       const hasContent = currentLines.some(line => line.length > 0);
       
       if (hasContent) {
+        console.log("Saving solved haiku with ID:", currentHaiku.id);
         console.log("Saving solved haiku with lines:", currentLines);
         
         // Store the solved lines for display
@@ -137,13 +142,12 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
           },
           onError: (error) => {
             console.error("Error saving haiku:", error);
+            didSaveCurrentHaiku.current = false;
             toast({
               title: "Error saving haiku",
               description: "There was an error saving your solution.",
               variant: "destructive"
             });
-            // Reset the save flag so we can try again
-            didSaveCurrentHaiku.current = false;
           }
         });
       } else {
@@ -165,24 +169,12 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     let foundUnsolved = false;
     
     // Try to find an unsolved haiku after the current one
-    for (let i = currentHaikuIndex + 1; i < haikus.length; i++) {
+    for (let i = 0; i < haikus.length; i++) {
       if (!completedIds.has(haikus[i].id)) {
         nextIndex = i;
         foundUnsolved = true;
         console.log("Found next unsolved at index:", nextIndex);
         break;
-      }
-    }
-    
-    // If no unsolved haiku found after the current one, start from the beginning
-    if (!foundUnsolved && haikus.length > 0) {
-      for (let i = 0; i < currentHaikuIndex; i++) {
-        if (!completedIds.has(haikus[i].id)) {
-          nextIndex = i;
-          foundUnsolved = true;
-          console.log("Found next unsolved from beginning at index:", nextIndex);
-          break;
-        }
       }
     }
     

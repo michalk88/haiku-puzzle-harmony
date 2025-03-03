@@ -35,8 +35,6 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
         <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 text-center mb-2">
           {title}
         </h2>
-        
-        {/* Remove the Next button from here; it's in CompletedHaiku component */}
       </div>
     </div>
   );

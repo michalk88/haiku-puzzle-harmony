@@ -9,8 +9,10 @@ interface CompletedHaikuProps {
 }
 
 const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) => {
+  console.log("CompletedHaiku rendering with lines:", lines);
+  
   const getLineSize = (line: string[] | null) => {
-    if (!line) return "base";
+    if (!line || line.length === 0) return "base";
     const totalLength = line.join(' ').length;
     if (totalLength > 25) return "sm";
     if (totalLength > 20) return "base";
@@ -28,6 +30,14 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
     lg: "text-2xl sm:text-3xl"
   };
 
+  // Ensure we have valid lines to display
+  const validLines = lines.map(line => line && line.length > 0 ? line : null);
+  const hasValidLines = validLines.some(line => line !== null && line.length > 0);
+
+  if (!hasValidLines) {
+    console.warn("CompletedHaiku: No valid lines to display", lines);
+  }
+
   return (
     <div className="flex flex-col items-center">
       <div className="my-6 sm:my-8 flex flex-col items-center gap-4 sm:gap-6 mb-12">
@@ -43,14 +53,16 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
               animationDelay: `${index * 400}ms`
             }}
           >
-            {line?.map((word, wordIndex) => (
+            {line && line.length > 0 ? line.map((word, wordIndex) => (
               <span
                 key={`${word}-${wordIndex}`}
                 className={`${sizeClasses[sizes[index]]} text-gray-900 font-normal`}
               >
                 {word}
               </span>
-            ))}
+            )) : (
+              <span className="text-gray-400">Line {index+1}</span>
+            )}
           </div>
         ))}
       </div>
