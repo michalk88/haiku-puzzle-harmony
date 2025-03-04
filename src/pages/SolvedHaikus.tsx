@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
@@ -88,7 +89,7 @@ const SolvedHaikus = () => {
           
           {haikuWithTitles.length > 0 ? (
             <ScrollArea className="flex-1 pb-20">
-              <div className="space-y-6 max-w-2xl mx-auto">
+              <div className="space-y-6 max-w-xl mx-auto">
                 {haikuWithTitles.map((haiku, index) => (
                   <Card 
                     key={haiku.id} 
