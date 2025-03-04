@@ -17,8 +17,10 @@ const Index = () => {
   // Initialize solved count from completed haikus
   useEffect(() => {
     if (completedHaikus && !isLoadingCompleted) {
-      console.log("Index: Setting solved count to", completedHaikus.length);
-      setSolvedCount(completedHaikus.length);
+      // Get unique haiku_ids to count accurately
+      const uniqueHaikuIds = new Set(completedHaikus.map(haiku => haiku.haiku_id));
+      console.log("Index: Setting solved count to", uniqueHaikuIds.size);
+      setSolvedCount(uniqueHaikuIds.size);
     }
   }, [completedHaikus, isLoadingCompleted]);
 

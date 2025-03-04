@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useHaikuData } from "./useHaikuData";
 
@@ -25,6 +26,7 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       console.log("All haikus:", haikus.length);
       console.log("Completed haikus:", completedHaikus.length);
       
+      // Use a Set for faster lookups and unique IDs
       const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
       console.log("Completed IDs:", Array.from(completedIds));
       
@@ -43,8 +45,10 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
   // Sync the solvedCount with the parent component
   useEffect(() => {
     if (onSolvedCountChange && completedHaikus) {
-      console.log("Updating solved count to:", completedHaikus.length);
-      onSolvedCountChange(completedHaikus.length);
+      // Count unique haiku_ids to avoid duplicates
+      const uniqueHaikuIds = new Set(completedHaikus.map(ch => ch.haiku_id));
+      console.log("Updating solved count to:", uniqueHaikuIds.size);
+      onSolvedCountChange(uniqueHaikuIds.size);
     }
   }, [completedHaikus, onSolvedCountChange]);
 

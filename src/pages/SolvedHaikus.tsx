@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
@@ -33,8 +32,9 @@ const SolvedHaikus = () => {
 
   useEffect(() => {
     if (completedHaikus) {
-      console.log("SolvedHaikus: Setting solved count to", completedHaikus.length);
-      setSolvedCount(completedHaikus.length);
+      const uniqueHaikuIds = new Set(completedHaikus.map(haiku => haiku.haiku_id));
+      console.log("SolvedHaikus: Setting solved count to", uniqueHaikuIds.size);
+      setSolvedCount(uniqueHaikuIds.size);
     }
   }, [completedHaikus]);
 
@@ -59,7 +59,21 @@ const SolvedHaikus = () => {
   console.log("SolvedHaikus: Valid haikus count:", validHaikus.length);
   console.log("SolvedHaikus: Valid haikus data:", validHaikus);
 
-  const haikuWithTitles = validHaikus.map(haiku => {
+  const uniqueHaikusMap = new Map();
+  
+  const sortedHaikus = [...validHaikus].sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  
+  for (const haiku of sortedHaikus) {
+    if (!uniqueHaikusMap.has(haiku.haiku_id)) {
+      uniqueHaikusMap.set(haiku.haiku_id, haiku);
+    }
+  }
+  
+  const uniqueValidHaikus = Array.from(uniqueHaikusMap.values());
+
+  const haikuWithTitles = uniqueValidHaikus.map(haiku => {
     const matchingHaiku = haikus?.find(h => h.id === haiku.haiku_id);
     return {
       ...haiku,
@@ -67,7 +81,7 @@ const SolvedHaikus = () => {
     };
   });
 
-  if (validHaikus.length === 0 && !isLoadingCompleted) {
+  if (uniqueValidHaikus.length === 0 && !isLoadingCompleted) {
     toast({
       title: "No solved haikus found",
       description: "You haven't solved any haikus yet.",
@@ -77,7 +91,7 @@ const SolvedHaikus = () => {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <Navigation solvedCount={validHaikus.length} />
+      <Navigation solvedCount={solvedCount} />
       <div className="flex-1 overflow-hidden">
         <div className="container mx-auto px-4 py-6 h-full flex flex-col">
           <div className="flex items-center mb-6">

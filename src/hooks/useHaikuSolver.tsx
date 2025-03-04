@@ -91,6 +91,9 @@ export function useHaikuSolver({
             await refetchCompletedHaikus();
             
             console.log("Haiku saved successfully");
+            
+            // REMOVE this automatic navigation that was causing issue #1
+            // No goToNextUnsolved here - we want the user to click Continue
           } catch (error) {
             console.error("Error saving haiku:", error);
             didSaveCurrentHaiku.current = false;
