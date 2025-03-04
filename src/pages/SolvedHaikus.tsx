@@ -94,17 +94,17 @@ const SolvedHaikus = () => {
           
           {haikuWithTitles.length > 0 ? (
             <ScrollArea className="flex-1 pb-20">
-              <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-screen-lg mx-auto">
                 {haikuWithTitles.map((haiku, index) => (
                   <Card 
                     key={haiku.id} 
-                    className="animate-fade-in border border-gray-200 rounded-xl shadow-sm"
+                    className="animate-fade-in border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200"
                   >
-                    <CardContent className="p-8 space-y-8">
-                      <h2 className="text-2xl font-medium text-center">
+                    <CardContent className="p-6 space-y-4">
+                      <h2 className="text-xl font-medium text-center text-primary-900">
                         {haiku.title}
                       </h2>
-                      <div className="text-xl text-center space-y-3">
+                      <div className="text-lg text-center space-y-2 text-gray-700">
                         {haiku.line1_arrangement && haiku.line1_arrangement.length > 0 && (
                           <p>{haiku.line1_arrangement.join(' ')}</p>
                         )}
