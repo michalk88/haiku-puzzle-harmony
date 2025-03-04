@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
@@ -59,6 +60,7 @@ const SolvedHaikus = () => {
   console.log("SolvedHaikus: Valid haikus count:", validHaikus.length);
   console.log("SolvedHaikus: Valid haikus data:", validHaikus);
 
+  // Create a map to get the latest completion for each haiku ID
   const uniqueHaikusMap = new Map();
   
   const sortedHaikus = [...validHaikus].sort((a, b) => 
@@ -73,11 +75,22 @@ const SolvedHaikus = () => {
   
   const uniqueValidHaikus = Array.from(uniqueHaikusMap.values());
 
-  const haikuWithTitles = uniqueValidHaikus.map(haiku => {
-    const matchingHaiku = haikus?.find(h => h.id === haiku.haiku_id);
+  // Properly match haiku content with titles
+  const haikuWithTitles = uniqueValidHaikus.map(completedHaiku => {
+    const matchingHaiku = haikus?.find(h => h.id === completedHaiku.haiku_id);
+    
+    // For debugging
+    console.log(`Matching haiku ${completedHaiku.haiku_id} with title:`, matchingHaiku?.title);
+    
     return {
-      ...haiku,
-      title: matchingHaiku?.title || "Untitled Haiku"
+      ...completedHaiku,
+      title: matchingHaiku?.title || "Untitled Haiku",
+      // Make sure to use the correct words from the matching haiku
+      originalWords: {
+        line1: matchingHaiku?.line1_words || [],
+        line2: matchingHaiku?.line2_words || [],
+        line3: matchingHaiku?.line3_words || []
+      }
     };
   });
 
@@ -104,29 +117,45 @@ const SolvedHaikus = () => {
           {haikuWithTitles.length > 0 ? (
             <ScrollArea className="flex-1 pb-20">
               <div className="space-y-6 max-w-xl mx-auto">
-                {haikuWithTitles.map((haiku, index) => (
-                  <Card 
-                    key={haiku.id} 
-                    className="animate-fade-in border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200"
-                  >
-                    <CardContent className="p-6 space-y-4">
-                      <h2 className="text-xl font-medium text-center text-primary-900">
-                        {haiku.title}
-                      </h2>
-                      <div className="text-lg text-center space-y-2 text-gray-700 whitespace-nowrap">
-                        {haiku.line1_arrangement && haiku.line1_arrangement.length > 0 && (
-                          <p>{haiku.line1_arrangement.join(' ')}</p>
-                        )}
-                        {haiku.line2_arrangement && haiku.line2_arrangement.length > 0 && (
-                          <p>{haiku.line2_arrangement.join(' ')}</p>
-                        )}
-                        {haiku.line3_arrangement && haiku.line3_arrangement.length > 0 && (
-                          <p>{haiku.line3_arrangement.join(' ')}</p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                {haikuWithTitles.map((haiku, index) => {
+                  // Determine which arrangement to use - prefer the user's arrangement,
+                  // but if it's empty, use the original words from the haiku
+                  const line1Display = haiku.line1_arrangement && haiku.line1_arrangement.length > 0
+                    ? haiku.line1_arrangement
+                    : haiku.originalWords.line1;
+                    
+                  const line2Display = haiku.line2_arrangement && haiku.line2_arrangement.length > 0
+                    ? haiku.line2_arrangement
+                    : haiku.originalWords.line2;
+                    
+                  const line3Display = haiku.line3_arrangement && haiku.line3_arrangement.length > 0
+                    ? haiku.line3_arrangement
+                    : haiku.originalWords.line3;
+                  
+                  return (
+                    <Card 
+                      key={`${haiku.id}-${index}`}
+                      className="animate-fade-in border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200"
+                    >
+                      <CardContent className="p-6 space-y-4">
+                        <h2 className="text-xl font-medium text-center text-primary-900">
+                          {haiku.title}
+                        </h2>
+                        <div className="text-lg text-center space-y-2 text-gray-700 whitespace-nowrap">
+                          {line1Display.length > 0 && (
+                            <p>{line1Display.join(' ')}</p>
+                          )}
+                          {line2Display.length > 0 && (
+                            <p>{line2Display.join(' ')}</p>
+                          )}
+                          {line3Display.length > 0 && (
+                            <p>{line3Display.join(' ')}</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </ScrollArea>
           ) : (
