@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
@@ -60,41 +59,47 @@ const SolvedHaikus = () => {
   console.log("SolvedHaikus: Valid haikus count:", validHaikus.length);
   console.log("SolvedHaikus: Valid haikus data:", validHaikus);
 
-  // Create a map to get the latest completion for each haiku ID
-  const uniqueHaikusMap = new Map();
+  // Get the most recent completion for each unique haiku ID
+  const latestCompletions = new Map();
   
-  const sortedHaikus = [...validHaikus].sort((a, b) => 
-    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
-  
-  for (const haiku of sortedHaikus) {
-    if (!uniqueHaikusMap.has(haiku.haiku_id)) {
-      uniqueHaikusMap.set(haiku.haiku_id, haiku);
+  if (validHaikus && validHaikus.length > 0) {
+    // Sort by most recent first
+    const sortedCompletions = [...validHaikus].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    
+    // Keep only the most recent completion for each haiku_id
+    for (const completion of sortedCompletions) {
+      if (!latestCompletions.has(completion.haiku_id)) {
+        latestCompletions.set(completion.haiku_id, completion);
+      }
     }
   }
   
-  const uniqueValidHaikus = Array.from(uniqueHaikusMap.values());
-
-  // Properly match haiku content with titles
-  const haikuWithTitles = uniqueValidHaikus.map(completedHaiku => {
-    const matchingHaiku = haikus?.find(h => h.id === completedHaiku.haiku_id);
-    
-    // For debugging
-    console.log(`Matching haiku ${completedHaiku.haiku_id} with title:`, matchingHaiku?.title);
+  // Now create the final array with matched haiku content and title
+  const haikuWithTitles = Array.from(latestCompletions.values()).map(completion => {
+    const matchingHaiku = haikus?.find(h => h.id === completion.haiku_id);
+    console.log(`Matching haiku ${completion.haiku_id} with title:`, matchingHaiku?.title);
     
     return {
-      ...completedHaiku,
+      id: completion.id,
+      haiku_id: completion.haiku_id,
       title: matchingHaiku?.title || "Untitled Haiku",
-      // Make sure to use the correct words from the matching haiku
+      arrangement: {
+        line1: completion.line1_arrangement || [],
+        line2: completion.line2_arrangement || [],
+        line3: completion.line3_arrangement || []
+      },
       originalWords: {
         line1: matchingHaiku?.line1_words || [],
         line2: matchingHaiku?.line2_words || [],
         line3: matchingHaiku?.line3_words || []
-      }
+      },
+      created_at: completion.created_at
     };
   });
 
-  if (uniqueValidHaikus.length === 0 && !isLoadingCompleted) {
+  if (haikuWithTitles.length === 0 && !isLoadingCompleted) {
     toast({
       title: "No solved haikus found",
       description: "You haven't solved any haikus yet.",
@@ -118,18 +123,17 @@ const SolvedHaikus = () => {
             <ScrollArea className="flex-1 pb-20">
               <div className="space-y-6 max-w-xl mx-auto">
                 {haikuWithTitles.map((haiku, index) => {
-                  // Determine which arrangement to use - prefer the user's arrangement,
-                  // but if it's empty, use the original words from the haiku
-                  const line1Display = haiku.line1_arrangement && haiku.line1_arrangement.length > 0
-                    ? haiku.line1_arrangement
+                  // For each line, use the arrangement if it exists, otherwise fall back to original words
+                  const line1Display = haiku.arrangement.line1.length > 0
+                    ? haiku.arrangement.line1
                     : haiku.originalWords.line1;
                     
-                  const line2Display = haiku.line2_arrangement && haiku.line2_arrangement.length > 0
-                    ? haiku.line2_arrangement
+                  const line2Display = haiku.arrangement.line2.length > 0
+                    ? haiku.arrangement.line2
                     : haiku.originalWords.line2;
                     
-                  const line3Display = haiku.line3_arrangement && haiku.line3_arrangement.length > 0
-                    ? haiku.line3_arrangement
+                  const line3Display = haiku.arrangement.line3.length > 0
+                    ? haiku.arrangement.line3
                     : haiku.originalWords.line3;
                   
                   return (
