@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
@@ -18,7 +17,6 @@ const SolvedHaikus = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Force refetch when component mounts
   useEffect(() => {
     if (user) {
       console.log("SolvedHaikus: Forcing refetch of completed haikus");
@@ -27,13 +25,11 @@ const SolvedHaikus = () => {
   }, [user, refetchCompletedHaikus]);
 
   useEffect(() => {
-    // Redirect to login if not authenticated
     if (!user && !isLoadingCompleted) {
       navigate('/auth');
     }
   }, [user, isLoadingCompleted, navigate]);
 
-  // Update the solved count for the navigation
   useEffect(() => {
     if (completedHaikus) {
       console.log("SolvedHaikus: Setting solved count to", completedHaikus.length);
@@ -52,7 +48,6 @@ const SolvedHaikus = () => {
 
   console.log("SolvedHaikus: Completed haikus raw data:", completedHaikus);
 
-  // Filter out haikus with empty arrangement arrays
   const validHaikus = completedHaikus?.filter(
     haiku => 
       (haiku.line1_arrangement && haiku.line1_arrangement.length > 0) || 
@@ -63,7 +58,6 @@ const SolvedHaikus = () => {
   console.log("SolvedHaikus: Valid haikus count:", validHaikus.length);
   console.log("SolvedHaikus: Valid haikus data:", validHaikus);
 
-  // Add titles to haikus
   const haikuWithTitles = validHaikus.map(haiku => {
     const matchingHaiku = haikus?.find(h => h.id === haiku.haiku_id);
     return {
@@ -94,7 +88,7 @@ const SolvedHaikus = () => {
           
           {haikuWithTitles.length > 0 ? (
             <ScrollArea className="flex-1 pb-20">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-screen-lg mx-auto">
+              <div className="space-y-6 max-w-2xl mx-auto">
                 {haikuWithTitles.map((haiku, index) => (
                   <Card 
                     key={haiku.id} 
@@ -104,7 +98,7 @@ const SolvedHaikus = () => {
                       <h2 className="text-xl font-medium text-center text-primary-900">
                         {haiku.title}
                       </h2>
-                      <div className="text-lg text-center space-y-2 text-gray-700">
+                      <div className="text-lg text-center space-y-2 text-gray-700 whitespace-nowrap">
                         {haiku.line1_arrangement && haiku.line1_arrangement.length > 0 && (
                           <p>{haiku.line1_arrangement.join(' ')}</p>
                         )}
