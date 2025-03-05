@@ -25,8 +25,6 @@ export function useHaikuSolver({
     draggedWord,
     usedWords,
     isSolved,
-    encouragingMessage,
-    isMessageVisible,
     verificationState,
     incorrectWords,
     solvedLines,
@@ -67,19 +65,30 @@ export function useHaikuSolver({
           console.log("Saving solved haiku with ID:", currentHaiku.id);
           console.log("Saving solved haiku with lines:", currentLines);
           
+          // Ensure we're creating deep copies of the arrays
+          const line1 = currentLines[0] ? [...currentLines[0]] : [];
+          const line2 = currentLines[1] ? [...currentLines[1]] : [];
+          const line3 = currentLines[2] ? [...currentLines[2]] : [];
+          
+          console.log("Saving line arrangements:", {
+            line1,
+            line2,
+            line3
+          });
+          
           // Mark as saved to avoid duplicate saves
           didSaveCurrentHaiku.current = true;
           
           // Update solvedLines in state for display
-          setSolvedLines([...currentLines]);
+          setSolvedLines([line1, line2, line3]);
           
           try {
             // Save the haiku to Supabase
             await saveCompletedHaiku.mutateAsync({
               haiku_id: currentHaiku.id,
-              line1_arrangement: currentLines[0] || [],
-              line2_arrangement: currentLines[1] || [],
-              line3_arrangement: currentLines[2] || []
+              line1_arrangement: line1,
+              line2_arrangement: line2,
+              line3_arrangement: line3
             });
             
             toast({
@@ -122,7 +131,11 @@ export function useHaikuSolver({
   // Handle verification of haiku solution
   const handleVerification = (currentLines: string[][], solution: string[][]) => {
     console.log("Handling verification with lines:", currentLines);
-    setSolvedLines([...currentLines]);
+    
+    // Deep copy the lines to avoid reference issues
+    const linesDeepCopy = currentLines.map(line => line ? [...line] : []);
+    setSolvedLines(linesDeepCopy);
+    
     handleVerify(currentLines, solution);
   };
 
@@ -158,8 +171,6 @@ export function useHaikuSolver({
     isSolved,
     isCompleted,
     usedWords,
-    encouragingMessage,
-    isMessageVisible,
     verificationState,
     incorrectWords,
     remainingWords,

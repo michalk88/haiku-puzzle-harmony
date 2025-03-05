@@ -52,6 +52,13 @@ export const fetchCompletedHaikus = async (userId: string): Promise<CompletedHai
     // Merge the data together - store original haiku as "originalHaiku" property
     const mergedData = completedData.map(completed => {
       const originalHaiku = haikuData?.find(h => h.id === completed.haiku_id);
+      
+      // Debug logging for each completed haiku
+      console.log(`Processing completed haiku ${completed.id} for haiku_id ${completed.haiku_id}`);
+      console.log("Line 1 arrangement:", completed.line1_arrangement);
+      console.log("Line 2 arrangement:", completed.line2_arrangement);
+      console.log("Line 3 arrangement:", completed.line3_arrangement);
+      
       return {
         ...completed,
         originalHaiku: originalHaiku
@@ -90,6 +97,11 @@ export const saveCompletedHaiku = async (
   
   console.log("Saving completed haiku:", haiku);
   console.log("User ID:", userId);
+  console.log("Line arrangements:", {
+    line1: haiku.line1_arrangement,
+    line2: haiku.line2_arrangement,
+    line3: haiku.line3_arrangement
+  });
   
   const { data, error } = await supabase
     .from('completed_haikus')

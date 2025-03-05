@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import NoHaikuAvailable from '@/components/haiku/NoHaikusAvailable';
-import { CompletedHaiku } from '@/types/haiku';
+import { CompletedHaiku, Haiku } from '@/types/haiku';
 
 interface SolvedHaikuDisplay {
   id: string;
@@ -53,18 +53,33 @@ const SolvedHaikus = () => {
             return null;
           }
 
-          // For each line, use the user's arrangement (from the specific completion) if available
-          const line1 = completion.line1_arrangement && completion.line1_arrangement.length > 0 
-            ? completion.line1_arrangement 
-            : haiku.line1_words;
-            
-          const line2 = completion.line2_arrangement && completion.line2_arrangement.length > 0 
-            ? completion.line2_arrangement 
-            : haiku.line2_words;
-            
-          const line3 = completion.line3_arrangement && completion.line3_arrangement.length > 0 
-            ? completion.line3_arrangement 
-            : haiku.line3_words;
+          // Important: Use the user's arrangement from THIS specific completion
+          // Only fall back to original words if the arrangement is empty
+          let line1, line2, line3;
+          
+          // Check if the completion has line arrangements with data
+          if (completion.line1_arrangement && completion.line1_arrangement.length > 0) {
+            line1 = [...completion.line1_arrangement]; // Use spread to create a new array
+          } else {
+            line1 = [...haiku.line1_words]; // Fallback to original words
+          }
+          
+          if (completion.line2_arrangement && completion.line2_arrangement.length > 0) {
+            line2 = [...completion.line2_arrangement]; // Use spread to create a new array
+          } else {
+            line2 = [...haiku.line2_words]; // Fallback to original words
+          }
+          
+          if (completion.line3_arrangement && completion.line3_arrangement.length > 0) {
+            line3 = [...completion.line3_arrangement]; // Use spread to create a new array
+          } else {
+            line3 = [...haiku.line3_words]; // Fallback to original words
+          }
+
+          console.log(`Processing haiku ${haiku.title} (ID: ${completion.id})`);
+          console.log("Line 1:", line1);
+          console.log("Line 2:", line2);
+          console.log("Line 3:", line3);
 
           return {
             id: completion.id,
