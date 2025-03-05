@@ -28,10 +28,12 @@ export function useHaikuGameState({
     setSolvedLines
   } = useHaikuGame();
 
+  // Updated ref type to include addWordToNextAvailableSpot
   const gameRef = useRef<{ 
     handleWordReturn: (word: string) => void;
     handleReset: () => void;
     getCurrentLines: () => string[][];
+    addWordToNextAvailableSpot: (word: string) => void;
   } | null>(null);
 
   const handleWordReturnToPool = (word: string, lineIndex?: number) => {

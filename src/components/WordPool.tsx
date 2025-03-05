@@ -41,6 +41,13 @@ const WordPool: React.FC<WordPoolProps> = ({
     e.dataTransfer.clearData();
   };
 
+  const handleWordTap = (word: string) => {
+    if (onWordTap) {
+      console.log("WordPool handleWordTap - Word tapped:", word);
+      onWordTap(word);
+    }
+  };
+
   // Calculate word size based on average word length
   const wordSize = words.join(' ').length / words.length > 6 ? "sm" : "base";
 
@@ -58,7 +65,7 @@ const WordPool: React.FC<WordPoolProps> = ({
           key={`pool-${word}`}
           word={word}
           onDragStart={onDragStart}
-          onTap={onWordTap}
+          onTap={handleWordTap}
           size={wordSize}
           inPool={true}
         />

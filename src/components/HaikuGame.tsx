@@ -75,7 +75,10 @@ const HaikuGame = forwardRef<{
     },
     getCurrentLines: () => linesRef.current,
     addWordToNextAvailableSpot: (word: string) => {
-      if (activeLineIndex < 0) return; // All lines are full
+      if (activeLineIndex < 0) {
+        console.log("No available spots to add word:", word);
+        return; // All lines are full
+      }
 
       setLines(prev => {
         // Remove the word from any line if it exists
@@ -90,7 +93,7 @@ const HaikuGame = forwardRef<{
       });
 
       // Mark word as used
-      if (!lines.some(line => line.includes(word))) {
+      if (!usedWords.has(word)) {
         onWordUse(word);
       }
     }

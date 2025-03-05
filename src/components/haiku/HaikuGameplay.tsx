@@ -37,7 +37,9 @@ const HaikuGameplay: React.FC<HaikuGameplayProps> = ({
 
   const handleWordTap = (word: string) => {
     console.log("Word tapped:", word);
-    gameRef.current?.addWordToNextAvailableSpot(word);
+    if (gameRef.current) {
+      gameRef.current.addWordToNextAvailableSpot(word);
+    }
   };
 
   return (
