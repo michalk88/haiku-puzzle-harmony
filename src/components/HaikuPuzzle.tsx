@@ -49,8 +49,6 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     gameRef,
     isSolved,
     usedWords,
-    encouragingMessage,
-    isMessageVisible,
     verificationState,
     incorrectWords,
     remainingWords,
@@ -110,7 +108,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
             isSolved={isSolved}
             isLastHaiku={availableHaikus.length === 0}
             onNextHaiku={goToNextUnsolved}
-            encouragingMessage={isMessageVisible ? encouragingMessage : ""}
+            encouragingMessage=""
             isNextDisabled={!isSolved && !isCompleted}
           />
         </div>

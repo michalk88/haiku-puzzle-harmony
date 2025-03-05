@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 type VerificationState = 'idle' | 'checking' | 'correct' | 'incorrect' | 'continue';
 
@@ -7,23 +7,10 @@ export const useHaikuGame = () => {
   const [draggedWord, setDraggedWord] = useState<string>("");
   const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
   const [currentHaikuIndex, setCurrentHaikuIndex] = useState(0);
-  const [encouragingMessage, setEncouragingMessage] = useState<string>("");
-  const [isMessageVisible, setIsMessageVisible] = useState(false);
   const [verificationState, setVerificationState] = useState<VerificationState>('idle');
   const [incorrectWords, setIncorrectWords] = useState<Set<string>>(new Set());
   const [isSolved, setIsSolved] = useState(false);
   const [solvedLines, setSolvedLines] = useState<string[][]>([[], [], []]);
-
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    if (encouragingMessage) {
-      setIsMessageVisible(true);
-      timeout = setTimeout(() => {
-        setIsMessageVisible(false);
-      }, 2000);
-    }
-    return () => clearTimeout(timeout);
-  }, [encouragingMessage]);
 
   const handleDragStart = (e: React.DragEvent, word: string) => {
     e.dataTransfer.setData("text/plain", word);
@@ -60,7 +47,7 @@ export const useHaikuGame = () => {
       setVerificationState('correct');
       setIsSolved(true);
       setSolvedLines([...currentLines]);
-      setEncouragingMessage("Great job!");
+      
       setTimeout(() => {
         setVerificationState('continue');
       }, 1500);
@@ -94,8 +81,8 @@ export const useHaikuGame = () => {
     draggedWord,
     usedWords,
     currentHaikuIndex,
-    encouragingMessage,
-    isMessageVisible,
+    encouragingMessage: "", // Returning empty string instead of removing to maintain interface compatibility
+    isMessageVisible: false, // Always false now
     verificationState,
     incorrectWords,
     isSolved,

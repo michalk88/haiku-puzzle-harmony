@@ -92,8 +92,8 @@ export function useHaikuSolver({
             
             console.log("Haiku saved successfully");
             
-            // REMOVE this automatic navigation that was causing issue #1
-            // No goToNextUnsolved here - we want the user to click Continue
+            // REMOVED: We don't automatically navigate to next haiku anymore
+            // User must click the Continue button
           } catch (error) {
             console.error("Error saving haiku:", error);
             didSaveCurrentHaiku.current = false;

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
@@ -52,7 +53,7 @@ const SolvedHaikus = () => {
             return null;
           }
 
-          // For each line, use the user's arrangement if available, otherwise use the original words
+          // For each line, use the user's arrangement (from the specific completion) if available
           const line1 = completion.line1_arrangement && completion.line1_arrangement.length > 0 
             ? completion.line1_arrangement 
             : haiku.line1_words;
