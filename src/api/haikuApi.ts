@@ -24,13 +24,10 @@ export const fetchCompletedHaikus = async (userId: string): Promise<CompletedHai
   
   console.log("Fetching completed haikus for user:", userId);
   
-  // Fetch completed haikus with a join to get original haiku data in one query
+  // Fetch completed haikus
   const { data, error } = await supabase
     .from('completed_haikus')
-    .select(`
-      *,
-      originalHaiku:haikus(*)
-    `)
+    .select('*')
     .eq('user_id', userId);
   
   if (error) {
@@ -38,18 +35,39 @@ export const fetchCompletedHaikus = async (userId: string): Promise<CompletedHai
     throw error;
   }
   
-  console.log("Fetched completed haikus with join:", data?.length);
+  console.log("Fetched completed haikus:", data?.length);
   
-  // Process the data to match the expected format
-  const processedData = data?.map(item => {
-    return {
-      ...item,
-      originalHaiku: item.originalHaiku
-    };
-  }) || [];
+  // If no completed haikus, return empty array
+  if (!data || data.length === 0) {
+    return [];
+  }
   
-  console.log("Processed completed haikus data:", processedData.length);
-  return processedData as CompletedHaiku[];
+  // For each completed haiku, fetch the original haiku data
+  const completedWithOriginals = await Promise.all(
+    data.map(async (completedHaiku) => {
+      const { data: originalHaiku, error: originalError } = await supabase
+        .from('haikus')
+        .select('*')
+        .eq('id', completedHaiku.haiku_id)
+        .single();
+      
+      if (originalError) {
+        console.error(`Error fetching original haiku ${completedHaiku.haiku_id}:`, originalError);
+        return {
+          ...completedHaiku,
+          originalHaiku: null
+        };
+      }
+      
+      return {
+        ...completedHaiku,
+        originalHaiku
+      };
+    })
+  );
+  
+  console.log("Processed completed haikus with original data:", completedWithOriginals.length);
+  return completedWithOriginals as CompletedHaiku[];
 };
 
 export const saveCompletedHaiku = async (
