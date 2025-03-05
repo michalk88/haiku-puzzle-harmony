@@ -71,7 +71,7 @@ const SolvedHaikus = () => {
             lines: [line1, line2, line3]
           };
         })
-        .filter(Boolean);
+        .filter(Boolean) as SolvedHaikuDisplay[];
       
       console.log("Processed solved haikus for display:", solvedHaikusList.length);
       setDisplayHaikus(solvedHaikusList);
