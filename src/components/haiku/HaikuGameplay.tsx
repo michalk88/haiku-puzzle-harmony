@@ -9,6 +9,7 @@ interface HaikuGameplayProps {
     handleWordReturn: (word: string) => void;
     handleReset: () => void;
     getCurrentLines: () => string[][];
+    addWordToNextAvailableSpot: (word: string) => void;
   }>;
   usedWords: Set<string>;
   remainingWords: string[];
@@ -34,6 +35,11 @@ const HaikuGameplay: React.FC<HaikuGameplayProps> = ({
 }) => {
   if (!currentHaiku) return null;
 
+  const handleWordTap = (word: string) => {
+    console.log("Word tapped:", word);
+    gameRef.current?.addWordToNextAvailableSpot(word);
+  };
+
   return (
     <>
       <div className="w-full overflow-visible">
@@ -58,6 +64,7 @@ const HaikuGameplay: React.FC<HaikuGameplayProps> = ({
           words={remainingWords}
           onDragStart={onDragStart}
           onWordReturn={onWordReturn}
+          onWordTap={handleWordTap}
         />
       </div>
     </>

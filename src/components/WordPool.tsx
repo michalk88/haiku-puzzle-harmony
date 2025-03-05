@@ -6,9 +6,15 @@ interface WordPoolProps {
   words: string[];
   onDragStart: (e: React.DragEvent, word: string) => void;
   onWordReturn: (word: string, lineIndex?: number) => void;
+  onWordTap?: (word: string) => void;
 }
 
-const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn }) => {
+const WordPool: React.FC<WordPoolProps> = ({ 
+  words, 
+  onDragStart, 
+  onWordReturn, 
+  onWordTap 
+}) => {
   const handleDragOver = (e: React.DragEvent) => {
     // Prevent default to enable dropping
     e.preventDefault();
@@ -44,13 +50,17 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
                  rounded-lg"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      role="region"
+      aria-label="Word pool"
     >
       {words.map((word) => (
         <WordTile
           key={`pool-${word}`}
           word={word}
           onDragStart={onDragStart}
+          onTap={onWordTap}
           size={wordSize}
+          inPool={true}
         />
       ))}
     </div>

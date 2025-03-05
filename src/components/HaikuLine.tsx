@@ -10,6 +10,8 @@ interface HaikuLineProps {
   className?: string;
   lineIndex: number;
   incorrectWords?: Set<string>;
+  isActive?: boolean;
+  targetWordCount?: number;
 }
 
 const HaikuLine: React.FC<HaikuLineProps> = ({ 
@@ -19,7 +21,9 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
   onWordReturnToPool,
   className,
   lineIndex,
-  incorrectWords = new Set()
+  incorrectWords = new Set(),
+  isActive = false,
+  targetWordCount = 0
 }) => {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -56,6 +60,8 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
     return "base";
   }, [words]) as "xs" | "sm" | "base";
 
+  const isFull = targetWordCount > 0 && words.length >= targetWordCount;
+
   return (
     <div
       onDrop={onDrop}
@@ -63,9 +69,12 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
       onTouchMove={handleTouchMove}
       className={cn(
         "min-h-[64px] sm:min-h-[96px] w-full border-b-2 border-haiku-border mb-4 sm:mb-6",
-        "flex items-center justify-center px-1 py-2 sm:p-3 touch-none overflow-visible",
+        "flex items-center justify-center px-1 py-2 sm:p-3 touch-none overflow-visible transition-colors duration-200",
+        isActive && !isFull ? "bg-gray-50 border-indigo-300" : "",
         className
       )}
+      aria-label={`Haiku line ${lineIndex + 1}${isActive ? ", active" : ""}${isFull ? ", full" : ""}`}
+      role="region"
     >
       <div className="w-full max-w-[98%] flex flex-nowrap items-center justify-center gap-1 sm:gap-2">
         {words.map((word, index) => (
@@ -89,6 +98,7 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
             onDragOver={(e) => handleWordDragOver(e, index)}
             onDrop={(e) => handleWordDrop(e, index)}
             onTouchMove={handleTouchMove}
+            onClick={() => onWordReturnToPool(word)}
             className={cn(
               `cursor-move touch-none select-none whitespace-nowrap shrink-0
               shadow-lg hover:shadow-xl transition-all duration-200 text-white
@@ -100,6 +110,8 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
               wordSize === "sm" ? "text-sm sm:text-base px-2 py-0.75" :
               "text-base sm:text-lg px-2.5 py-1"
             )}
+            role="button"
+            aria-label={`Word: ${word}, drag to reorder or tap to remove`}
           >
             {word}
           </div>
