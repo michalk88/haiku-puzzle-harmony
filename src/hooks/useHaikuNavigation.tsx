@@ -11,6 +11,7 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
   const [availableHaikus, setAvailableHaikus] = useState<Haiku[]>([]);
   const [currentHaikuIndex, setCurrentHaikuIndex] = useState(0);
   const navigationInProgressRef = useRef(false);
+  const lastReportedCountRef = useRef<number | null>(null);
 
   const {
     haikus,
@@ -37,11 +38,12 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       
       setAvailableHaikus(available);
       
-      // Sync the solvedCount with the parent component
-      if (onSolvedCountChange) {
+      // Sync the solvedCount with the parent component, but only if it actually changed
+      if (onSolvedCountChange && lastReportedCountRef.current !== completedIds.size) {
         const count = completedIds.size;
         console.log("Updating solved count to:", count);
         onSolvedCountChange(count);
+        lastReportedCountRef.current = count;
       }
     }
   }, [haikus, completedHaikus, onSolvedCountChange]);

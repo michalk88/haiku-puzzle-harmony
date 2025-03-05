@@ -17,8 +17,8 @@ interface HaikuPuzzleProps {
 const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const initialNavigationDoneRef = useRef(false);
-  const manualNavigationRef = useRef(false);
+  const initialLoadDoneRef = useRef(false);
+  const solvingInProgressRef = useRef(false);
   
   // Hook for haiku navigation and selection
   const {
@@ -47,18 +47,17 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   }, [user, isLoadingHaikus, navigate]);
 
   // Only navigate to next unsolved haiku on initial load when a haiku is already completed
-  // or when explicitly requested through the continue button
   useEffect(() => {
     if (
       !isLoadingHaikus && 
       !isLoadingCompleted && 
       isCompleted && 
-      !initialNavigationDoneRef.current && 
-      availableHaikus.length > 0
+      !initialLoadDoneRef.current && 
+      availableHaikus.length > 0 &&
+      !solvingInProgressRef.current
     ) {
-      console.log("Initial navigation to next unsolved haiku...");
-      initialNavigationDoneRef.current = true;
-      manualNavigationRef.current = true; // Mark this as a deliberate navigation
+      console.log("Initial navigation to next unsolved haiku on load...");
+      initialLoadDoneRef.current = true;
       goToNextUnsolved();
     }
   }, [isCompleted, isLoadingHaikus, isLoadingCompleted, availableHaikus, goToNextUnsolved]);
@@ -84,9 +83,15 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     saveCompletedHaiku,
     refetchCompletedHaikus,
     goToNextUnsolved: () => {
-      // Set the manual navigation flag before navigating
-      manualNavigationRef.current = true;
-      goToNextUnsolved();
+      // Set a flag to prevent multiple navigations
+      solvingInProgressRef.current = true;
+      setTimeout(() => {
+        goToNextUnsolved();
+        // Reset the flag after navigation completes
+        setTimeout(() => {
+          solvingInProgressRef.current = false;
+        }, 200);
+      }, 100);
     }
   });
 

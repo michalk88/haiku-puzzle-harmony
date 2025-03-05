@@ -53,9 +53,10 @@ export function useHaikuSolver({
     updateCurrentHaikuRef(currentHaiku?.id || null);
   }, [currentHaiku, updateCurrentHaikuRef]);
 
-  // Save haiku when solved
+  // Save haiku when solved but don't auto-navigate
   useEffect(() => {
     if (isSolved && currentHaiku) {
+      // Only save, don't trigger any navigation
       saveHaiku();
     }
   }, [isSolved, currentHaiku, saveHaiku]);
@@ -66,7 +67,7 @@ export function useHaikuSolver({
     // First reset the current game state
     handleNextHaiku();
     
-    // Then navigate to the next unsolved haiku
+    // Then navigate to the next unsolved haiku, but only when explicitly requested
     goToNextUnsolved();
   };
 
