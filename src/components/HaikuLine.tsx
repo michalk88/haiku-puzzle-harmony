@@ -73,7 +73,7 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
             key={`line-${lineIndex}-word-${index}-${word}`}
             draggable="true"
             onDragStart={(e) => {
-              e.preventDefault();
+              // Don't call preventDefault here
               e.dataTransfer.effectAllowed = 'move';
               e.dataTransfer.setData("text/plain", word);
               e.dataTransfer.setData("lineIndex", lineIndex.toString());

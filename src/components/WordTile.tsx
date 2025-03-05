@@ -9,10 +9,7 @@ interface WordTileProps {
 
 const WordTile: React.FC<WordTileProps> = ({ word, onDragStart, size = "base" }) => {
   const handleDragStart = (e: React.DragEvent) => {
-    // Prevent default to avoid any unexpected behaviors
-    e.preventDefault();
-    
-    // Set data immediately to ensure consistent drag behavior
+    // Set data transfer properties without preventing default
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData("text/plain", word);
     
@@ -24,7 +21,7 @@ const WordTile: React.FC<WordTileProps> = ({ word, onDragStart, size = "base" })
       e.currentTarget.style.opacity = '0.6';
     }
     
-    // Call the parent's drag start handler after setting up everything
+    // Call the parent's drag start handler
     onDragStart(e, word);
   };
 
