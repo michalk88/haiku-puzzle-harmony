@@ -9,12 +9,22 @@ interface WordTileProps {
 
 const WordTile: React.FC<WordTileProps> = ({ word, onDragStart, size = "base" }) => {
   const handleDragStart = (e: React.DragEvent) => {
+    // Prevent default to avoid any unexpected behaviors
+    e.preventDefault();
+    
+    // Set data immediately to ensure consistent drag behavior
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData("text/plain", word);
+    
     // Prevent scrolling during drag on mobile
     document.body.style.overflow = 'hidden';
+    
     // Add touch feedback
     if (e.currentTarget instanceof HTMLElement) {
       e.currentTarget.style.opacity = '0.6';
     }
+    
+    // Call the parent's drag start handler after setting up everything
     onDragStart(e, word);
   };
 
@@ -40,7 +50,7 @@ const WordTile: React.FC<WordTileProps> = ({ word, onDragStart, size = "base" })
 
   return (
     <div
-      draggable
+      draggable="true"
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onTouchMove={handleTouchMove}

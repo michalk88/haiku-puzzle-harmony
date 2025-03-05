@@ -9,6 +9,13 @@ interface WordPoolProps {
 }
 
 const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn }) => {
+  const handleDragOver = (e: React.DragEvent) => {
+    // Prevent default to enable dropping
+    e.preventDefault();
+    // Set dropEffect to move for consistent visual feedback
+    e.dataTransfer.dropEffect = 'move';
+  };
+  
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const word = e.dataTransfer.getData("text/plain");
@@ -35,12 +42,12 @@ const WordPool: React.FC<WordPoolProps> = ({ words, onDragStart, onWordReturn })
     <div 
       className="flex flex-wrap gap-1.5 sm:gap-3 justify-center p-2 sm:p-4 
                  rounded-lg"
-      onDragOver={(e) => e.preventDefault()}
+      onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
       {words.map((word) => (
         <WordTile
-          key={word}
+          key={`pool-${word}`}
           word={word}
           onDragStart={onDragStart}
           size={wordSize}

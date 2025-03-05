@@ -23,11 +23,13 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
 }) => {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
   };
 
   const handleWordDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
   };
 
   const handleWordDrop = (e: React.DragEvent, dropIndex: number) => {
@@ -68,9 +70,11 @@ const HaikuLine: React.FC<HaikuLineProps> = ({
       <div className="w-full max-w-[98%] flex flex-nowrap items-center justify-center gap-1 sm:gap-2">
         {words.map((word, index) => (
           <div
-            key={`${word}-${index}`}
-            draggable
+            key={`line-${lineIndex}-word-${index}-${word}`}
+            draggable="true"
             onDragStart={(e) => {
+              e.preventDefault();
+              e.dataTransfer.effectAllowed = 'move';
               e.dataTransfer.setData("text/plain", word);
               e.dataTransfer.setData("lineIndex", lineIndex.toString());
               if (e.currentTarget instanceof HTMLElement) {
