@@ -20,7 +20,7 @@ export const useHaikuData = () => {
   });
 
   const { 
-    data: completedHaikus, 
+    data: completedHaikus = [], // Set default value of empty array
     isLoading: isLoadingCompleted,
     refetch: refetchCompletedHaikus
   } = useQuery({

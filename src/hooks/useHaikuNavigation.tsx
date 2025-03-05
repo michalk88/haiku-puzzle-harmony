@@ -13,7 +13,7 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
 
   const {
     haikus,
-    completedHaikus,
+    completedHaikus = [], // Provide default value
     saveCompletedHaiku,
     isLoadingHaikus,
     isLoadingCompleted,

@@ -73,14 +73,19 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     return <LoadingState />;
   }
 
-  // Handle no haikus
-  if (!currentHaiku) {
-    return <div>No haikus available</div>;
+  // Handle the case when no haikus are available at all
+  if (!currentHaiku && (!haikus || haikus.length === 0)) {
+    return <div>No haikus available in the system</div>;
   }
 
   // Check if there are any unsolved haikus
-  if (availableHaikus.length === 0 && !isLoadingHaikus && !isLoadingCompleted) {
+  if (availableHaikus.length === 0 && !isLoadingHaikus && !isLoadingCompleted && haikus?.length > 0) {
     return <NoHaikusAvailable />;
+  }
+
+  // Ensure we have a current haiku to display
+  if (!currentHaiku) {
+    return <LoadingState />;
   }
 
   // If the current haiku is already completed, go to the next unsolved one
