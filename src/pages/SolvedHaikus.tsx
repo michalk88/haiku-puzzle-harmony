@@ -43,9 +43,9 @@ const SolvedHaikus = () => {
       
       // Create display data from the completed haikus and their corresponding original haiku data
       const solvedHaikusList: SolvedHaikuDisplay[] = completedHaikus
-        .filter(completion => completion.haikus) // Make sure we have the original haiku data
+        .filter(completion => completion.originalHaiku) // Make sure we have the original haiku data
         .map(completion => {
-          const haiku = completion.haikus;
+          const haiku = completion.originalHaiku;
           
           if (!haiku) {
             console.warn(`No haiku found for id: ${completion.haiku_id}`);

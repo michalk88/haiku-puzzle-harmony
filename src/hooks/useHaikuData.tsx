@@ -69,12 +69,12 @@ export const useHaikuData = () => {
           throw haikuError;
         }
         
-        // Merge the data together
+        // Merge the data together - store original haiku as "originalHaiku" property
         const mergedData = completedData.map(completed => {
           const originalHaiku = haikuData?.find(h => h.id === completed.haiku_id);
           return {
             ...completed,
-            haikus: originalHaiku
+            originalHaiku: originalHaiku
           };
         });
         
