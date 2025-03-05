@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
@@ -10,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import NoHaikuAvailable from '@/components/haiku/NoHaikusAvailable';
+import { CompletedHaiku } from '@/types/haiku';
 
 interface SolvedHaikuDisplay {
   id: string;
@@ -42,7 +42,7 @@ const SolvedHaikus = () => {
       console.log("Processing haikus for display:", completedHaikus.length, "completions");
       
       // Create display data from the completed haikus and their corresponding original haiku data
-      const solvedHaikusList: SolvedHaikuDisplay[] = completedHaikus
+      const solvedHaikusList: SolvedHaikuDisplay[] = (completedHaikus as CompletedHaiku[])
         .filter(completion => completion.originalHaiku) // Make sure we have the original haiku data
         .map(completion => {
           const haiku = completion.originalHaiku;

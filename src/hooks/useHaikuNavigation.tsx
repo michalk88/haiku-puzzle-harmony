@@ -1,13 +1,14 @@
 
 import { useEffect, useState } from "react";
 import { useHaikuData } from "./useHaikuData";
+import { Haiku, CompletedHaiku } from "@/types/haiku";
 
 export interface HaikuNavigationProps {
   onSolvedCountChange?: (count: number) => void;
 }
 
 export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps = {}) {
-  const [availableHaikus, setAvailableHaikus] = useState<any[]>([]);
+  const [availableHaikus, setAvailableHaikus] = useState<Haiku[]>([]);
   const [currentHaikuIndex, setCurrentHaikuIndex] = useState(0);
 
   const {
