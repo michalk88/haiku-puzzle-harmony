@@ -8,7 +8,7 @@ interface NavigationProps {
   solvedCount?: number;
 }
 
-const Navigation = ({ solvedCount }: NavigationProps) => {
+const Navigation = ({ solvedCount = 0 }: NavigationProps) => {
   const { user, signOut } = useAuth();
 
   // Add console log to track when solvedCount changes
@@ -23,7 +23,7 @@ const Navigation = ({ solvedCount }: NavigationProps) => {
         </div>
         
         <div className="flex items-center gap-4">
-          {user && solvedCount !== undefined && (
+          {user && (
             <Link to="/solved" className="text-emerald-600 font-medium hover:underline">
               {solvedCount} {solvedCount === 1 ? 'Haiku' : 'Haikus'} Solved
             </Link>

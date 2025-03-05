@@ -36,6 +36,7 @@ const SolvedHaikus = () => {
     }
   }, [user, refetchCompletedHaikus]);
 
+  // Redirect to auth if not logged in
   useEffect(() => {
     if (!user && !isLoadingCompleted) {
       navigate('/auth');
@@ -46,9 +47,6 @@ const SolvedHaikus = () => {
   useEffect(() => {
     if (completedHaikus && !isLoadingCompleted) {
       console.log("Processing haikus for display:", completedHaikus.length, "completions");
-      
-      // Create an object to deduplicate haikus by ID for debugging
-      const uniqueHaikus = new Map();
       
       // Create display data from the completed haikus and their corresponding original haiku data
       const solvedHaikusList: SolvedHaikuDisplay[] = completedHaikus
@@ -83,9 +81,6 @@ const SolvedHaikus = () => {
           
           // Log the full object for comparison
           console.log(`Full completion object:`, JSON.stringify(completion, null, 2));
-          
-          // Track unique haikus for debugging
-          uniqueHaikus.set(completion.haiku_id, originalHaiku.title);
 
           // Make sure line1_arrangement, line2_arrangement, line3_arrangement are valid arrays
           const line1 = Array.isArray(completion.line1_arrangement) ? completion.line1_arrangement : [];
@@ -102,7 +97,6 @@ const SolvedHaikus = () => {
         .filter(Boolean) as SolvedHaikuDisplay[];
       
       console.log("Processed solved haikus for display:", solvedHaikusList.length);
-      console.log("Unique haikus in completions:", [...uniqueHaikus.entries()]);
       
       // Log each processed haiku for verification
       solvedHaikusList.forEach((haiku, index) => {
@@ -139,7 +133,7 @@ const SolvedHaikus = () => {
         setTimeout(() => {
           console.log("Redirecting to home after reset");
           navigate('/', { replace: true });
-        }, 300);
+        }, 500);
       } catch (error) {
         console.error("Error resetting all haikus:", error);
         setIsResetting(false);

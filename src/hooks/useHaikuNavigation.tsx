@@ -40,19 +40,15 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       if (currentHaikuIndex >= 0 && haikus[currentHaikuIndex] && completedIds.has(haikus[currentHaikuIndex].id)) {
         goToNextUnsolved();
       }
+      
+      // Sync the solvedCount with the parent component
+      if (onSolvedCountChange) {
+        const count = completedIds.size;
+        console.log("Updating solved count to:", count);
+        onSolvedCountChange(count);
+      }
     }
-  }, [haikus, completedHaikus]);
-
-  // Sync the solvedCount with the parent component
-  useEffect(() => {
-    if (onSolvedCountChange && completedHaikus) {
-      // Count unique haiku_ids to avoid duplicates
-      const uniqueHaikuIds = new Set(completedHaikus.map(ch => ch.haiku_id));
-      const count = uniqueHaikuIds.size;
-      console.log("Updating solved count to:", count);
-      onSolvedCountChange(count);
-    }
-  }, [completedHaikus, onSolvedCountChange]);
+  }, [haikus, completedHaikus, currentHaikuIndex, onSolvedCountChange]);
 
   // Find the next unsolved haiku
   const goToNextUnsolved = () => {

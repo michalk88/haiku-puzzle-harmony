@@ -227,7 +227,7 @@ export const resetAllCompletedHaikus = async (userId: string): Promise<void> => 
     return;
   }
   
-  // Delete all completed haikus for this user
+  // Delete all completed haikus for this user - using DELETE FROM syntax to ensure complete removal
   const { error } = await supabase
     .from('completed_haikus')
     .delete()
@@ -239,4 +239,19 @@ export const resetAllCompletedHaikus = async (userId: string): Promise<void> => 
   }
   
   console.log(`Successfully deleted ${existingData.length} completed haikus for user ${userId}`);
+  
+  // Double check that all haikus were deleted
+  const { data: remainingData, error: remainingError } = await supabase
+    .from('completed_haikus')
+    .select('id')
+    .eq('user_id', userId);
+  
+  if (remainingError) {
+    console.error("Error checking remaining haikus:", remainingError);
+  } else {
+    console.log(`Remaining haikus after delete: ${remainingData?.length || 0}`);
+    if (remainingData && remainingData.length > 0) {
+      console.error("Some haikus were not deleted!");
+    }
+  }
 };

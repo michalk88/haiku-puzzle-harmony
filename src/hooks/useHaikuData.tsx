@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -94,16 +93,18 @@ export const useHaikuData = () => {
     onSuccess: () => {
       console.log("RESET ALL - Invalidating ALL queries");
       
-      // Use invalidateQueries with broader key to invalidate all related queries
-      queryClient.invalidateQueries();
+      // Force clean the query cache completely
+      queryClient.clear();
       
-      // Force clean the query cache for completed_haikus specifically
-      queryClient.removeQueries({ queryKey: ['completed_haikus'] });
-      queryClient.removeQueries({ queryKey: ['completed_haikus', user?.id] });
+      // Set empty data for completed haikus explicitly
+      queryClient.setQueryData(['completed_haikus', user?.id], []);
       
-      // Explicitly refetch both queries to ensure fresh data
-      queryClient.refetchQueries({ queryKey: ['haikus'] });
-      queryClient.refetchQueries({ queryKey: ['completed_haikus', user?.id] });
+      // Wait a bit and then refetch everything
+      setTimeout(() => {
+        console.log("Refetching all data after reset");
+        queryClient.refetchQueries({ queryKey: ['haikus'] });
+        queryClient.refetchQueries({ queryKey: ['completed_haikus', user?.id] });
+      }, 100);
       
       toast({
         title: "All progress reset",
