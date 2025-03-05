@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -7,7 +8,7 @@ import {
   saveCompletedHaiku as saveHaiku, 
   resetCompletedHaiku, 
   resetAllCompletedHaikus 
-} from "@/api/haikuApi";
+} from "@/api";
 import { Haiku, CompletedHaiku } from "@/types/haiku";
 
 export const useHaikuData = () => {
