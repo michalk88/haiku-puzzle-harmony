@@ -1,12 +1,13 @@
-import { useRef, useEffect } from "react";
-import { useHaikuGame } from "./useHaikuGame";
-import { shuffleArray } from "../lib/utils";
-import { useToast } from "./use-toast";
+
+import { useEffect } from "react";
+import { useHaikuGameState } from "./useHaikuGameState";
+import { useSaveHaiku } from "./useSaveHaiku";
+import { Haiku, CompletedHaiku } from "@/types/haiku";
 
 interface HaikuSolverProps {
-  currentHaiku: any;
+  currentHaiku: Haiku | null;
   isCompleted: boolean;
-  completedHaiku: any;
+  completedHaiku: CompletedHaiku | undefined;
   saveCompletedHaiku: any;
   refetchCompletedHaikus: () => Promise<any>;
   goToNextUnsolved: () => void;
@@ -20,123 +21,48 @@ export function useHaikuSolver({
   refetchCompletedHaikus,
   goToNextUnsolved
 }: HaikuSolverProps) {
+  // Game state management
   const {
-    draggedWord,
-    usedWords,
+    gameRef,
     isSolved,
+    usedWords,
     verificationState,
     incorrectWords,
-    solvedLines,
+    remainingWords,
+    displayLines,
     handleDragStart,
     handleWordUse,
-    handleWordReturn,
-    handleVerify,
-    handleNextHaiku,
-    setSolvedLines
-  } = useHaikuGame();
+    handleWordReturnToPool,
+    handleVerification,
+    handleNextHaiku
+  } = useHaikuGameState({
+    currentHaiku,
+    completedHaiku
+  });
 
-  const gameRef = useRef<{ 
-    handleWordReturn: (word: string) => void;
-    handleReset: () => void;
-    getCurrentLines: () => string[][];
-  } | null>(null);
+  // Haiku saving functionality
+  const { updateCurrentHaikuRef, saveHaiku } = useSaveHaiku({
+    currentHaiku,
+    isSolved,
+    saveCompletedHaiku,
+    refetchCompletedHaikus
+  });
 
-  const didSaveCurrentHaiku = useRef(false);
-  const saveAttemptsRef = useRef(0);
-  const currentHaikuIdRef = useRef<string | null>(null);
-  const { toast } = useToast();
-
+  // Update current haiku reference when it changes
   useEffect(() => {
-    if (currentHaiku?.id !== currentHaikuIdRef.current) {
-      console.log(`Moving to a new haiku: ${currentHaiku?.id} (was: ${currentHaikuIdRef.current})`);
-      didSaveCurrentHaiku.current = false;
-      saveAttemptsRef.current = 0;
-      currentHaikuIdRef.current = currentHaiku?.id || null;
-    }
+    updateCurrentHaikuRef(currentHaiku?.id || null);
   }, [currentHaiku]);
 
+  // Save haiku when solved
   useEffect(() => {
-    const saveHaiku = async () => {
-      if (isSolved && currentHaiku && !didSaveCurrentHaiku.current) {
-        try {
-          console.log(`========== ATTEMPTING TO SAVE HAIKU ==========`);
-          console.log(`Haiku ID: ${currentHaiku.id}, Title: ${currentHaiku.title}`);
-          
-          // Increment save attempts
-          saveAttemptsRef.current += 1;
-          console.log(`Save attempt #${saveAttemptsRef.current}`);
-          
-          // Mark as saved to avoid duplicate saves
-          didSaveCurrentHaiku.current = true;
-          
-          // Save only the haiku_id to Supabase
-          await saveCompletedHaiku.mutateAsync({
-            haiku_id: currentHaiku.id
-          });
-          
-          toast({
-            title: "Haiku saved!",
-            description: "Your solution has been saved.",
-          });
-          
-          // Force refetch completed haikus to update the data
-          await refetchCompletedHaikus();
-          
-          console.log("Haiku saved successfully");
-        } catch (error) {
-          console.error("Error saving haiku:", error);
-          didSaveCurrentHaiku.current = false;
-          toast({
-            title: "Error saving haiku",
-            description: "There was an error saving your solution. Please try again.",
-            variant: "destructive"
-          });
-        }
-      }
-    };
-    
     saveHaiku();
-  }, [isSolved, currentHaiku, saveCompletedHaiku, toast, refetchCompletedHaikus]);
+  }, [isSolved, currentHaiku]);
 
-  const handleWordReturnToPool = (word: string, lineIndex?: number) => {
-    console.log("HaikuPuzzle - Word returned to pool:", word, "from line:", lineIndex);
-    gameRef.current?.handleWordReturn(word);
-    handleWordReturn(word);
-  };
-
-  const handleVerification = (currentLines: string[][], solution: string[][]) => {
-    console.log("Handling verification with lines:", JSON.stringify(currentLines));
-    
-    // Deep copy the lines to avoid reference issues
-    const linesDeepCopy = currentLines.map(line => line ? [...line] : []);
-    setSolvedLines(linesDeepCopy);
-    
-    handleVerify(currentLines, solution);
-  };
-
+  // Handle continuing to next haiku
   const handleContinue = () => {
     handleNextHaiku();
     goToNextUnsolved();
   };
-
-  const availableWords = currentHaiku ? [
-    ...currentHaiku.line1_words,
-    ...currentHaiku.line2_words,
-    ...currentHaiku.line3_words
-  ] : [];
-  
-  const shuffledWords = shuffleArray([...availableWords]);
-  const remainingWords = shuffledWords.filter(word => !usedWords.has(word));
-
-  const displayLines = isSolved 
-    ? solvedLines 
-    : completedHaiku 
-      ? [
-          completedHaiku.line1_arrangement || [],
-          completedHaiku.line2_arrangement || [],
-          completedHaiku.line3_arrangement || []
-        ] 
-      : [[], [], []];
 
   return {
     gameRef,
