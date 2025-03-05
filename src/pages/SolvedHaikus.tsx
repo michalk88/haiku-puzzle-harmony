@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 const SolvedHaikus = () => {
   const { completedHaikus, haikus, isLoadingCompleted, isLoadingHaikus, refetchCompletedHaikus } = useHaikuData();
   const [solvedCount, setSolvedCount] = useState(0);
+  const [displayHaikus, setDisplayHaikus] = useState<any[]>([]);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -31,13 +32,68 @@ const SolvedHaikus = () => {
     }
   }, [user, isLoadingCompleted, navigate]);
 
+  // Process the haikus and completed haikus data to create proper display data
   useEffect(() => {
-    if (completedHaikus) {
+    if (haikus && completedHaikus && !isLoadingHaikus && !isLoadingCompleted) {
+      console.log("Processing haikus for display:", haikus.length, "haikus and", completedHaikus.length, "completions");
+      
+      // Create a mapping of haiku IDs to their original content
+      const haikuMap = new Map();
+      haikus.forEach(haiku => {
+        haikuMap.set(haiku.id, {
+          title: haiku.title,
+          line1: haiku.line1_words,
+          line2: haiku.line2_words,
+          line3: haiku.line3_words
+        });
+      });
+      
+      // Group completions by haiku_id and get the latest one for each
+      const completionsMap = new Map();
+      completedHaikus.forEach(completion => {
+        const existingCompletion = completionsMap.get(completion.haiku_id);
+        const completionDate = new Date(completion.created_at);
+        
+        if (!existingCompletion || completionDate > new Date(existingCompletion.created_at)) {
+          completionsMap.set(completion.haiku_id, completion);
+        }
+      });
+      
+      // Create display data
+      const solvedHaikusToDisplay = Array.from(completionsMap.entries()).map(([haikuId, completion]) => {
+        const originalHaiku = haikuMap.get(haikuId);
+        
+        if (!originalHaiku) {
+          console.warn(`No original haiku found for id: ${haikuId}`);
+          return null;
+        }
+
+        return {
+          id: completion.id,
+          haiku_id: haikuId,
+          title: originalHaiku.title,
+          displayLines: [
+            completion.line1_arrangement && completion.line1_arrangement.length > 0 
+              ? completion.line1_arrangement 
+              : originalHaiku.line1,
+            completion.line2_arrangement && completion.line2_arrangement.length > 0 
+              ? completion.line2_arrangement 
+              : originalHaiku.line2,
+            completion.line3_arrangement && completion.line3_arrangement.length > 0 
+              ? completion.line3_arrangement 
+              : originalHaiku.line3
+          ]
+        };
+      }).filter(Boolean); // Remove null entries
+      
+      console.log("Processed solved haikus for display:", solvedHaikusToDisplay.length);
+      setDisplayHaikus(solvedHaikusToDisplay);
+      
+      // Update the solved count
       const uniqueHaikuIds = new Set(completedHaikus.map(haiku => haiku.haiku_id));
-      console.log("SolvedHaikus: Setting solved count to", uniqueHaikuIds.size);
       setSolvedCount(uniqueHaikuIds.size);
     }
-  }, [completedHaikus]);
+  }, [haikus, completedHaikus, isLoadingHaikus, isLoadingCompleted]);
 
   if (isLoadingCompleted || isLoadingHaikus) {
     return (
@@ -46,75 +102,6 @@ const SolvedHaikus = () => {
         <LoadingState />
       </div>
     );
-  }
-
-  // First, create a proper mapping of haiku IDs to their original content
-  const haikuOriginalContent = {};
-  if (haikus && haikus.length > 0) {
-    haikus.forEach(haiku => {
-      haikuOriginalContent[haiku.id] = {
-        title: haiku.title,
-        line1: haiku.line1_words,
-        line2: haiku.line2_words,
-        line3: haiku.line3_words
-      };
-    });
-  }
-  
-  // Find unique haiku IDs from completed haikus (to avoid duplicates)
-  const uniqueHaikuIds = new Set();
-  const uniqueCompletions = [];
-  
-  // Sort completions by date (newest first) to get the latest completions
-  const sortedCompletions = completedHaikus ? 
-    [...completedHaikus].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) 
-    : [];
-  
-  // Get the most recent completion for each unique haiku ID
-  sortedCompletions.forEach(completion => {
-    if (!uniqueHaikuIds.has(completion.haiku_id) && 
-        ((completion.line1_arrangement && completion.line1_arrangement.length > 0) || 
-         (completion.line2_arrangement && completion.line2_arrangement.length > 0) || 
-         (completion.line3_arrangement && completion.line3_arrangement.length > 0))) {
-      uniqueHaikuIds.add(completion.haiku_id);
-      uniqueCompletions.push(completion);
-    }
-  });
-  
-  // Create display data with the correct title and content for each haiku
-  const solvedHaikusDisplay = uniqueCompletions.map(completion => {
-    const originalContent = haikuOriginalContent[completion.haiku_id] || {
-      title: "Untitled Haiku",
-      line1: [],
-      line2: [],
-      line3: []
-    };
-    
-    return {
-      id: completion.id,
-      haiku_id: completion.haiku_id,
-      title: originalContent.title,
-      // Use the user's arrangement if available, otherwise fall back to original content
-      displayLines: [
-        completion.line1_arrangement && completion.line1_arrangement.length > 0 
-          ? completion.line1_arrangement 
-          : originalContent.line1,
-        completion.line2_arrangement && completion.line2_arrangement.length > 0 
-          ? completion.line2_arrangement 
-          : originalContent.line2,
-        completion.line3_arrangement && completion.line3_arrangement.length > 0 
-          ? completion.line3_arrangement 
-          : originalContent.line3
-      ]
-    };
-  });
-
-  if (solvedHaikusDisplay.length === 0 && !isLoadingCompleted) {
-    toast({
-      title: "No solved haikus found",
-      description: "You haven't solved any haikus yet.",
-      variant: "default"
-    });
   }
 
   return (
@@ -129,10 +116,10 @@ const SolvedHaikus = () => {
             <h1 className="ml-4 text-2xl font-semibold">Your Solved Haikus</h1>
           </div>
           
-          {solvedHaikusDisplay.length > 0 ? (
+          {displayHaikus.length > 0 ? (
             <ScrollArea className="flex-1 pb-20">
               <div className="space-y-6 max-w-xl mx-auto">
-                {solvedHaikusDisplay.map((haiku, index) => (
+                {displayHaikus.map((haiku, index) => (
                   <Card 
                     key={`${haiku.id}-${index}`}
                     className="animate-fade-in border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200"
@@ -142,13 +129,13 @@ const SolvedHaikus = () => {
                         {haiku.title}
                       </h2>
                       <div className="text-lg text-center space-y-2 text-gray-700 whitespace-nowrap">
-                        {haiku.displayLines[0].length > 0 && (
+                        {haiku.displayLines[0]?.length > 0 && (
                           <p>{haiku.displayLines[0].join(' ')}</p>
                         )}
-                        {haiku.displayLines[1].length > 0 && (
+                        {haiku.displayLines[1]?.length > 0 && (
                           <p>{haiku.displayLines[1].join(' ')}</p>
                         )}
-                        {haiku.displayLines[2].length > 0 && (
+                        {haiku.displayLines[2]?.length > 0 && (
                           <p>{haiku.displayLines[2].join(' ')}</p>
                         )}
                       </div>

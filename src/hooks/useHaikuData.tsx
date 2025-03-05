@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -25,7 +26,7 @@ export const useHaikuData = () => {
         throw error;
       }
       console.log("Fetched haikus:", data?.length);
-      return data;
+      return data || [];
     }
   });
 
@@ -52,7 +53,7 @@ export const useHaikuData = () => {
         throw error;
       }
       console.log("Fetched completed haikus:", data?.length);
-      return data;
+      return data || [];
     },
     enabled: !!user
   });
