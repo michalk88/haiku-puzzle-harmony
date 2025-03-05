@@ -55,26 +55,11 @@ export const fetchCompletedHaikus = async (userId: string): Promise<CompletedHai
         return null;
       }
       
-      // Validate line arrangements are arrays
-      const line1_arrangement = Array.isArray(completedHaiku.line1_arrangement) 
-        ? completedHaiku.line1_arrangement 
-        : [];
-      const line2_arrangement = Array.isArray(completedHaiku.line2_arrangement) 
-        ? completedHaiku.line2_arrangement 
-        : [];
-      const line3_arrangement = Array.isArray(completedHaiku.line3_arrangement) 
-        ? completedHaiku.line3_arrangement 
-        : [];
-      
       // Log detailed info for debugging
       console.log(`Retrieved haiku: ${originalHaiku.title}`);
-      console.log(`Line arrangements: [${line1_arrangement.length}] [${line2_arrangement.length}] [${line3_arrangement.length}]`);
       
       return {
         ...completedHaiku,
-        line1_arrangement,
-        line2_arrangement,
-        line3_arrangement,
         originalHaiku
       };
     })

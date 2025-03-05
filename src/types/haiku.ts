@@ -12,9 +12,6 @@ export interface CompletedHaiku {
   id: string;
   user_id: string;
   haiku_id: string;
-  line1_arrangement: string[];
-  line2_arrangement: string[];
-  line3_arrangement: string[];
   created_at: string;
   originalHaiku?: Haiku;
 }

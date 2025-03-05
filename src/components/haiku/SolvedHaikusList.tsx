@@ -7,8 +7,12 @@ import NoHaikuAvailable from './NoHaikusAvailable';
 interface SolvedHaikuDisplay {
   id: string;
   title: string;
-  lines: string[][];
   haiku_id: string;
+  words: {
+    line1: string[];
+    line2: string[];
+    line3: string[];
+  };
 }
 
 interface SolvedHaikusListProps {
@@ -28,7 +32,7 @@ const SolvedHaikusList = ({ displayHaikus }: SolvedHaikusListProps) => {
             key={`${haiku.id}-${index}`}
             id={haiku.id}
             title={haiku.title}
-            lines={haiku.lines}
+            words={haiku.words}
           />
         ))}
       </div>

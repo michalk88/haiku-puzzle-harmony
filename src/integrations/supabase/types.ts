@@ -14,6 +14,35 @@ export type Database = {
           created_at: string
           haiku_id: string
           id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          haiku_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          haiku_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "completed_haikus_new_haiku_id_fkey"
+            columns: ["haiku_id"]
+            isOneToOne: false
+            referencedRelation: "haikus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      completed_haikus_old: {
+        Row: {
+          created_at: string
+          haiku_id: string
+          id: string
           line1_arrangement: string[]
           line2_arrangement: string[]
           line3_arrangement: string[]

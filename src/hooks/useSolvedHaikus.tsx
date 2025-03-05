@@ -8,8 +8,12 @@ import { CompletedHaiku } from '@/types/haiku';
 interface SolvedHaikuDisplay {
   id: string;
   title: string;
-  lines: string[][];
   haiku_id: string;
+  words: {
+    line1: string[];
+    line2: string[];
+    line3: string[];
+  };
 }
 
 export const useSolvedHaikus = () => {
@@ -50,30 +54,23 @@ export const useSolvedHaikus = () => {
         
         const originalHaiku = completion.originalHaiku;
         
-        // Validate line arrangements
-        const line1 = Array.isArray(completion.line1_arrangement) 
-          ? [...completion.line1_arrangement] // Create a copy to avoid mutation issues
-          : [];
-        const line2 = Array.isArray(completion.line2_arrangement) 
-          ? [...completion.line2_arrangement]
-          : [];
-        const line3 = Array.isArray(completion.line3_arrangement) 
-          ? [...completion.line3_arrangement]
-          : [];
-        
-        // Add to the display list
+        // Add to the display list with the original words from the haiku
         solvedHaikusList.push({
           id: completion.id,
           haiku_id: completion.haiku_id,
           title: originalHaiku.title || "Untitled Haiku",
-          lines: [line1, line2, line3]
+          words: {
+            line1: originalHaiku.line1_words || [],
+            line2: originalHaiku.line2_words || [],
+            line3: originalHaiku.line3_words || []
+          }
         });
         
         // Log for debugging
         console.log(`Processed haiku "${originalHaiku.title}":`, {
-          line1: line1.join(' '),
-          line2: line2.join(' '),
-          line3: line3.join(' ')
+          line1: originalHaiku.line1_words.join(' '),
+          line2: originalHaiku.line2_words.join(' '),
+          line3: originalHaiku.line3_words.join(' ')
         });
       }
       

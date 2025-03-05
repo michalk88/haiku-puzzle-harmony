@@ -5,14 +5,17 @@ import { Card, CardContent } from '@/components/ui/card';
 interface SolvedHaikuCardProps {
   id: string;
   title: string;
-  lines: string[][];
+  words: {
+    line1: string[];
+    line2: string[];
+    line3: string[];
+  };
 }
 
-const SolvedHaikuCard = ({ id, title, lines }: SolvedHaikuCardProps) => {
-  // Only render lines that have content
-  const line1 = lines[0]?.length > 0 ? lines[0].join(' ') : '';
-  const line2 = lines[1]?.length > 0 ? lines[1].join(' ') : '';
-  const line3 = lines[2]?.length > 0 ? lines[2].join(' ') : '';
+const SolvedHaikuCard = ({ id, title, words }: SolvedHaikuCardProps) => {
+  const line1 = words.line1?.join(' ') || '';
+  const line2 = words.line2?.join(' ') || '';
+  const line3 = words.line3?.join(' ') || '';
   
   return (
     <Card 
