@@ -43,9 +43,24 @@ export const useHaikuData = () => {
       }
       
       console.log("Fetching completed haikus for user:", user.id);
+      // Use a join to get the haiku details along with the completed haiku data
       const { data, error } = await supabase
         .from('completed_haikus')
-        .select('*')
+        .select(`
+          id,
+          haiku_id,
+          created_at,
+          line1_arrangement,
+          line2_arrangement,
+          line3_arrangement,
+          haikus:haiku_id (
+            id,
+            title,
+            line1_words,
+            line2_words,
+            line3_words
+          )
+        `)
         .eq('user_id', user.id);
       
       if (error) {
