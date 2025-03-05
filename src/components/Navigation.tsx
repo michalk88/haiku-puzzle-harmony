@@ -11,6 +11,9 @@ interface NavigationProps {
 const Navigation = ({ solvedCount }: NavigationProps) => {
   const { user, signOut } = useAuth();
 
+  // Add console log to track when solvedCount changes
+  console.log("Navigation rendering with solvedCount:", solvedCount);
+
   return (
     <nav className="bg-white/50 backdrop-blur-sm">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">

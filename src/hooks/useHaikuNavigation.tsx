@@ -48,8 +48,9 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
     if (onSolvedCountChange && completedHaikus) {
       // Count unique haiku_ids to avoid duplicates
       const uniqueHaikuIds = new Set(completedHaikus.map(ch => ch.haiku_id));
-      console.log("Updating solved count to:", uniqueHaikuIds.size);
-      onSolvedCountChange(uniqueHaikuIds.size);
+      const count = uniqueHaikuIds.size;
+      console.log("Updating solved count to:", count);
+      onSolvedCountChange(count);
     }
   }, [completedHaikus, onSolvedCountChange]);
 

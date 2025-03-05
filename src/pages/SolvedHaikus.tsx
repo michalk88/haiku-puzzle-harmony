@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
@@ -124,13 +125,23 @@ const SolvedHaikus = () => {
   const handleResetAll = async () => {
     if (window.confirm("Are you sure you want to reset all your solved haikus? This will allow you to solve them again.")) {
       setIsResetting(true);
+      console.log("Starting reset all process...");
+      
       try {
         await resetAllMutation.mutateAsync();
-        // Redirect to home after resetting
-        navigate('/');
+        console.log("Reset completed, setting solvedCount to 0");
+        
+        // Clear the local state immediately
+        setDisplayHaikus([]);
+        setSolvedCount(0);
+        
+        // Add a small delay to ensure the UI updates before navigating
+        setTimeout(() => {
+          console.log("Redirecting to home after reset");
+          navigate('/', { replace: true });
+        }, 300);
       } catch (error) {
         console.error("Error resetting all haikus:", error);
-      } finally {
         setIsResetting(false);
       }
     }

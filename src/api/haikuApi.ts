@@ -208,6 +208,26 @@ export const resetAllCompletedHaikus = async (userId: string): Promise<void> => 
   if (!userId) throw new Error("User must be authenticated");
   
   console.log("Resetting ALL completed haikus for user:", userId);
+  
+  // First check if there are any haikus to delete
+  const { data: existingData, error: checkError } = await supabase
+    .from('completed_haikus')
+    .select('id')
+    .eq('user_id', userId);
+    
+  if (checkError) {
+    console.error("Error checking completed haikus:", checkError);
+    throw checkError;
+  }
+  
+  console.log(`Found ${existingData?.length || 0} haikus to delete for user ${userId}`);
+  
+  if (!existingData || existingData.length === 0) {
+    console.log("No haikus to delete, reset complete");
+    return;
+  }
+  
+  // Delete all completed haikus for this user
   const { error } = await supabase
     .from('completed_haikus')
     .delete()
@@ -218,5 +238,5 @@ export const resetAllCompletedHaikus = async (userId: string): Promise<void> => 
     throw error;
   }
   
-  console.log("Successfully reset all completed haikus for user");
+  console.log(`Successfully deleted ${existingData.length} completed haikus for user ${userId}`);
 };

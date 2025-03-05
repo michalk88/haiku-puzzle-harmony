@@ -88,11 +88,23 @@ export const useHaikuData = () => {
   const resetAllMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("User must be authenticated");
+      console.log("Starting resetAllCompletedHaikus for user:", user.id);
       return resetAllCompletedHaikus(user.id);
     },
     onSuccess: () => {
-      console.log("Invalidating all queries after reset all");
-      queryClient.invalidateQueries({ queryKey: ['completed_haikus', user?.id] });
+      console.log("RESET ALL - Invalidating ALL queries");
+      
+      // Use invalidateQueries with broader key to invalidate all related queries
+      queryClient.invalidateQueries();
+      
+      // Force clean the query cache for completed_haikus specifically
+      queryClient.removeQueries({ queryKey: ['completed_haikus'] });
+      queryClient.removeQueries({ queryKey: ['completed_haikus', user?.id] });
+      
+      // Explicitly refetch both queries to ensure fresh data
+      queryClient.refetchQueries({ queryKey: ['haikus'] });
+      queryClient.refetchQueries({ queryKey: ['completed_haikus', user?.id] });
+      
       toast({
         title: "All progress reset",
         description: "All your solved haikus have been reset successfully.",
