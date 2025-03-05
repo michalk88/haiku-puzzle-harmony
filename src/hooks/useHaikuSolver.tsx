@@ -51,16 +51,22 @@ export function useHaikuSolver({
   // Update current haiku reference when it changes
   useEffect(() => {
     updateCurrentHaikuRef(currentHaiku?.id || null);
-  }, [currentHaiku]);
+  }, [currentHaiku, updateCurrentHaikuRef]);
 
   // Save haiku when solved
   useEffect(() => {
-    saveHaiku();
-  }, [isSolved, currentHaiku]);
+    if (isSolved && currentHaiku) {
+      saveHaiku();
+    }
+  }, [isSolved, currentHaiku, saveHaiku]);
 
-  // Handle continuing to next haiku
+  // Handle continuing to next haiku - this is only called when the user
+  // explicitly clicks the Continue button
   const handleContinue = () => {
+    // First reset the current game state
     handleNextHaiku();
+    
+    // Then navigate to the next unsolved haiku
     goToNextUnsolved();
   };
 
