@@ -74,6 +74,7 @@ export const useHaikuData = () => {
     onSuccess: () => {
       console.log("Invalidating completed_haikus query after reset");
       queryClient.invalidateQueries({ queryKey: ['completed_haikus', user?.id] });
+      queryClient.refetchQueries({ queryKey: ['haikus'] });
     },
     onError: (error) => {
       console.error("Error in resetMutation:", error);
@@ -89,22 +90,26 @@ export const useHaikuData = () => {
     mutationFn: async () => {
       if (!user) throw new Error("User must be authenticated");
       console.log("Starting resetAllCompletedHaikus for user:", user.id);
-      return resetAllCompletedHaikus(user.id);
+      await resetAllCompletedHaikus(user.id);
+      return true; // Ensure we return something for the mutation
     },
     onSuccess: () => {
-      console.log("RESET ALL - Invalidating ALL queries");
+      console.log("RESET ALL - Clearing and invalidating ALL queries");
       
-      // Force clean the query cache completely
-      queryClient.clear();
-      
-      // Set empty data for completed haikus explicitly
+      // First, set empty data for completed haikus explicitly
       queryClient.setQueryData(['completed_haikus', user?.id], []);
       
-      // Wait a bit and then refetch everything
+      // Remove all queries from cache to ensure fresh data
+      queryClient.removeQueries({ queryKey: ['completed_haikus'] });
+      
+      // Force invalidate all queries to trigger refetches
+      queryClient.invalidateQueries();
+      
+      // Force refetch haikus data
       setTimeout(() => {
-        console.log("Refetching all data after reset");
-        queryClient.refetchQueries({ queryKey: ['haikus'] });
-        queryClient.refetchQueries({ queryKey: ['completed_haikus', user?.id] });
+        console.log("Force refetching all data after reset");
+        refetchHaikus();
+        refetchCompletedHaikus();
       }, 100);
       
       toast({
