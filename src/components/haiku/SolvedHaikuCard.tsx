@@ -23,7 +23,7 @@ const SolvedHaikuCard = ({ id, title, words }: SolvedHaikuCardProps) => {
       className="animate-fade-in border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200"
     >
       <CardContent className="p-6 sm:p-8 space-y-6">
-        <h2 className="text-xl font-medium text-center text-primary-900">
+        <h2 className="text-xl font-medium text-center text-gray-900">
           {title}
         </h2>
         <div className="text-lg text-center space-y-4 text-gray-700">

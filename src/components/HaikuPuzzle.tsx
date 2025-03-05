@@ -88,7 +88,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     return <LoadingState />;
   }
 
-  // We'll no longer auto-navigate if the current haiku is completed
+  // Important: We'll no longer auto-navigate if the current haiku is completed
   // This prevents the auto-solving behavior. Users need to manually continue.
 
   const showSolvedState = isCompleted || isSolved;

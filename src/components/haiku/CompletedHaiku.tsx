@@ -16,7 +16,7 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
 
   return (
     <div className="flex flex-col items-center">
-      <div className="my-8 sm:my-10 flex flex-col items-center gap-6 sm:gap-8 mb-16">
+      <div className="my-8 sm:my-10 flex flex-col items-center gap-6 sm:gap-8 mb-14 sm:mb-16">
         {lines.map((line, index) => (
           <div 
             key={index} 
@@ -33,7 +33,7 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
               line.map((word, wordIndex) => (
                 <span
                   key={`${word}-${wordIndex}`}
-                  className="text-xl sm:text-2xl text-gray-900 font-normal"
+                  className="text-lg sm:text-xl text-gray-900 font-normal"
                 >
                   {word}
                 </span>
@@ -44,13 +44,15 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
           </div>
         ))}
       </div>
-      <Button
-        onClick={onNextHaiku}
-        className="bg-emerald-500 hover:bg-emerald-600 text-white w-full max-w-md px-8 py-6 h-auto text-lg font-medium rounded-md"
-      >
-        Continue
-        <ChevronRight className="h-5 w-5 ml-1" />
-      </Button>
+      <div className="w-full max-w-md text-center">
+        <Button
+          onClick={onNextHaiku}
+          className="haiku-action-button primary w-full sm:w-auto flex items-center justify-center gap-2"
+        >
+          Continue
+          <ChevronRight className="h-5 w-5" />
+        </Button>
+      </div>
     </div>
   );
 };
