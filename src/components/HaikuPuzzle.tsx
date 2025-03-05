@@ -18,6 +18,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const initialNavigationDoneRef = useRef(false);
+  const autoNavigationAttemptedRef = useRef(false);
   
   // Hook for haiku navigation and selection
   const {
@@ -44,6 +45,21 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     
     return () => clearTimeout(timer);
   }, [user, isLoadingHaikus, navigate]);
+
+  // Automatically navigate to next unsolved haiku if current one is already completed
+  useEffect(() => {
+    if (
+      !isLoadingHaikus && 
+      !isLoadingCompleted && 
+      isCompleted && 
+      !autoNavigationAttemptedRef.current && 
+      availableHaikus.length > 0
+    ) {
+      console.log("Auto-navigating to next unsolved haiku...");
+      autoNavigationAttemptedRef.current = true;
+      goToNextUnsolved();
+    }
+  }, [isCompleted, isLoadingHaikus, isLoadingCompleted, availableHaikus, goToNextUnsolved]);
 
   // Hook for haiku solving and completion
   const {
@@ -88,8 +104,10 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     return <LoadingState />;
   }
 
-  // Important: We'll no longer auto-navigate if the current haiku is completed
-  // This prevents the auto-solving behavior. Users need to manually continue.
+  // Reset the auto-navigation flag when showing a new haiku
+  if (!isCompleted && autoNavigationAttemptedRef.current) {
+    autoNavigationAttemptedRef.current = false;
+  }
 
   const showSolvedState = isCompleted || isSolved;
   

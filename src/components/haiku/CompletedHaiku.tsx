@@ -44,10 +44,10 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
           </div>
         ))}
       </div>
-      <div className="w-full max-w-md text-center">
+      <div className="w-full flex justify-center">
         <Button
           onClick={onNextHaiku}
-          className="haiku-action-button primary w-full sm:w-auto flex items-center justify-center gap-2"
+          className="haiku-action-button primary flex items-center justify-center gap-2 mx-auto"
         >
           Continue
           <ChevronRight className="h-5 w-5" />
