@@ -4,6 +4,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+// Define the interface for the haiku data
+interface Haiku {
+  id: string;
+  title: string;
+  line1_words: string[];
+  line2_words: string[];
+  line3_words: string[];
+  created_at: string;
+}
+
+// Define the interface for completed haiku data
+interface CompletedHaiku {
+  id: string;
+  user_id: string;
+  haiku_id: string;
+  line1_arrangement: string[];
+  line2_arrangement: string[];
+  line3_arrangement: string[];
+  created_at: string;
+  originalHaiku?: Haiku;
+}
+
 export const useHaikuData = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -79,7 +101,7 @@ export const useHaikuData = () => {
         });
         
         console.log("Fetched and merged completed haikus:", mergedData.length);
-        return mergedData;
+        return mergedData as CompletedHaiku[];
       }
       
       return completedData || [];
