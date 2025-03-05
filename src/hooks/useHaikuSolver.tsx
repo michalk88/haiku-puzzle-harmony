@@ -54,35 +54,34 @@ export function useHaikuSolver({
   useEffect(() => {
     const saveHaiku = async () => {
       if (isSolved && currentHaiku && !didSaveCurrentHaiku.current) {
-        // Get the current lines from the game ref
-        const currentLines = gameRef.current?.getCurrentLines() || solvedLines;
-        console.log("Current lines for haiku:", currentLines);
-        
-        // Check if we have actual content in the lines
-        const hasContent = currentLines.some(line => line && line.length > 0);
-        
-        if (hasContent) {
-          console.log("Saving solved haiku with ID:", currentHaiku.id);
-          console.log("Saving solved haiku with lines:", currentLines);
+        try {
+          // Get the current lines from the game ref
+          const currentLines = gameRef.current?.getCurrentLines() || solvedLines;
+          console.log(`Saving solved haiku with ID: ${currentHaiku.id}, Title: ${currentHaiku.title}`);
+          console.log("Current lines for haiku:", currentLines);
           
-          // Ensure we're creating deep copies of the arrays
-          const line1 = currentLines[0] ? [...currentLines[0]] : [];
-          const line2 = currentLines[1] ? [...currentLines[1]] : [];
-          const line3 = currentLines[2] ? [...currentLines[2]] : [];
+          // Check if we have actual content in the lines
+          const hasContent = currentLines.some(line => line && line.length > 0);
           
-          console.log("Saving line arrangements:", {
-            line1,
-            line2,
-            line3
-          });
-          
-          // Mark as saved to avoid duplicate saves
-          didSaveCurrentHaiku.current = true;
-          
-          // Update solvedLines in state for display
-          setSolvedLines([line1, line2, line3]);
-          
-          try {
+          if (hasContent) {
+            // Ensure we're creating deep copies of the arrays
+            const line1 = currentLines[0] ? [...currentLines[0]] : [];
+            const line2 = currentLines[1] ? [...currentLines[1]] : [];
+            const line3 = currentLines[2] ? [...currentLines[2]] : [];
+            
+            console.log("Saving line arrangements:", {
+              haiku_id: currentHaiku.id,
+              line1,
+              line2,
+              line3
+            });
+            
+            // Mark as saved to avoid duplicate saves
+            didSaveCurrentHaiku.current = true;
+            
+            // Update solvedLines in state for display
+            setSolvedLines([line1, line2, line3]);
+            
             // Save the haiku to Supabase
             await saveCompletedHaiku.mutateAsync({
               haiku_id: currentHaiku.id,
@@ -96,24 +95,21 @@ export function useHaikuSolver({
               description: "Your solution has been saved.",
             });
             
-            // Force refetch completed haikus to update the count
+            // Force refetch completed haikus to update the data
             await refetchCompletedHaikus();
             
             console.log("Haiku saved successfully");
-            
-            // REMOVED: We don't automatically navigate to next haiku anymore
-            // User must click the Continue button
-          } catch (error) {
-            console.error("Error saving haiku:", error);
-            didSaveCurrentHaiku.current = false;
-            toast({
-              title: "Error saving haiku",
-              description: "There was an error saving your solution.",
-              variant: "destructive"
-            });
+          } else {
+            console.warn("Not saving haiku - lines are empty");
           }
-        } else {
-          console.warn("Not saving haiku - lines are empty");
+        } catch (error) {
+          console.error("Error saving haiku:", error);
+          didSaveCurrentHaiku.current = false;
+          toast({
+            title: "Error saving haiku",
+            description: "There was an error saving your solution.",
+            variant: "destructive"
+          });
         }
       }
     };

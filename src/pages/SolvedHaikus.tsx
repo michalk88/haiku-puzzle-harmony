@@ -10,26 +10,29 @@ import { useAuth } from '@/context/AuthContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import NoHaikuAvailable from '@/components/haiku/NoHaikusAvailable';
-import { CompletedHaiku, Haiku } from '@/types/haiku';
+import { CompletedHaiku } from '@/types/haiku';
 
 interface SolvedHaikuDisplay {
   id: string;
   title: string;
   lines: string[][];
+  haiku_id: string;
 }
 
 const SolvedHaikus = () => {
-  const { completedHaikus, isLoadingCompleted } = useHaikuData();
+  const { completedHaikus, isLoadingCompleted, refetchCompletedHaikus } = useHaikuData();
   const [solvedCount, setSolvedCount] = useState(0);
   const [displayHaikus, setDisplayHaikus] = useState<SolvedHaikuDisplay[]>([]);
   const navigate = useNavigate();
   const { user } = useAuth();
   
+  // Force refetch when component mounts to ensure fresh data
   useEffect(() => {
     if (user) {
       console.log("SolvedHaikus: Forcing refetch of completed haikus");
+      refetchCompletedHaikus();
     }
-  }, [user]);
+  }, [user, refetchCompletedHaikus]);
 
   useEffect(() => {
     if (!user && !isLoadingCompleted) {
@@ -43,57 +46,52 @@ const SolvedHaikus = () => {
       console.log("Processing haikus for display:", completedHaikus.length, "completions");
       
       // Create display data from the completed haikus and their corresponding original haiku data
-      const solvedHaikusList: SolvedHaikuDisplay[] = (completedHaikus as CompletedHaiku[])
+      const solvedHaikusList: SolvedHaikuDisplay[] = completedHaikus
         .filter(completion => completion.originalHaiku) // Make sure we have the original haiku data
         .map(completion => {
-          const haiku = completion.originalHaiku;
+          const originalHaiku = completion.originalHaiku;
           
-          if (!haiku) {
+          if (!originalHaiku) {
             console.warn(`No haiku found for id: ${completion.haiku_id}`);
             return null;
           }
 
-          // Important: Use the user's arrangement from THIS specific completion
-          // Only fall back to original words if the arrangement is empty
-          let line1, line2, line3;
-          
-          // Check if the completion has line arrangements with data
-          if (completion.line1_arrangement && completion.line1_arrangement.length > 0) {
-            line1 = [...completion.line1_arrangement]; // Use spread to create a new array
-          } else {
-            line1 = [...haiku.line1_words]; // Fallback to original words
-          }
-          
-          if (completion.line2_arrangement && completion.line2_arrangement.length > 0) {
-            line2 = [...completion.line2_arrangement]; // Use spread to create a new array
-          } else {
-            line2 = [...haiku.line2_words]; // Fallback to original words
-          }
-          
-          if (completion.line3_arrangement && completion.line3_arrangement.length > 0) {
-            line3 = [...completion.line3_arrangement]; // Use spread to create a new array
-          } else {
-            line3 = [...haiku.line3_words]; // Fallback to original words
-          }
-
-          console.log(`Processing haiku ${haiku.title} (ID: ${completion.id})`);
-          console.log("Line 1:", line1);
-          console.log("Line 2:", line2);
-          console.log("Line 3:", line3);
+          console.log(`Processing haiku ID: ${completion.haiku_id}, Title: ${originalHaiku.title}`);
+          console.log("Line1 arrangement:", completion.line1_arrangement);
+          console.log("Line2 arrangement:", completion.line2_arrangement);
+          console.log("Line3 arrangement:", completion.line3_arrangement);
 
           return {
             id: completion.id,
-            title: haiku.title || "Untitled Haiku",
-            lines: [line1, line2, line3]
+            haiku_id: completion.haiku_id,
+            title: originalHaiku.title || "Untitled Haiku",
+            lines: [
+              completion.line1_arrangement || [],
+              completion.line2_arrangement || [],
+              completion.line3_arrangement || []
+            ]
           };
         })
         .filter(Boolean) as SolvedHaikuDisplay[];
       
       console.log("Processed solved haikus for display:", solvedHaikusList.length);
+      
+      // Log each haiku for debugging
+      solvedHaikusList.forEach((haiku, index) => {
+        console.log(`Haiku ${index + 1}:`, {
+          id: haiku.id,
+          haiku_id: haiku.haiku_id,
+          title: haiku.title,
+          line1: haiku.lines[0],
+          line2: haiku.lines[1],
+          line3: haiku.lines[2]
+        });
+      });
+      
       setDisplayHaikus(solvedHaikusList);
       
       // Update the solved count
-      setSolvedCount(completedHaikus.length);
+      setSolvedCount(solvedHaikusList.length);
     }
   }, [completedHaikus, isLoadingCompleted]);
 
@@ -130,7 +128,7 @@ const SolvedHaikus = () => {
                       <h2 className="text-xl font-medium text-center text-primary-900">
                         {haiku.title}
                       </h2>
-                      <div className="text-lg text-center space-y-2 text-gray-700 whitespace-nowrap">
+                      <div className="text-lg text-center space-y-2 text-gray-700">
                         {haiku.lines[0]?.length > 0 && (
                           <p>{haiku.lines[0].join(' ')}</p>
                         )}

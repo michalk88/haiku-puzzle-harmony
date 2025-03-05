@@ -24,52 +24,32 @@ export const fetchCompletedHaikus = async (userId: string): Promise<CompletedHai
   
   console.log("Fetching completed haikus for user:", userId);
   
-  // First, get the completed haikus information
-  const { data: completedData, error: completedError } = await supabase
+  // Fetch completed haikus with a join to get original haiku data in one query
+  const { data, error } = await supabase
     .from('completed_haikus')
-    .select('*')
+    .select(`
+      *,
+      originalHaiku:haikus(*)
+    `)
     .eq('user_id', userId);
   
-  if (completedError) {
-    console.error("Error fetching completed haikus:", completedError);
-    throw completedError;
+  if (error) {
+    console.error("Error fetching completed haikus:", error);
+    throw error;
   }
   
-  // Then, for each completed haiku, fetch the original haiku data
-  if (completedData && completedData.length > 0) {
-    const haikuIds = completedData.map(ch => ch.haiku_id);
-    
-    const { data: haikuData, error: haikuError } = await supabase
-      .from('haikus')
-      .select('*')
-      .in('id', haikuIds);
-    
-    if (haikuError) {
-      console.error("Error fetching haiku details:", haikuError);
-      throw haikuError;
-    }
-    
-    // Merge the data together - store original haiku as "originalHaiku" property
-    const mergedData = completedData.map(completed => {
-      const originalHaiku = haikuData?.find(h => h.id === completed.haiku_id);
-      
-      // Debug logging for each completed haiku
-      console.log(`Processing completed haiku ${completed.id} for haiku_id ${completed.haiku_id}`);
-      console.log("Line 1 arrangement:", completed.line1_arrangement);
-      console.log("Line 2 arrangement:", completed.line2_arrangement);
-      console.log("Line 3 arrangement:", completed.line3_arrangement);
-      
-      return {
-        ...completed,
-        originalHaiku: originalHaiku
-      };
-    });
-    
-    console.log("Fetched and merged completed haikus:", mergedData.length);
-    return mergedData as CompletedHaiku[];
-  }
+  console.log("Fetched completed haikus with join:", data?.length);
   
-  return completedData || [];
+  // Process the data to match the expected format
+  const processedData = data?.map(item => {
+    return {
+      ...item,
+      originalHaiku: item.originalHaiku
+    };
+  }) || [];
+  
+  console.log("Processed completed haikus data:", processedData.length);
+  return processedData as CompletedHaiku[];
 };
 
 export const saveCompletedHaiku = async (
