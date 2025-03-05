@@ -44,12 +44,17 @@ export function useHaikuSolver({
 
   const didSaveCurrentHaiku = useRef(false);
   const saveAttemptsRef = useRef(0);
+  const currentHaikuIdRef = useRef<string | null>(null);
   const { toast } = useToast();
 
   // Reset the save tracking when moving to a new haiku
   useEffect(() => {
-    didSaveCurrentHaiku.current = false;
-    saveAttemptsRef.current = 0;
+    if (currentHaiku?.id !== currentHaikuIdRef.current) {
+      console.log(`Moving to a new haiku: ${currentHaiku?.id} (was: ${currentHaikuIdRef.current})`);
+      didSaveCurrentHaiku.current = false;
+      saveAttemptsRef.current = 0;
+      currentHaikuIdRef.current = currentHaiku?.id || null;
+    }
   }, [currentHaiku]);
 
   // Save the current haiku to Supabase when it's solved
@@ -68,14 +73,19 @@ export function useHaikuSolver({
           saveAttemptsRef.current += 1;
           console.log(`Save attempt #${saveAttemptsRef.current}`);
           
-          // Check if we have actual content in the lines
-          const hasContent = currentLines.some(line => line && line.length > 0);
+          // Validate all lines have content
+          const line1HasContent = currentLines[0] && currentLines[0].length > 0;
+          const line2HasContent = currentLines[1] && currentLines[1].length > 0;
+          const line3HasContent = currentLines[2] && currentLines[2].length > 0;
           
-          if (hasContent) {
+          // All lines must have content to be considered valid
+          const hasAllContent = line1HasContent && line2HasContent && line3HasContent;
+          
+          if (hasAllContent) {
             // Ensure we're creating deep copies of the arrays
-            const line1 = currentLines[0] ? [...currentLines[0]] : [];
-            const line2 = currentLines[1] ? [...currentLines[1]] : [];
-            const line3 = currentLines[2] ? [...currentLines[2]] : [];
+            const line1 = [...currentLines[0]];
+            const line2 = [...currentLines[1]];
+            const line3 = [...currentLines[2]];
             
             console.log("Saving line arrangements:", {
               haiku_id: currentHaiku.id,
@@ -108,14 +118,26 @@ export function useHaikuSolver({
             
             console.log("Haiku saved successfully");
           } else {
-            console.warn("Not saving haiku - lines are empty");
+            console.warn("Not saving haiku - one or more lines are empty");
+            console.warn(`Line 1 has content: ${line1HasContent}`);
+            console.warn(`Line 2 has content: ${line2HasContent}`);
+            console.warn(`Line 3 has content: ${line3HasContent}`);
+            
+            toast({
+              title: "Haiku incomplete",
+              description: "Cannot save incomplete haiku. Please complete all lines.",
+              variant: "destructive"
+            });
+            
+            // Reset solved state to allow trying again
+            didSaveCurrentHaiku.current = false;
           }
         } catch (error) {
           console.error("Error saving haiku:", error);
           didSaveCurrentHaiku.current = false;
           toast({
             title: "Error saving haiku",
-            description: "There was an error saving your solution.",
+            description: "There was an error saving your solution. Please try again.",
             variant: "destructive"
           });
         }
@@ -132,7 +154,6 @@ export function useHaikuSolver({
     handleWordReturn(word);
   };
 
-  // Handle verification of haiku solution
   const handleVerification = (currentLines: string[][], solution: string[][]) => {
     console.log("Handling verification with lines:", JSON.stringify(currentLines));
     
@@ -143,7 +164,6 @@ export function useHaikuSolver({
     handleVerify(currentLines, solution);
   };
 
-  // Handle next haiku after solving
   const handleContinue = () => {
     handleNextHaiku();
     goToNextUnsolved();

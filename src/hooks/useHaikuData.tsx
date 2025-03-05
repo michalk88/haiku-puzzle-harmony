@@ -2,7 +2,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { fetchHaikus, fetchCompletedHaikus, saveCompletedHaiku as saveHaiku, resetCompletedHaiku } from "@/api/haikuApi";
+import { 
+  fetchHaikus, 
+  fetchCompletedHaikus, 
+  saveCompletedHaiku as saveHaiku, 
+  resetCompletedHaiku, 
+  resetAllCompletedHaikus 
+} from "@/api/haikuApi";
 import { Haiku, CompletedHaiku } from "@/types/haiku";
 
 export const useHaikuData = () => {
@@ -79,6 +85,29 @@ export const useHaikuData = () => {
     }
   });
 
+  const resetAllMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("User must be authenticated");
+      return resetAllCompletedHaikus(user.id);
+    },
+    onSuccess: () => {
+      console.log("Invalidating all queries after reset all");
+      queryClient.invalidateQueries({ queryKey: ['completed_haikus', user?.id] });
+      toast({
+        title: "All progress reset",
+        description: "All your solved haikus have been reset successfully.",
+      });
+    },
+    onError: (error) => {
+      console.error("Error in resetAllMutation:", error);
+      toast({
+        title: "Error resetting progress",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    }
+  });
+
   return {
     haikus,
     completedHaikus,
@@ -86,6 +115,7 @@ export const useHaikuData = () => {
     isLoadingCompleted,
     saveCompletedHaiku,
     resetMutation,
+    resetAllMutation,
     refetchHaikus,
     refetchCompletedHaikus
   };

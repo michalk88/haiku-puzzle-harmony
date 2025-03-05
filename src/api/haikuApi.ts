@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Haiku, CompletedHaiku } from "@/types/haiku";
 
@@ -203,4 +202,21 @@ export const resetCompletedHaiku = async (userId: string, haikuId: string): Prom
   }
   
   console.log("Successfully reset completed haiku");
+};
+
+export const resetAllCompletedHaikus = async (userId: string): Promise<void> => {
+  if (!userId) throw new Error("User must be authenticated");
+  
+  console.log("Resetting ALL completed haikus for user:", userId);
+  const { error } = await supabase
+    .from('completed_haikus')
+    .delete()
+    .eq('user_id', userId);
+  
+  if (error) {
+    console.error("Error resetting all completed haikus:", error);
+    throw error;
+  }
+  
+  console.log("Successfully reset all completed haikus for user");
 };
