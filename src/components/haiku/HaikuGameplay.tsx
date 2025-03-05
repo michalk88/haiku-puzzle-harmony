@@ -43,8 +43,8 @@ const HaikuGameplay: React.FC<HaikuGameplayProps> = ({
   };
 
   return (
-    <>
-      <div className="w-full overflow-visible">
+    <div className="flex flex-col">
+      <div className="w-full overflow-visible mb-16">
         <HaikuGame
           ref={gameRef}
           solution={[
@@ -69,7 +69,7 @@ const HaikuGameplay: React.FC<HaikuGameplayProps> = ({
           onWordTap={handleWordTap}
         />
       </div>
-    </>
+    </div>
   );
 };
 

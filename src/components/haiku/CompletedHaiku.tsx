@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React from "react";
 import { Button } from "../ui/button";
 import { ChevronRight } from "lucide-react";
 
@@ -11,44 +11,16 @@ interface CompletedHaikuProps {
 const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) => {
   console.log("CompletedHaiku rendering with lines:", lines);
   
-  const getLineSize = (line: string[] | null) => {
-    if (!line || line.length === 0) return "base";
-    const totalLength = line.join(' ').length;
-    if (totalLength > 25) return "sm";
-    if (totalLength > 20) return "base";
-    return "lg";
-  };
-
-  const sizes = useMemo(() => 
-    lines.map(line => getLineSize(line)), 
-    [lines]
-  );
-
-  const sizeClasses = {
-    sm: "text-lg sm:text-xl",
-    base: "text-xl sm:text-2xl",
-    lg: "text-2xl sm:text-3xl"
-  };
-
-  // Filter out empty lines
-  const validLines = lines.map((line, index) => {
-    if (!line || line.length === 0) {
-      console.warn(`CompletedHaiku: Line ${index} is empty or null`);
-      return null;
-    }
-    return line;
-  });
-
-  const hasValidLines = validLines.some(line => line !== null && line.length > 0);
+  const hasValidLines = lines.some(line => line !== null && line.length > 0);
   console.log("CompletedHaiku: hasValidLines:", hasValidLines);
 
   return (
     <div className="flex flex-col items-center">
-      <div className="my-6 sm:my-8 flex flex-col items-center gap-4 sm:gap-6 mb-12">
+      <div className="my-8 sm:my-10 flex flex-col items-center gap-6 sm:gap-8 mb-16">
         {lines.map((line, index) => (
           <div 
             key={index} 
-            className={`flex flex-nowrap gap-2 sm:gap-3 items-center justify-center overflow-x-auto px-2 
+            className={`flex flex-wrap gap-2 sm:gap-3 items-center justify-center w-full 
               transition-all duration-1000 ease-out opacity-0 translate-y-4 animate-fade-in
               ${index === 1 ? 'animate-delay-[400ms]' : ''}
               ${index === 2 ? 'animate-delay-[800ms]' : ''}`}
@@ -61,7 +33,7 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
               line.map((word, wordIndex) => (
                 <span
                   key={`${word}-${wordIndex}`}
-                  className={`${sizeClasses[sizes[index]]} text-gray-900 font-normal`}
+                  className="text-xl sm:text-2xl text-gray-900 font-normal"
                 >
                   {word}
                 </span>
@@ -74,10 +46,10 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
       </div>
       <Button
         onClick={onNextHaiku}
-        className="bg-emerald-500 hover:bg-emerald-600 text-white px-8"
+        className="bg-emerald-500 hover:bg-emerald-600 text-white w-full max-w-md px-8 py-6 h-auto text-lg font-medium rounded-md"
       >
         Continue
-        <ChevronRight className="h-4 w-4 ml-1" />
+        <ChevronRight className="h-5 w-5 ml-1" />
       </Button>
     </div>
   );

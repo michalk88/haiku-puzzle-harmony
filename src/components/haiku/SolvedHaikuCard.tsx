@@ -22,11 +22,11 @@ const SolvedHaikuCard = ({ id, title, words }: SolvedHaikuCardProps) => {
       key={id}
       className="animate-fade-in border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200"
     >
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="p-6 sm:p-8 space-y-6">
         <h2 className="text-xl font-medium text-center text-primary-900">
           {title}
         </h2>
-        <div className="text-lg text-center space-y-2 text-gray-700">
+        <div className="text-lg text-center space-y-4 text-gray-700">
           {line1 && <p>{line1}</p>}
           {line2 && <p>{line2}</p>}
           {line3 && <p>{line3}</p>}

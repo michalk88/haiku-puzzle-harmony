@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -20,4 +21,28 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+/* Hide scrollbars on haiku lines */
+.haiku-line-container {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.haiku-line-container::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Animation delay utilities */
+.animate-delay-\[400ms\] {
+  animation-delay: 400ms;
+}
+
+.animate-delay-\[800ms\] {
+  animation-delay: 800ms;
+}
+
+/* Consistent button sizing */
+.haiku-action-button {
+  @apply w-full max-w-md px-8 py-6 h-auto text-lg font-medium rounded-md;
 }
