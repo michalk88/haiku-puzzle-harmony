@@ -43,11 +43,13 @@ export function useHaikuSolver({
   } | null>(null);
 
   const didSaveCurrentHaiku = useRef(false);
+  const saveAttemptsRef = useRef(0);
   const { toast } = useToast();
 
   // Reset the save tracking when moving to a new haiku
   useEffect(() => {
     didSaveCurrentHaiku.current = false;
+    saveAttemptsRef.current = 0;
   }, [currentHaiku]);
 
   // Save the current haiku to Supabase when it's solved
@@ -57,8 +59,14 @@ export function useHaikuSolver({
         try {
           // Get the current lines from the game ref
           const currentLines = gameRef.current?.getCurrentLines() || solvedLines;
-          console.log(`Saving solved haiku with ID: ${currentHaiku.id}, Title: ${currentHaiku.title}`);
-          console.log("Current lines for haiku:", currentLines);
+          
+          console.log(`========== ATTEMPTING TO SAVE HAIKU ==========`);
+          console.log(`Haiku ID: ${currentHaiku.id}, Title: ${currentHaiku.title}`);
+          console.log("Current lines for haiku:", JSON.stringify(currentLines));
+          
+          // Increment save attempts
+          saveAttemptsRef.current += 1;
+          console.log(`Save attempt #${saveAttemptsRef.current}`);
           
           // Check if we have actual content in the lines
           const hasContent = currentLines.some(line => line && line.length > 0);
@@ -71,9 +79,9 @@ export function useHaikuSolver({
             
             console.log("Saving line arrangements:", {
               haiku_id: currentHaiku.id,
-              line1,
-              line2,
-              line3
+              line1: JSON.stringify(line1),
+              line2: JSON.stringify(line2),
+              line3: JSON.stringify(line3)
             });
             
             // Mark as saved to avoid duplicate saves
@@ -82,7 +90,7 @@ export function useHaikuSolver({
             // Update solvedLines in state for display
             setSolvedLines([line1, line2, line3]);
             
-            // Save the haiku to Supabase
+            // Save the haiku to Supabase with proper haiku_id
             await saveCompletedHaiku.mutateAsync({
               haiku_id: currentHaiku.id,
               line1_arrangement: line1,
@@ -126,7 +134,7 @@ export function useHaikuSolver({
 
   // Handle verification of haiku solution
   const handleVerification = (currentLines: string[][], solution: string[][]) => {
-    console.log("Handling verification with lines:", currentLines);
+    console.log("Handling verification with lines:", JSON.stringify(currentLines));
     
     // Deep copy the lines to avoid reference issues
     const linesDeepCopy = currentLines.map(line => line ? [...line] : []);

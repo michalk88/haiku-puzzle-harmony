@@ -45,9 +45,18 @@ const SolvedHaikus = () => {
     if (completedHaikus && !isLoadingCompleted) {
       console.log("Processing haikus for display:", completedHaikus.length, "completions");
       
+      // Create an object to deduplicate haikus by ID for debugging
+      const uniqueHaikus = new Map();
+      
       // Create display data from the completed haikus and their corresponding original haiku data
       const solvedHaikusList: SolvedHaikuDisplay[] = completedHaikus
-        .filter(completion => completion.originalHaiku) // Make sure we have the original haiku data
+        .filter(completion => {
+          if (!completion.originalHaiku) {
+            console.warn(`No originalHaiku found for completion with haiku_id: ${completion.haiku_id}`);
+            return false;
+          }
+          return true;
+        })
         .map(completion => {
           const originalHaiku = completion.originalHaiku;
           
@@ -56,31 +65,47 @@ const SolvedHaikus = () => {
             return null;
           }
 
-          console.log(`Processing haiku ID: ${completion.haiku_id}, Title: ${originalHaiku.title}`);
-          console.log("Line1 arrangement:", completion.line1_arrangement);
-          console.log("Line2 arrangement:", completion.line2_arrangement);
-          console.log("Line3 arrangement:", completion.line3_arrangement);
+          // Log detailed information for debugging
+          console.log(`--- DETAILED HAIKU INFO ---`);
+          console.log(`Haiku ID: ${completion.haiku_id}`);
+          console.log(`Title: ${originalHaiku.title}`);
+          console.log(`Completion ID: ${completion.id}`);
+          
+          // Log the actual line arrangements
+          console.log(`Line1 arrangement (${completion.line1_arrangement?.length || 0} words):`, 
+            JSON.stringify(completion.line1_arrangement));
+          console.log(`Line2 arrangement (${completion.line2_arrangement?.length || 0} words):`, 
+            JSON.stringify(completion.line2_arrangement));
+          console.log(`Line3 arrangement (${completion.line3_arrangement?.length || 0} words):`, 
+            JSON.stringify(completion.line3_arrangement));
+          
+          // Log the full object for comparison
+          console.log(`Full completion object:`, JSON.stringify(completion, null, 2));
+          
+          // Track unique haikus for debugging
+          uniqueHaikus.set(completion.haiku_id, originalHaiku.title);
+
+          // Make sure line1_arrangement, line2_arrangement, line3_arrangement are valid arrays
+          const line1 = Array.isArray(completion.line1_arrangement) ? completion.line1_arrangement : [];
+          const line2 = Array.isArray(completion.line2_arrangement) ? completion.line2_arrangement : [];
+          const line3 = Array.isArray(completion.line3_arrangement) ? completion.line3_arrangement : [];
 
           return {
             id: completion.id,
             haiku_id: completion.haiku_id,
             title: originalHaiku.title || "Untitled Haiku",
-            lines: [
-              completion.line1_arrangement || [],
-              completion.line2_arrangement || [],
-              completion.line3_arrangement || []
-            ]
+            lines: [line1, line2, line3]
           };
         })
         .filter(Boolean) as SolvedHaikuDisplay[];
       
       console.log("Processed solved haikus for display:", solvedHaikusList.length);
+      console.log("Unique haikus in completions:", [...uniqueHaikus.entries()]);
       
-      // Log each haiku for debugging
+      // Log each processed haiku for verification
       solvedHaikusList.forEach((haiku, index) => {
-        console.log(`Haiku ${index + 1}:`, {
+        console.log(`Processed Haiku ${index + 1} (${haiku.haiku_id}):`, {
           id: haiku.id,
-          haiku_id: haiku.haiku_id,
           title: haiku.title,
           line1: haiku.lines[0],
           line2: haiku.lines[1],
