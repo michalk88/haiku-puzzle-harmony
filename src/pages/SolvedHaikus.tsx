@@ -7,7 +7,6 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useHaikuData } from '@/hooks/useHaikuData';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import NoHaikuAvailable from '@/components/haiku/NoHaikusAvailable';
@@ -42,35 +41,37 @@ const SolvedHaikus = () => {
     if (completedHaikus && !isLoadingCompleted) {
       console.log("Processing haikus for display:", completedHaikus.length, "completions");
       
-      // Create display data directly from the joined query result
-      const solvedHaikusList: SolvedHaikuDisplay[] = completedHaikus.map(completion => {
-        // Get the haiku details from the joined data
-        const haiku = completion.haikus;
-        
-        if (!haiku) {
-          console.warn(`No haiku found for id: ${completion.haiku_id}`);
-          return null;
-        }
-
-        // For each line, use the user's arrangement if available, otherwise use the original words
-        const line1 = completion.line1_arrangement && completion.line1_arrangement.length > 0 
-          ? completion.line1_arrangement 
-          : haiku.line1_words;
+      // Create display data from the completed haikus and their corresponding original haiku data
+      const solvedHaikusList: SolvedHaikuDisplay[] = completedHaikus
+        .filter(completion => completion.haikus) // Make sure we have the original haiku data
+        .map(completion => {
+          const haiku = completion.haikus;
           
-        const line2 = completion.line2_arrangement && completion.line2_arrangement.length > 0 
-          ? completion.line2_arrangement 
-          : haiku.line2_words;
-          
-        const line3 = completion.line3_arrangement && completion.line3_arrangement.length > 0 
-          ? completion.line3_arrangement 
-          : haiku.line3_words;
+          if (!haiku) {
+            console.warn(`No haiku found for id: ${completion.haiku_id}`);
+            return null;
+          }
 
-        return {
-          id: completion.id,
-          title: haiku.title,
-          lines: [line1, line2, line3]
-        };
-      }).filter(Boolean);
+          // For each line, use the user's arrangement if available, otherwise use the original words
+          const line1 = completion.line1_arrangement && completion.line1_arrangement.length > 0 
+            ? completion.line1_arrangement 
+            : haiku.line1_words;
+            
+          const line2 = completion.line2_arrangement && completion.line2_arrangement.length > 0 
+            ? completion.line2_arrangement 
+            : haiku.line2_words;
+            
+          const line3 = completion.line3_arrangement && completion.line3_arrangement.length > 0 
+            ? completion.line3_arrangement 
+            : haiku.line3_words;
+
+          return {
+            id: completion.id,
+            title: haiku.title || "Untitled Haiku",
+            lines: [line1, line2, line3]
+          };
+        })
+        .filter(Boolean);
       
       console.log("Processed solved haikus for display:", solvedHaikusList.length);
       setDisplayHaikus(solvedHaikusList);

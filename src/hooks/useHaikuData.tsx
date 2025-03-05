@@ -43,32 +43,46 @@ export const useHaikuData = () => {
       }
       
       console.log("Fetching completed haikus for user:", user.id);
-      // Use a join to get the haiku details along with the completed haiku data
-      const { data, error } = await supabase
+      
+      // First, get the completed haikus information
+      const { data: completedData, error: completedError } = await supabase
         .from('completed_haikus')
-        .select(`
-          id,
-          haiku_id,
-          created_at,
-          line1_arrangement,
-          line2_arrangement,
-          line3_arrangement,
-          haikus:haiku_id (
-            id,
-            title,
-            line1_words,
-            line2_words,
-            line3_words
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id);
       
-      if (error) {
-        console.error("Error fetching completed haikus:", error);
-        throw error;
+      if (completedError) {
+        console.error("Error fetching completed haikus:", completedError);
+        throw completedError;
       }
-      console.log("Fetched completed haikus:", data?.length);
-      return data || [];
+      
+      // Then, for each completed haiku, fetch the original haiku data
+      if (completedData && completedData.length > 0) {
+        const haikuIds = completedData.map(ch => ch.haiku_id);
+        
+        const { data: haikuData, error: haikuError } = await supabase
+          .from('haikus')
+          .select('*')
+          .in('id', haikuIds);
+        
+        if (haikuError) {
+          console.error("Error fetching haiku details:", haikuError);
+          throw haikuError;
+        }
+        
+        // Merge the data together
+        const mergedData = completedData.map(completed => {
+          const originalHaiku = haikuData?.find(h => h.id === completed.haiku_id);
+          return {
+            ...completed,
+            haikus: originalHaiku
+          };
+        });
+        
+        console.log("Fetched and merged completed haikus:", mergedData.length);
+        return mergedData;
+      }
+      
+      return completedData || [];
     },
     enabled: !!user
   });
