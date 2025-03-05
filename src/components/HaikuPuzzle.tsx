@@ -20,6 +20,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   
   // Hook for haiku navigation and selection
   const {
+    haikus, // Make sure to destructure haikus from the hook
     currentHaiku,
     availableHaikus,
     isCompleted,
