@@ -53,7 +53,7 @@ export function useSaveHaiku({
           description: "Your solution has been saved.",
         });
         
-        // Force refetch completed haikus to update the data
+        // Only refetch the completed haikus after saving, but don't trigger navigation
         await refetchCompletedHaikus();
         
         console.log("Haiku saved successfully");

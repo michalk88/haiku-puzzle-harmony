@@ -1,17 +1,21 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import HaikuPuzzle from "@/components/HaikuPuzzle";
 import Navigation from "@/components/Navigation";
 import { useHaikuData } from "@/hooks/useHaikuData";
 
 const Index = () => {
   const [solvedCount, setSolvedCount] = useState(0);
+  const initialLoadDoneRef = useRef(false);
   const { completedHaikus, isLoadingCompleted, refetchCompletedHaikus } = useHaikuData();
 
-  // Force refetch when component mounts
+  // Force refetch when component mounts - but only once
   useEffect(() => {
-    console.log("Index: Forcing refetch of completed haikus");
-    refetchCompletedHaikus();
+    if (!initialLoadDoneRef.current) {
+      console.log("Index: Forcing initial refetch of completed haikus");
+      refetchCompletedHaikus();
+      initialLoadDoneRef.current = true;
+    }
   }, [refetchCompletedHaikus]);
 
   // Initialize solved count from completed haikus

@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useHaikuData } from "./useHaikuData";
 import { Haiku, CompletedHaiku } from "@/types/haiku";
 
@@ -10,6 +10,7 @@ export interface HaikuNavigationProps {
 export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps = {}) {
   const [availableHaikus, setAvailableHaikus] = useState<Haiku[]>([]);
   const [currentHaikuIndex, setCurrentHaikuIndex] = useState(0);
+  const navigationInProgressRef = useRef(false);
 
   const {
     haikus,
@@ -22,7 +23,7 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
 
   // Filter out completed haikus to get available ones
   useEffect(() => {
-    if (haikus && completedHaikus) {
+    if (haikus && completedHaikus && !navigationInProgressRef.current) {
       console.log("Filtering available haikus...");
       console.log("All haikus:", haikus.length);
       console.log("Completed haikus:", completedHaikus.length);
@@ -35,11 +36,6 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       console.log("Available haikus after filtering:", available.length);
       
       setAvailableHaikus(available);
-
-      // If current haiku is completed, move to next available one
-      if (currentHaikuIndex >= 0 && haikus[currentHaikuIndex] && completedIds.has(haikus[currentHaikuIndex].id)) {
-        goToNextUnsolved();
-      }
       
       // Sync the solvedCount with the parent component
       if (onSolvedCountChange) {
@@ -48,11 +44,14 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
         onSolvedCountChange(count);
       }
     }
-  }, [haikus, completedHaikus, currentHaikuIndex, onSolvedCountChange]);
+  }, [haikus, completedHaikus, onSolvedCountChange]);
 
-  // Find the next unsolved haiku
+  // Find the next unsolved haiku - but ONLY when explicitly requested
   const goToNextUnsolved = () => {
     if (!haikus || !completedHaikus) return;
+    
+    // Set flag to prevent multiple navigations
+    navigationInProgressRef.current = true;
     
     const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
     console.log("Going to next unsolved. Current index:", currentHaikuIndex);
@@ -77,6 +76,11 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       console.log("All haikus are solved");
       // We'll stay on the current page but display the NoHaikusAvailable component
     }
+    
+    // Clear navigation flag after a short delay to allow state to settle
+    setTimeout(() => {
+      navigationInProgressRef.current = false;
+    }, 100);
   };
 
   // Get current haiku information
