@@ -25,8 +25,10 @@ export function useSaveHaiku({
   const { toast } = useToast();
 
   const updateCurrentHaikuRef = (haikuId: string | null) => {
+    // Only reset save status if we're truly moving to a different haiku
     if (haikuId !== currentHaikuIdRef.current) {
       console.log(`Moving to a new haiku: ${haikuId} (was: ${currentHaikuIdRef.current})`);
+      // Reset all the tracking variables
       didSaveCurrentHaiku.current = false;
       saveAttemptsRef.current = 0;
       currentHaikuIdRef.current = haikuId;
@@ -58,7 +60,7 @@ export function useSaveHaiku({
         saveAttemptsRef.current += 1;
         console.log(`Save attempt #${saveAttemptsRef.current}`);
         
-        // Mark as saved to avoid duplicate saves
+        // Set the flag BEFORE saving to prevent concurrent save attempts
         didSaveCurrentHaiku.current = true;
         console.log(`didSaveCurrentHaiku flag set to: ${didSaveCurrentHaiku.current}`);
         
@@ -75,6 +77,7 @@ export function useSaveHaiku({
         
       } catch (error) {
         console.error("Error saving haiku:", error);
+        // Reset the flag if saving failed
         didSaveCurrentHaiku.current = false;
         console.log(`Save failed, didSaveCurrentHaiku reset to: ${didSaveCurrentHaiku.current}`);
         toast({
@@ -94,6 +97,7 @@ export function useSaveHaiku({
 
   return {
     isSaving,
+    didSaveCurrentHaiku: didSaveCurrentHaiku.current,
     updateCurrentHaikuRef,
     saveHaiku
   };

@@ -17,6 +17,7 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
   const initialLoadCompleteRef = useRef(false);
   const pendingNavigationRef = useRef(false);
   const lastNavigatedToHaikuRef = useRef<string | null>(null);
+  const recentlyNavigatedHaikusRef = useRef<Set<string>>(new Set());
 
   const {
     haikus,
@@ -123,6 +124,7 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
       console.log("Going to next unsolved. Current index:", currentHaikuIndex);
       console.log("Available haikus:", availableHaikus.length);
       console.log("Completed haiku IDs:", Array.from(completedIds));
+      console.log("Recently navigated haikus:", Array.from(recentlyNavigatedHaikusRef.current));
       
       // Start from the current index + 1
       let nextIndex = currentHaikuIndex + 1;
@@ -133,13 +135,25 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
         const checkIndex = (nextIndex + i) % haikus.length;
         const candidateHaiku = haikus[checkIndex];
         
-        console.log(`Checking haiku at index ${checkIndex}, ID: ${candidateHaiku.id}, already completed: ${completedIds.has(candidateHaiku.id)}`);
+        console.log(`Checking haiku at index ${checkIndex}, ID: ${candidateHaiku.id}, already completed: ${completedIds.has(candidateHaiku.id)}, recently navigated: ${recentlyNavigatedHaikusRef.current.has(candidateHaiku.id)}`);
         
+        // Skip if it's already completed OR if we've recently navigated to it
         if (!completedIds.has(candidateHaiku.id) && 
+            !recentlyNavigatedHaikusRef.current.has(candidateHaiku.id) &&
             lastNavigatedToHaikuRef.current !== candidateHaiku.id) {
           console.log("Found next unsolved at index:", checkIndex, "ID:", candidateHaiku.id);
           setCurrentHaikuIndex(checkIndex);
           lastNavigatedToHaikuRef.current = candidateHaiku.id;
+          
+          // Add to recently navigated set to prevent cycling back too soon
+          recentlyNavigatedHaikusRef.current.add(candidateHaiku.id);
+          
+          // Limit the size of recently navigated set
+          if (recentlyNavigatedHaikusRef.current.size > 3) {
+            const oldestItem = Array.from(recentlyNavigatedHaikusRef.current)[0];
+            recentlyNavigatedHaikusRef.current.delete(oldestItem);
+          }
+          
           foundUnsolved = true;
           break;
         }
@@ -147,6 +161,8 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
       
       if (!foundUnsolved) {
         console.log("All haikus are solved");
+        // Clear the recently navigated set so we can start fresh
+        recentlyNavigatedHaikusRef.current.clear();
         // We'll stay on the current page but display the NoHaikusAvailable component
       }
       
@@ -172,6 +188,15 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
     if (currentHaiku) {
       console.log(`CurrentHaiku changed to: ${currentHaiku.id}, title: ${currentHaiku.title}`);
       lastNavigatedToHaikuRef.current = currentHaiku.id;
+      
+      // Also add to recently navigated set
+      recentlyNavigatedHaikusRef.current.add(currentHaiku.id);
+      
+      // Limit the size of recently navigated set
+      if (recentlyNavigatedHaikusRef.current.size > 3) {
+        const oldestItem = Array.from(recentlyNavigatedHaikusRef.current)[0];
+        recentlyNavigatedHaikusRef.current.delete(oldestItem);
+      }
     }
   }, [currentHaiku]);
 
