@@ -24,6 +24,7 @@ export function useHaikuSolver({
 }: HaikuSolverProps) {
   const navigationRef = useRef(false);
   const hasSolvedToastShownRef = useRef(false);
+  const hasRefetchedAfterSolveRef = useRef(false);
   const { toast } = useToast();
 
   // Game state management
@@ -60,6 +61,8 @@ export function useHaikuSolver({
     navigationRef.current = false;
     // Reset toast shown flag when haiku changes
     hasSolvedToastShownRef.current = false;
+    // Reset refetch flag when haiku changes
+    hasRefetchedAfterSolveRef.current = false;
   }, [currentHaiku, updateCurrentHaikuRef]);
 
   // Show toast when solved, but don't auto-refetch
@@ -85,19 +88,31 @@ export function useHaikuSolver({
   const handleContinue = async () => {
     if (navigationRef.current) return;
     
+    console.log("Continue button clicked - explicit user action");
     navigationRef.current = true;
     
     // First reset the current game state
     handleNextHaiku();
     
-    // Now we can safely refetch the completed haikus to update counts
-    // This happens after the user has clicked "Continue"
-    await refetchCompletedHaikus();
-    
-    // Then navigate to the next unsolved haiku
-    setTimeout(() => {
+    try {
+      // Now we can safely refetch the completed haikus to update counts
+      // This happens after the user has clicked "Continue"
+      console.log("Explicitly refetching completed haikus after Continue button");
+      await refetchCompletedHaikus();
+      
+      // Mark that we've refetched after solving, so we don't do it again
+      hasRefetchedAfterSolveRef.current = true;
+      
+      // Then navigate to the next unsolved haiku
+      setTimeout(() => {
+        console.log("Navigating to next unsolved haiku after Continue button");
+        goToNextUnsolved();
+      }, 100);
+    } catch (error) {
+      console.error("Error refetching completed haikus:", error);
+      // Still try to navigate even if refetch fails
       goToNextUnsolved();
-    }, 100);
+    }
   };
 
   return {

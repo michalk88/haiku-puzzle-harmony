@@ -13,6 +13,7 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
   const navigationInProgressRef = useRef(false);
   const lastReportedCountRef = useRef<number | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const initialLoadCompleteRef = useRef(false);
 
   const {
     haikus,
@@ -22,6 +23,14 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
     isLoadingCompleted,
     refetchCompletedHaikus
   } = useHaikuData();
+
+  // Set initial load flag once data is available
+  useEffect(() => {
+    if (haikus && completedHaikus && !isLoadingHaikus && !isLoadingCompleted && !initialLoadCompleteRef.current) {
+      console.log("Initial haiku data load complete");
+      initialLoadCompleteRef.current = true;
+    }
+  }, [haikus, completedHaikus, isLoadingHaikus, isLoadingCompleted]);
 
   // Filter out completed haikus to get available ones - with debounce protection
   useEffect(() => {
@@ -39,21 +48,24 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       
       setAvailableHaikus(available);
       
-      // Clear any existing debounce timer
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      
-      // Debounce the solved count update to prevent rapid fluctuations
-      debounceTimerRef.current = setTimeout(() => {
-        // Sync the solvedCount with the parent component, but only if it actually changed
-        if (onSolvedCountChange && lastReportedCountRef.current !== completedIds.size) {
-          const count = completedIds.size;
-          console.log("Updating solved count to:", count);
-          onSolvedCountChange(count);
-          lastReportedCountRef.current = count;
+      // Only update the solved count if initial load is complete to prevent premature updates
+      if (initialLoadCompleteRef.current) {
+        // Clear any existing debounce timer
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
         }
-      }, 500); // 500ms debounce
+        
+        // Debounce the solved count update to prevent rapid fluctuations
+        debounceTimerRef.current = setTimeout(() => {
+          // Sync the solvedCount with the parent component, but only if it actually changed
+          if (onSolvedCountChange && lastReportedCountRef.current !== completedIds.size) {
+            const count = completedIds.size;
+            console.log("Updating solved count to:", count);
+            onSolvedCountChange(count);
+            lastReportedCountRef.current = count;
+          }
+        }, 800); // Increased debounce time to 800ms for better stability
+      }
     }
     
     // Cleanup the timer on unmount
@@ -68,38 +80,44 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
   const goToNextUnsolved = useCallback(() => {
     if (!haikus || !completedHaikus || navigationInProgressRef.current) return;
     
+    console.log("EXPLICIT navigation to next unsolved requested");
+    
     // Set flag to prevent multiple navigations
     navigationInProgressRef.current = true;
     
-    const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
-    console.log("Going to next unsolved. Current index:", currentHaikuIndex);
-    console.log("Available haikus:", availableHaikus.length);
-    
-    // Start from the current index + 1
-    let nextIndex = currentHaikuIndex + 1;
-    let foundUnsolved = false;
-    
-    // Look through all haikus starting from the next index
-    for (let i = 0; i < haikus.length; i++) {
-      const checkIndex = (nextIndex + i) % haikus.length;
-      if (!completedIds.has(haikus[checkIndex].id)) {
-        console.log("Found next unsolved at index:", checkIndex);
-        setCurrentHaikuIndex(checkIndex);
-        foundUnsolved = true;
-        break;
+    // CRITICAL: Force a refetch of completed haikus before navigating to ensure we have the latest data
+    // This helps prevent incorrect state after solving the first haiku
+    refetchCompletedHaikus().then(() => {
+      const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
+      console.log("Going to next unsolved. Current index:", currentHaikuIndex);
+      console.log("Available haikus:", availableHaikus.length);
+      
+      // Start from the current index + 1
+      let nextIndex = currentHaikuIndex + 1;
+      let foundUnsolved = false;
+      
+      // Look through all haikus starting from the next index
+      for (let i = 0; i < haikus.length; i++) {
+        const checkIndex = (nextIndex + i) % haikus.length;
+        if (!completedIds.has(haikus[checkIndex].id)) {
+          console.log("Found next unsolved at index:", checkIndex);
+          setCurrentHaikuIndex(checkIndex);
+          foundUnsolved = true;
+          break;
+        }
       }
-    }
-    
-    if (!foundUnsolved) {
-      console.log("All haikus are solved");
-      // We'll stay on the current page but display the NoHaikusAvailable component
-    }
-    
-    // Clear navigation flag after a short delay to allow state to settle
-    setTimeout(() => {
-      navigationInProgressRef.current = false;
-    }, 300);
-  }, [haikus, completedHaikus, currentHaikuIndex, availableHaikus.length]);
+      
+      if (!foundUnsolved) {
+        console.log("All haikus are solved");
+        // We'll stay on the current page but display the NoHaikusAvailable component
+      }
+      
+      // Clear navigation flag after a short delay to allow state to settle
+      setTimeout(() => {
+        navigationInProgressRef.current = false;
+      }, 300);
+    });
+  }, [haikus, completedHaikus, currentHaikuIndex, availableHaikus.length, refetchCompletedHaikus]);
 
   // Get current haiku information
   const currentHaiku = haikus?.[currentHaikuIndex] || null;

@@ -50,14 +50,9 @@ export function useSaveHaiku({
           haiku_id: currentHaiku.id
         });
         
-        // Only refetch the completed haikus after saving if not skipped
-        // This helps prevent premature updates to the solved count
-        if (!skipRefetch) {
-          console.log("Refetching completed haikus after save");
-          await refetchCompletedHaikus();
-        } else {
-          console.log("Skipping refetch of completed haikus (will be done later)");
-        }
+        // CRITICAL FIX: Always skip refetch until user explicitly clicks Continue
+        // This prevents premature updates to the UI
+        console.log("Skipping immediate refetch of completed haikus (will be done after Continue button click)");
         
         console.log("Haiku saved successfully");
       } catch (error) {
