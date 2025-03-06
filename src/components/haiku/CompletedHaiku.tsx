@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "../ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, CheckCircle } from "lucide-react";
 
 interface CompletedHaikuProps {
   lines: (string[] | null)[];
@@ -16,6 +16,13 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
 
   return (
     <div className="flex flex-col items-center">
+      <div className="animate-fade-in mb-6 flex justify-center">
+        <div className="bg-green-50 text-green-600 px-4 py-2 rounded-full flex items-center gap-2">
+          <CheckCircle className="h-5 w-5" />
+          <span className="font-medium">Haiku Solved!</span>
+        </div>
+      </div>
+      
       <div className="my-8 sm:my-10 flex flex-col items-center gap-6 sm:gap-8 mb-14 sm:mb-16">
         {lines.map((line, index) => (
           <div 
@@ -44,7 +51,8 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) =
           </div>
         ))}
       </div>
-      <div className="w-full flex justify-center">
+      <div className="w-full flex justify-center transition-all duration-300 animate-fade-in" 
+           style={{ animationDelay: '1200ms', animationFillMode: 'forwards' }}>
         <Button
           onClick={onNextHaiku}
           className="haiku-action-button primary flex items-center justify-center gap-2 mx-auto"

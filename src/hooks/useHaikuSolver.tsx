@@ -1,8 +1,9 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useHaikuGameState } from "./useHaikuGameState";
 import { useSaveHaiku } from "./useSaveHaiku";
 import { Haiku, CompletedHaiku } from "@/types/haiku";
+import { useToast } from "./use-toast";
 
 interface HaikuSolverProps {
   currentHaiku: Haiku | null;
@@ -21,6 +22,9 @@ export function useHaikuSolver({
   refetchCompletedHaikus,
   goToNextUnsolved
 }: HaikuSolverProps) {
+  const navigationRef = useRef(false);
+  const { toast } = useToast();
+
   // Game state management
   const {
     gameRef,
@@ -51,24 +55,38 @@ export function useHaikuSolver({
   // Update current haiku reference when it changes
   useEffect(() => {
     updateCurrentHaikuRef(currentHaiku?.id || null);
+    // Reset navigation flag when haiku changes
+    navigationRef.current = false;
   }, [currentHaiku, updateCurrentHaikuRef]);
 
-  // Save haiku when solved but don't auto-navigate
+  // Save haiku when solved and show congratulations toast
   useEffect(() => {
-    if (isSolved && currentHaiku) {
-      // Only save, don't trigger any navigation
+    if (isSolved && currentHaiku && !navigationRef.current) {
+      // Show toast when haiku is solved
+      toast({
+        title: "Congratulations!",
+        description: "You've solved the haiku correctly.",
+      });
+      
+      // Save haiku but don't auto-navigate
       saveHaiku();
     }
-  }, [isSolved, currentHaiku, saveHaiku]);
+  }, [isSolved, currentHaiku, saveHaiku, toast]);
 
   // Handle continuing to next haiku - this is only called when the user
   // explicitly clicks the Continue button
   const handleContinue = () => {
+    if (navigationRef.current) return;
+    
+    navigationRef.current = true;
+    
     // First reset the current game state
     handleNextHaiku();
     
     // Then navigate to the next unsolved haiku, but only when explicitly requested
-    goToNextUnsolved();
+    setTimeout(() => {
+      goToNextUnsolved();
+    }, 100);
   };
 
   return {

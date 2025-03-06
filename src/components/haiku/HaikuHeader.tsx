@@ -32,7 +32,7 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
         )}
       </div>
       <div className="flex flex-col items-center">
-        <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 text-center mb-2">
+        <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 text-center mb-2 transition-all duration-300">
           {title}
         </h2>
       </div>

@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useHaikuData } from "./useHaikuData";
 import { Haiku, CompletedHaiku } from "@/types/haiku";
 
@@ -49,8 +49,8 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
   }, [haikus, completedHaikus, onSolvedCountChange]);
 
   // Find the next unsolved haiku - but ONLY when explicitly requested
-  const goToNextUnsolved = () => {
-    if (!haikus || !completedHaikus) return;
+  const goToNextUnsolved = useCallback(() => {
+    if (!haikus || !completedHaikus || navigationInProgressRef.current) return;
     
     // Set flag to prevent multiple navigations
     navigationInProgressRef.current = true;
@@ -82,8 +82,8 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
     // Clear navigation flag after a short delay to allow state to settle
     setTimeout(() => {
       navigationInProgressRef.current = false;
-    }, 100);
-  };
+    }, 300);
+  }, [haikus, completedHaikus, currentHaikuIndex, availableHaikus.length]);
 
   // Get current haiku information
   const currentHaiku = haikus?.[currentHaikuIndex] || null;

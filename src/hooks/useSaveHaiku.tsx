@@ -1,5 +1,5 @@
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useToast } from "./use-toast";
 import { Haiku } from "@/types/haiku";
 
@@ -19,6 +19,7 @@ export function useSaveHaiku({
   const didSaveCurrentHaiku = useRef(false);
   const saveAttemptsRef = useRef(0);
   const currentHaikuIdRef = useRef<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   const updateCurrentHaikuRef = (haikuId: string | null) => {
@@ -31,8 +32,9 @@ export function useSaveHaiku({
   };
 
   const saveHaiku = async () => {
-    if (isSolved && currentHaiku && !didSaveCurrentHaiku.current) {
+    if (isSolved && currentHaiku && !didSaveCurrentHaiku.current && !isSaving) {
       try {
+        setIsSaving(true);
         console.log(`========== ATTEMPTING TO SAVE HAIKU ==========`);
         console.log(`Haiku ID: ${currentHaiku.id}, Title: ${currentHaiku.title}`);
         
@@ -48,11 +50,6 @@ export function useSaveHaiku({
           haiku_id: currentHaiku.id
         });
         
-        toast({
-          title: "Haiku saved!",
-          description: "Your solution has been saved.",
-        });
-        
         // Only refetch the completed haikus after saving, but don't trigger navigation
         await refetchCompletedHaikus();
         
@@ -65,11 +62,14 @@ export function useSaveHaiku({
           description: "There was an error saving your solution. Please try again.",
           variant: "destructive"
         });
+      } finally {
+        setIsSaving(false);
       }
     }
   };
 
   return {
+    isSaving,
     updateCurrentHaikuRef,
     saveHaiku
   };
