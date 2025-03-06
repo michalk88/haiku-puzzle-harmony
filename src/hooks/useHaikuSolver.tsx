@@ -27,7 +27,18 @@ export function useHaikuSolver({
   const navigationRef = useRef(false);
   const hasSolvedToastShownRef = useRef(false);
   const hasRefetchedAfterSolveRef = useRef(false);
+  const currentHaikuIdRef = useRef<string | null>(null);
   const { toast } = useToast();
+
+  // Update the current haiku ref whenever it changes
+  useEffect(() => {
+    if (currentHaiku?.id !== currentHaikuIdRef.current) {
+      console.log(`useHaikuSolver: currentHaiku changed from ${currentHaikuIdRef.current} to ${currentHaiku?.id}`);
+      currentHaikuIdRef.current = currentHaiku?.id || null;
+      hasSolvedToastShownRef.current = false; // Reset toast flag for new haiku
+      hasRefetchedAfterSolveRef.current = false; // Reset refetch flag for new haiku
+    }
+  }, [currentHaiku]);
 
   // Game state management
   const {
@@ -58,7 +69,7 @@ export function useHaikuSolver({
     }
   };
 
-  // Haiku saving functionality with simplified tracking
+  // Haiku saving functionality with per-instance tracking
   const { 
     saveHaiku, 
     isCurrentHaikuSaved,
@@ -79,15 +90,7 @@ export function useHaikuSolver({
     }
   }, [currentHaiku, isCompleted, markCurrentHaikuAsSaved]);
 
-  // Reset toast shown flag when haiku changes
-  useEffect(() => {
-    if (currentHaiku) {
-      console.log(`Resetting hasSolvedToastShownRef for haiku: ${currentHaiku.id}`);
-      hasSolvedToastShownRef.current = false;
-    }
-  }, [currentHaiku]);
-
-  // Save the haiku when solved (but don't show toast - visual feedback already present)
+  // Save the haiku when solved
   useEffect(() => {
     console.log(`=== SOLVE-SAVE CHECK ===`);
     console.log(`isSolved: ${isSolved}`);
@@ -108,15 +111,14 @@ export function useHaikuSolver({
       // Only save once per solve
       hasSolvedToastShownRef.current = true;
       
-      // Save haiku but don't show toast (we already have "Great job!" in the UI)
+      // Save haiku
       saveHaiku();
     } else if (isSolved) {
       console.log(`Not saving because: hasSolvedToastShownRef=${hasSolvedToastShownRef.current}, isCompleted=${isCompleted}, isCurrentHaikuSaved=${isCurrentHaikuSaved}`);
     }
   }, [isSolved, currentHaiku, isCompleted, saveHaiku, isCurrentHaikuSaved]);
 
-  // Handle continuing to next haiku - this is only called when the user
-  // explicitly clicks the Continue button
+  // Handle continuing to next haiku
   const handleContinue = async () => {
     if (navigationRef.current) return;
     

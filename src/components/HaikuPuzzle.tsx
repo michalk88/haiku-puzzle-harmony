@@ -21,6 +21,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   const solvingInProgressRef = useRef(false);
   const noMoreHaikusRef = useRef(false);
   const [forcedCountUpdate, setForcedCountUpdate] = useState(0);
+  const lastCompletedHaikuIdRef = useRef<string | null>(null);
   
   // Hook for haiku navigation and selection
   const {
@@ -59,6 +60,14 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     return () => clearTimeout(timer);
   }, [user, isLoadingHaikus, navigate]);
 
+  // Track the last completed haiku to prevent duplicate solves
+  useEffect(() => {
+    if (isCompleted && currentHaiku) {
+      lastCompletedHaikuIdRef.current = currentHaiku.id;
+      console.log(`Setting lastCompletedHaikuIdRef to ${currentHaiku.id} because it's already completed`);
+    }
+  }, [isCompleted, currentHaiku]);
+
   // Only navigate to next unsolved haiku on initial load when a haiku is already completed
   useEffect(() => {
     if (
@@ -71,7 +80,11 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     ) {
       console.log("Initial navigation to next unsolved haiku on load...");
       initialLoadDoneRef.current = true;
-      goToNextUnsolved();
+      
+      // Add a small delay to ensure everything is loaded properly
+      setTimeout(() => {
+        goToNextUnsolved();
+      }, 200);
     }
   }, [isCompleted, isLoadingHaikus, isLoadingCompleted, availableHaikus, goToNextUnsolved]);
 
@@ -97,8 +110,20 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     refetchCompletedHaikus,
     onCountUpdate: handleForceCountUpdate,
     goToNextUnsolved: () => {
+      // Check if this haiku was just completed to prevent duplicate processing
+      if (currentHaiku && lastCompletedHaikuIdRef.current === currentHaiku.id) {
+        console.log(`Skipping navigation, haiku ${currentHaiku.id} was just completed`);
+        return;
+      }
+      
       // Set a flag to prevent multiple navigations
       solvingInProgressRef.current = true;
+      
+      // If this haiku was just solved, set it as last completed
+      if (isSolved && currentHaiku) {
+        lastCompletedHaikuIdRef.current = currentHaiku.id;
+        console.log(`Setting lastCompletedHaikuIdRef to ${currentHaiku.id} because it was just solved`);
+      }
       
       // Check if we just solved the last available haiku
       if (isSolved && isLastAvailableHaiku) {

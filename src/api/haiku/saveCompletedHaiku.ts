@@ -20,6 +20,25 @@ export const saveCompletedHaiku = async (
     throw new Error("Missing haiku_id");
   }
   
+  // First, check if this haiku is already completed by this user
+  const { data: existingCompletion, error: checkError } = await supabase
+    .from('completed_haikus')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('haiku_id', haiku.haiku_id)
+    .maybeSingle();
+    
+  if (checkError) {
+    console.error("Error checking for existing completion:", checkError);
+    throw checkError;
+  }
+  
+  // If it's already completed, return the existing record
+  if (existingCompletion) {
+    console.log("Haiku already completed, returning existing record:", existingCompletion);
+    return existingCompletion;
+  }
+  
   // Create the data object to be saved
   const dataToSave = {
     user_id: userId,
@@ -28,11 +47,10 @@ export const saveCompletedHaiku = async (
   
   console.log("Data being saved to Supabase:", JSON.stringify(dataToSave, null, 2));
   
-  // The table has a unique constraint on (user_id, haiku_id),
-  // so this will either insert a new record or do nothing if it already exists
+  // Insert new record
   const { data, error } = await supabase
     .from('completed_haikus')
-    .upsert(dataToSave, { onConflict: 'user_id,haiku_id' })
+    .insert(dataToSave)
     .select()
     .single();
     

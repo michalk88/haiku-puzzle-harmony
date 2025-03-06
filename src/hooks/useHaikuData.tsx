@@ -32,7 +32,8 @@ export const useHaikuData = () => {
   } = useQuery({
     queryKey: ['completed_haikus', user?.id],
     queryFn: () => fetchCompletedHaikus(user?.id || ''),
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 30000 // Consider data stale after 30 seconds
   });
 
   const saveCompletedHaiku = useMutation({
@@ -47,9 +48,28 @@ export const useHaikuData = () => {
       }
       return saveHaiku(user.id, haiku);
     },
-    onSuccess: () => {
-      console.log("Successfully saved haiku - invalidating queries");
-      // Invalidate and refetch immediately to update counts correctly
+    onSuccess: (data) => {
+      console.log("Successfully saved haiku - invalidating queries:", data);
+      
+      // Immediately update the query cache with the new completion
+      // This helps ensure the UI reflects the completion right away
+      queryClient.setQueryData(
+        ['completed_haikus', user?.id], 
+        (oldData: CompletedHaiku[] = []) => {
+          // Check if this completion already exists in the cache
+          const hasSameCompletion = oldData.some(ch => ch.haiku_id === data.haiku_id);
+          if (hasSameCompletion) {
+            console.log("Completion already in cache, not updating");
+            return oldData;
+          }
+          
+          // Add new completion to the cache
+          console.log("Adding new completion to cache");
+          return [...oldData, data];
+        }
+      );
+      
+      // Also invalidate the queries to trigger a background refetch
       queryClient.invalidateQueries({ queryKey: ['completed_haikus', user?.id] });
       
       // Force a refetch to get the latest data after a short delay

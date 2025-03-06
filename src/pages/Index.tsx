@@ -27,7 +27,7 @@ const Index = () => {
     };
   }, [refetchCompletedHaikus]);
 
-  // Initialize solved count from completed haikus - with better uniqueness checking
+  // Initialize solved count from completed haikus - with faster updates
   useEffect(() => {
     if (completedHaikus && !isLoadingCompleted && !countUpdateLockRef.current) {
       // Cancel any pending updates
@@ -35,16 +35,13 @@ const Index = () => {
         clearTimeout(countUpdateTimerRef.current);
       }
       
-      // Set a timer to update the count after a shorter delay
-      // This helps prevent flickering, but updates more quickly
-      countUpdateTimerRef.current = setTimeout(() => {
-        // Use a Set for unique haiku_ids to ensure accurate counting
-        const uniqueHaikuIds = new Set(completedHaikus.map(haiku => haiku.haiku_id));
-        const uniqueCount = uniqueHaikuIds.size;
-        
-        console.log("Index: Setting solved count to", uniqueCount, "unique IDs:", Array.from(uniqueHaikuIds));
-        setSolvedCount(uniqueCount);
-      }, 100);
+      // Update immediately to reduce delay
+      // Use a Set for unique haiku_ids to ensure accurate counting
+      const uniqueHaikuIds = new Set(completedHaikus.map(haiku => haiku.haiku_id));
+      const uniqueCount = uniqueHaikuIds.size;
+      
+      console.log("Index: Setting solved count to", uniqueCount, "unique IDs:", Array.from(uniqueHaikuIds));
+      setSolvedCount(uniqueCount);
     }
   }, [completedHaikus, isLoadingCompleted]);
 
@@ -65,7 +62,7 @@ const Index = () => {
     // Release the lock after a delay
     setTimeout(() => {
       countUpdateLockRef.current = false;
-    }, 500);
+    }, 300);
   };
 
   return (
