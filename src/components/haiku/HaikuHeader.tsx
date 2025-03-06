@@ -30,6 +30,11 @@ const HaikuHeader: React.FC<HaikuHeaderProps> = ({
             {encouragingMessage}
           </div>
         )}
+        {isLastHaiku && isSolved && (
+          <div className="text-sm font-medium text-orange-500 text-center animate-in fade-in duration-300">
+            This is the last unsolved haiku
+          </div>
+        )}
       </div>
       <div className="flex flex-col items-center">
         <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 text-center mb-2 transition-all duration-300">

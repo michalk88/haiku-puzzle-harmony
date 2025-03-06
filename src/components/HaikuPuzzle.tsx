@@ -20,6 +20,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   const navigate = useNavigate();
   const initialLoadDoneRef = useRef(false);
   const solvingInProgressRef = useRef(false);
+  const noMoreHaikusRef = useRef(false);
   
   // Hook for haiku navigation and selection
   const {
@@ -35,6 +36,11 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     refetchCompletedHaikus,
     goToNextUnsolved
   } = useHaikuNavigation({ onSolvedCountChange });
+
+  // Check if this is the last available haiku
+  const isLastAvailableHaiku = availableHaikus.length === 1 && 
+    currentHaiku && 
+    availableHaikus[0]?.id === currentHaiku.id;
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -86,6 +92,12 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     goToNextUnsolved: () => {
       // Set a flag to prevent multiple navigations
       solvingInProgressRef.current = true;
+      
+      // Check if we just solved the last available haiku
+      if (isSolved && isLastAvailableHaiku) {
+        noMoreHaikusRef.current = true;
+      }
+      
       setTimeout(() => {
         goToNextUnsolved();
         // Reset the flag after navigation completes
@@ -111,8 +123,8 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     return <div className="flex justify-center items-center min-h-[400px]">No haikus available in the system</div>;
   }
 
-  // Check if there are any unsolved haikus
-  if (availableHaikus.length === 0 && !isLoadingHaikus && !isLoadingCompleted && haikus?.length > 0) {
+  // Only show NoHaikusAvailable when we've explicitly completed all haikus and clicked continue
+  if (noMoreHaikusRef.current && availableHaikus.length === 0) {
     return <NoHaikusAvailable />;
   }
 
@@ -137,7 +149,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
             title={currentHaiku.title}
             isCompleted={!!isCompleted}
             isSolved={isSolved}
-            isLastHaiku={availableHaikus.length === 0}
+            isLastHaiku={isLastAvailableHaiku}
             onNextHaiku={goToNextUnsolved}
             encouragingMessage={isSolved ? "Great job!" : ""}
             isNextDisabled={!isSolved && !isCompleted}
@@ -147,7 +159,13 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
         {showSolvedState ? (
           <CompletedHaiku
             lines={displayLines}
-            onNextHaiku={handleContinue}
+            onNextHaiku={() => {
+              // Flag this as the end if it was the last haiku
+              if (isLastAvailableHaiku) {
+                noMoreHaikusRef.current = true;
+              }
+              handleContinue();
+            }}
           />
         ) : (
           <HaikuGameplay
