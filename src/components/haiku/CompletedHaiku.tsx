@@ -1,18 +1,32 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "../ui/button";
 import { ChevronRight, CheckCircle } from "lucide-react";
 
 interface CompletedHaikuProps {
   lines: (string[] | null)[];
   onNextHaiku: () => void;
+  onAnimationComplete?: () => void;
 }
 
-const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku }) => {
+const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku, onAnimationComplete }) => {
   console.log("CompletedHaiku rendering with lines:", lines);
   
   const hasValidLines = lines.some(line => line !== null && line.length > 0);
   console.log("CompletedHaiku: hasValidLines:", hasValidLines);
+
+  // Call onAnimationComplete after the last line's animation is done
+  useEffect(() => {
+    if (onAnimationComplete && hasValidLines) {
+      // The last animation delay is 800ms + 300ms for the animation itself
+      const animationCompleteTimeout = setTimeout(() => {
+        console.log("Animation complete, updating count");
+        onAnimationComplete();
+      }, 1200); // wait for the animation to complete
+
+      return () => clearTimeout(animationCompleteTimeout);
+    }
+  }, [onAnimationComplete, hasValidLines]);
 
   return (
     <div className="flex flex-col items-center">

@@ -12,6 +12,7 @@ interface HaikuSolverProps {
   saveCompletedHaiku: any;
   refetchCompletedHaikus: () => Promise<any>;
   goToNextUnsolved: () => void;
+  onCountUpdate?: () => void;
 }
 
 export function useHaikuSolver({
@@ -20,7 +21,8 @@ export function useHaikuSolver({
   completedHaiku,
   saveCompletedHaiku,
   refetchCompletedHaikus,
-  goToNextUnsolved
+  goToNextUnsolved,
+  onCountUpdate
 }: HaikuSolverProps) {
   const navigationRef = useRef(false);
   const hasSolvedToastShownRef = useRef(false);
@@ -46,12 +48,23 @@ export function useHaikuSolver({
     completedHaiku
   });
 
+  // Handle count updates after save
+  const handleSaveComplete = async () => {
+    console.log("Save complete, updating counts");
+    // Refetch completed haikus to update counts immediately
+    await refetchCompletedHaikus();
+    if (onCountUpdate) {
+      onCountUpdate();
+    }
+  };
+
   // Haiku saving functionality
   const { updateCurrentHaikuRef, saveHaiku } = useSaveHaiku({
     currentHaiku,
     isSolved,
     saveCompletedHaiku,
-    refetchCompletedHaikus
+    refetchCompletedHaikus,
+    onSaveComplete: handleSaveComplete
   });
 
   // Update current haiku reference when it changes

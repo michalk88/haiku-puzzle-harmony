@@ -5,9 +5,10 @@ import { Haiku, CompletedHaiku } from "@/types/haiku";
 
 export interface HaikuNavigationProps {
   onSolvedCountChange?: (count: number) => void;
+  forcedCountUpdate?: number;
 }
 
-export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps = {}) {
+export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 }: HaikuNavigationProps = {}) {
   const [availableHaikus, setAvailableHaikus] = useState<Haiku[]>([]);
   const [currentHaikuIndex, setCurrentHaikuIndex] = useState(0);
   const navigationInProgressRef = useRef(false);
@@ -32,6 +33,31 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       initialLoadCompleteRef.current = true;
     }
   }, [haikus, completedHaikus, isLoadingHaikus, isLoadingCompleted]);
+
+  // Force update when forcedCountUpdate changes
+  useEffect(() => {
+    if (forcedCountUpdate > 0 && completedHaikus) {
+      console.log("Forced count update triggered:", forcedCountUpdate);
+      
+      // Use a Set for faster lookups and unique IDs
+      const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
+      
+      // Sync the solvedCount with the parent component
+      if (onSolvedCountChange) {
+        const count = completedIds.size;
+        console.log("Immediately updating solved count to:", count);
+        onSolvedCountChange(count);
+        lastReportedCountRef.current = count;
+      }
+      
+      // Update available haikus as well
+      if (haikus) {
+        const available = haikus.filter(haiku => !completedIds.has(haiku.id));
+        console.log("Updating available haikus after force update:", available.length);
+        setAvailableHaikus(available);
+      }
+    }
+  }, [forcedCountUpdate, completedHaikus, haikus, onSolvedCountChange]);
 
   // Filter out completed haikus to get available ones - with debounce protection
   useEffect(() => {

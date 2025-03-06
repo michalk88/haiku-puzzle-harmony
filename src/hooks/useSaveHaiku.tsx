@@ -8,13 +8,15 @@ interface SaveHaikuProps {
   isSolved: boolean;
   saveCompletedHaiku: any;
   refetchCompletedHaikus: () => Promise<any>;
+  onSaveComplete?: () => void;
 }
 
 export function useSaveHaiku({
   currentHaiku,
   isSolved,
   saveCompletedHaiku,
-  refetchCompletedHaikus
+  refetchCompletedHaikus,
+  onSaveComplete
 }: SaveHaikuProps) {
   const didSaveCurrentHaiku = useRef(false);
   const saveAttemptsRef = useRef(0);
@@ -50,8 +52,11 @@ export function useSaveHaiku({
           haiku_id: currentHaiku.id
         });
         
-        // CRITICAL: NEVER refetch here - we'll do it explicitly after Continue button
-        console.log("Saved haiku without refetching - will wait for explicit Continue button");
+        // Call onSaveComplete callback to update counts immediately
+        if (onSaveComplete) {
+          console.log("Calling onSaveComplete callback to update counts");
+          onSaveComplete();
+        }
         
       } catch (error) {
         console.error("Error saving haiku:", error);

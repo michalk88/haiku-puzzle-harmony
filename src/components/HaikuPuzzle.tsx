@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HaikuHeader from "./haiku/HaikuHeader";
 import CompletedHaiku from "./haiku/CompletedHaiku";
@@ -21,6 +21,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   const initialLoadDoneRef = useRef(false);
   const solvingInProgressRef = useRef(false);
   const noMoreHaikusRef = useRef(false);
+  const [forcedCountUpdate, setForcedCountUpdate] = useState(0);
   
   // Hook for haiku navigation and selection
   const {
@@ -35,7 +36,12 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     saveCompletedHaiku,
     refetchCompletedHaikus,
     goToNextUnsolved
-  } = useHaikuNavigation({ onSolvedCountChange });
+  } = useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate });
+
+  // Force count update function
+  const handleForceCountUpdate = () => {
+    setForcedCountUpdate(prev => prev + 1);
+  };
 
   // Check if this is the last available haiku
   const isLastAvailableHaiku = availableHaikus.length === 1 && 
@@ -89,6 +95,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     completedHaiku,
     saveCompletedHaiku,
     refetchCompletedHaikus,
+    onCountUpdate: handleForceCountUpdate,
     goToNextUnsolved: () => {
       // Set a flag to prevent multiple navigations
       solvingInProgressRef.current = true;
@@ -159,6 +166,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
         {showSolvedState ? (
           <CompletedHaiku
             lines={displayLines}
+            onAnimationComplete={handleForceCountUpdate}
             onNextHaiku={() => {
               // Flag this as the end if it was the last haiku
               if (isLastAvailableHaiku) {
