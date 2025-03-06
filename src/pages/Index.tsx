@@ -8,6 +8,7 @@ const Index = () => {
   const [solvedCount, setSolvedCount] = useState(0);
   const initialLoadDoneRef = useRef(false);
   const countUpdateTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const countUpdateLockRef = useRef(false);
   const { completedHaikus, isLoadingCompleted, refetchCompletedHaikus } = useHaikuData();
 
   // Force refetch when component mounts - but only once
@@ -28,14 +29,14 @@ const Index = () => {
 
   // Initialize solved count from completed haikus - with better uniqueness checking
   useEffect(() => {
-    if (completedHaikus && !isLoadingCompleted) {
+    if (completedHaikus && !isLoadingCompleted && !countUpdateLockRef.current) {
       // Cancel any pending updates
       if (countUpdateTimerRef.current) {
         clearTimeout(countUpdateTimerRef.current);
       }
       
-      // Set a timer to update the count after a short delay
-      // This helps prevent flickering and premature updates
+      // Set a timer to update the count after a longer delay
+      // This helps prevent flickering, premature updates, and race conditions
       countUpdateTimerRef.current = setTimeout(() => {
         // Use a Set for unique haiku_ids to ensure accurate counting
         const uniqueHaikuIds = new Set(completedHaikus.map(haiku => haiku.haiku_id));
@@ -43,13 +44,28 @@ const Index = () => {
         
         console.log("Index: Setting solved count to", uniqueCount, "unique IDs:", Array.from(uniqueHaikuIds));
         setSolvedCount(uniqueCount);
-      }, 300);
+      }, 500);
     }
   }, [completedHaikus, isLoadingCompleted]);
 
   const handleSolvedCountChange = (count: number) => {
-    console.log("Index: Explicit solved count change to", count);
+    console.log("Index: Explicit solved count change request to", count);
+    
+    // Set a brief lock to prevent effect-triggered updates from overriding this explicit update
+    countUpdateLockRef.current = true;
+    
+    // Cancel any pending updates
+    if (countUpdateTimerRef.current) {
+      clearTimeout(countUpdateTimerRef.current);
+    }
+    
+    // Update the count immediately since this is an explicit change
     setSolvedCount(count);
+    
+    // Release the lock after a delay
+    setTimeout(() => {
+      countUpdateLockRef.current = false;
+    }, 1500);
   };
 
   return (

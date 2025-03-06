@@ -38,9 +38,9 @@ export const useHaikuData = () => {
   const saveCompletedHaiku = useMutation({
     mutationFn: async (haiku: {
       haiku_id: string;
-      line1_arrangement: string[];
-      line2_arrangement: string[];
-      line3_arrangement: string[];
+      line1_arrangement?: string[];
+      line2_arrangement?: string[];
+      line3_arrangement?: string[];
     }) => {
       if (!user) {
         throw new Error("User must be authenticated");
@@ -48,13 +48,9 @@ export const useHaikuData = () => {
       return saveHaiku(user.id, haiku);
     },
     onSuccess: () => {
-      console.log("Successfully saved haiku, invalidating queries");
-      queryClient.invalidateQueries({ queryKey: ['completed_haikus', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['haikus'] });
-      toast({
-        title: "Haiku saved!",
-        description: "Your solution has been saved successfully.",
-      });
+      console.log("Successfully saved haiku, but NOT invalidating queries yet");
+      // DO NOT invalidate queries here - we'll do it explicitly after Continue button
+      // DO NOT show toast here - we already have visual feedback in the UI
     },
     onError: (error) => {
       console.error("Error in saveCompletedHaiku mutation:", error);

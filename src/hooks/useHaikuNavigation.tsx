@@ -14,6 +14,7 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
   const lastReportedCountRef = useRef<number | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const initialLoadCompleteRef = useRef(false);
+  const pendingNavigationRef = useRef(false);
 
   const {
     haikus,
@@ -34,7 +35,7 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
 
   // Filter out completed haikus to get available ones - with debounce protection
   useEffect(() => {
-    if (haikus && completedHaikus && !navigationInProgressRef.current) {
+    if (haikus && completedHaikus && !navigationInProgressRef.current && !pendingNavigationRef.current) {
       console.log("Filtering available haikus...");
       console.log("All haikus:", haikus.length);
       console.log("Completed haikus:", completedHaikus.length);
@@ -48,7 +49,8 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       
       setAvailableHaikus(available);
       
-      // Only update the solved count if initial load is complete to prevent premature updates
+      // Only update the solved count if initial load is complete AND we're not navigating
+      // This prevents premature updates during initial load and navigation
       if (initialLoadCompleteRef.current) {
         // Clear any existing debounce timer
         if (debounceTimerRef.current) {
@@ -56,15 +58,16 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
         }
         
         // Debounce the solved count update to prevent rapid fluctuations
+        // Longer timeout - 1000ms - to ensure we don't update too early
         debounceTimerRef.current = setTimeout(() => {
-          // Sync the solvedCount with the parent component, but only if it actually changed
-          if (onSolvedCountChange && lastReportedCountRef.current !== completedIds.size) {
+          // Sync the solvedCount with the parent component, but only if we're not navigating
+          if (onSolvedCountChange && !pendingNavigationRef.current) {
             const count = completedIds.size;
             console.log("Updating solved count to:", count);
             onSolvedCountChange(count);
             lastReportedCountRef.current = count;
           }
-        }, 800); // Increased debounce time to 800ms for better stability
+        }, 1000);
       }
     }
     
@@ -82,11 +85,11 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
     
     console.log("EXPLICIT navigation to next unsolved requested");
     
-    // Set flag to prevent multiple navigations
+    // Set flags to prevent multiple navigations and premature count updates
     navigationInProgressRef.current = true;
+    pendingNavigationRef.current = true;
     
     // CRITICAL: Force a refetch of completed haikus before navigating to ensure we have the latest data
-    // This helps prevent incorrect state after solving the first haiku
     refetchCompletedHaikus().then(() => {
       const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
       console.log("Going to next unsolved. Current index:", currentHaikuIndex);
@@ -112,9 +115,14 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
         // We'll stay on the current page but display the NoHaikusAvailable component
       }
       
-      // Clear navigation flag after a short delay to allow state to settle
+      // Clear navigation flags after a delay to allow state to settle
       setTimeout(() => {
         navigationInProgressRef.current = false;
+        // Wait a bit longer to clear the pending navigation flag
+        // This prevents premature count updates
+        setTimeout(() => {
+          pendingNavigationRef.current = false;
+        }, 800);
       }, 300);
     });
   }, [haikus, completedHaikus, currentHaikuIndex, availableHaikus.length, refetchCompletedHaikus]);

@@ -65,23 +65,16 @@ export function useHaikuSolver({
     hasRefetchedAfterSolveRef.current = false;
   }, [currentHaiku, updateCurrentHaikuRef]);
 
-  // Show toast when solved, but don't auto-refetch
+  // Save the haiku when solved, but don't show toast (visual feedback already present)
   useEffect(() => {
     if (isSolved && currentHaiku && !hasSolvedToastShownRef.current) {
-      // Only show the toast once per solve
+      // Only save once per solve
       hasSolvedToastShownRef.current = true;
       
-      // Show toast when haiku is solved
-      toast({
-        title: "Congratulations!",
-        description: "You've solved the haiku correctly.",
-      });
-      
-      // Save haiku but skip the immediate refetch to prevent count updates
-      // This helps prevent the UI from updating prematurely
-      saveHaiku(true); // true = skip refetch
+      // Save haiku but don't show toast (we already have "Great job!" in the UI)
+      saveHaiku();
     }
-  }, [isSolved, currentHaiku, saveHaiku, toast]);
+  }, [isSolved, currentHaiku, saveHaiku]);
 
   // Handle continuing to next haiku - this is only called when the user
   // explicitly clicks the Continue button
