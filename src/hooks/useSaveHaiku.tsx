@@ -34,6 +34,11 @@ export function useSaveHaiku({
   };
 
   const saveHaiku = async () => {
+    // Only save if:
+    // 1. Haiku is solved
+    // 2. We have a current haiku
+    // 3. We haven't already saved this haiku
+    // 4. We're not already in the process of saving
     if (isSolved && currentHaiku && !didSaveCurrentHaiku.current && !isSaving) {
       try {
         setIsSaving(true);
@@ -69,6 +74,8 @@ export function useSaveHaiku({
       } finally {
         setIsSaving(false);
       }
+    } else if (didSaveCurrentHaiku.current) {
+      console.log("Skipping save - already saved this haiku");
     }
   };
 

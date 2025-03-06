@@ -27,6 +27,7 @@ export function useHaikuSolver({
   const navigationRef = useRef(false);
   const hasSolvedToastShownRef = useRef(false);
   const hasRefetchedAfterSolveRef = useRef(false);
+  const hasSavedCurrentHaikuRef = useRef(false);
   const { toast } = useToast();
 
   // Game state management
@@ -76,18 +77,26 @@ export function useHaikuSolver({
     hasSolvedToastShownRef.current = false;
     // Reset refetch flag when haiku changes
     hasRefetchedAfterSolveRef.current = false;
+    // Reset save flag when haiku changes
+    hasSavedCurrentHaikuRef.current = false;
   }, [currentHaiku, updateCurrentHaikuRef]);
 
   // Save the haiku when solved, but don't show toast (visual feedback already present)
   useEffect(() => {
-    if (isSolved && currentHaiku && !hasSolvedToastShownRef.current) {
+    // Only save once per solve and only if this is a new solve (not a pre-completed one)
+    if (isSolved && currentHaiku && !hasSolvedToastShownRef.current && !isCompleted && !hasSavedCurrentHaikuRef.current) {
+      console.log("First time solving this haiku - saving");
       // Only save once per solve
       hasSolvedToastShownRef.current = true;
+      hasSavedCurrentHaikuRef.current = true;
       
       // Save haiku but don't show toast (we already have "Great job!" in the UI)
       saveHaiku();
+    } else if (isCompleted && currentHaiku) {
+      console.log("This haiku was already completed - not saving again");
+      hasSavedCurrentHaikuRef.current = true;
     }
-  }, [isSolved, currentHaiku, saveHaiku]);
+  }, [isSolved, currentHaiku, isCompleted, saveHaiku]);
 
   // Handle continuing to next haiku - this is only called when the user
   // explicitly clicks the Continue button

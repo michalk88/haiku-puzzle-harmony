@@ -12,10 +12,11 @@ interface CompletedHaikuProps {
 const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku, onAnimationComplete }) => {
   console.log("CompletedHaiku rendering with lines:", lines);
   
+  // Check if we have valid content to display
   const hasValidLines = lines.some(line => line !== null && line.length > 0);
   console.log("CompletedHaiku: hasValidLines:", hasValidLines);
 
-  // Call onAnimationComplete after the last line's animation is done
+  // Only proceed with animation if we have content to display
   useEffect(() => {
     if (onAnimationComplete && hasValidLines) {
       // The last animation delay is 800ms + 300ms for the animation itself
@@ -27,6 +28,11 @@ const CompletedHaiku: React.FC<CompletedHaikuProps> = ({ lines, onNextHaiku, onA
       return () => clearTimeout(animationCompleteTimeout);
     }
   }, [onAnimationComplete, hasValidLines]);
+
+  // If we don't have valid lines, don't render anything (prevents "Line 1, Line 2, Line 3" flash)
+  if (!hasValidLines) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col items-center">
