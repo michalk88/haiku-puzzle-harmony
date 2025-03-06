@@ -16,6 +16,7 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const initialLoadCompleteRef = useRef(false);
   const pendingNavigationRef = useRef(false);
+  const lastNavigatedToHaikuRef = useRef<string | null>(null);
 
   const {
     haikus,
@@ -41,6 +42,7 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
       
       // Use a Set for faster lookups and unique IDs
       const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
+      console.log("Completed IDs:", Array.from(completedIds));
       
       // Sync the solvedCount with the parent component
       if (onSolvedCountChange) {
@@ -120,6 +122,7 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
       const completedIds = new Set(completedHaikus.map(ch => ch.haiku_id));
       console.log("Going to next unsolved. Current index:", currentHaikuIndex);
       console.log("Available haikus:", availableHaikus.length);
+      console.log("Completed haiku IDs:", Array.from(completedIds));
       
       // Start from the current index + 1
       let nextIndex = currentHaikuIndex + 1;
@@ -128,9 +131,15 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
       // Look through all haikus starting from the next index
       for (let i = 0; i < haikus.length; i++) {
         const checkIndex = (nextIndex + i) % haikus.length;
-        if (!completedIds.has(haikus[checkIndex].id)) {
-          console.log("Found next unsolved at index:", checkIndex);
+        const candidateHaiku = haikus[checkIndex];
+        
+        console.log(`Checking haiku at index ${checkIndex}, ID: ${candidateHaiku.id}, already completed: ${completedIds.has(candidateHaiku.id)}`);
+        
+        if (!completedIds.has(candidateHaiku.id) && 
+            lastNavigatedToHaikuRef.current !== candidateHaiku.id) {
+          console.log("Found next unsolved at index:", checkIndex, "ID:", candidateHaiku.id);
           setCurrentHaikuIndex(checkIndex);
+          lastNavigatedToHaikuRef.current = candidateHaiku.id;
           foundUnsolved = true;
           break;
         }
@@ -157,6 +166,14 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
   const currentHaiku = haikus?.[currentHaikuIndex] || null;
   const isCompleted = currentHaiku && completedHaikus?.some(ch => ch.haiku_id === currentHaiku.id);
   const completedHaiku = currentHaiku && completedHaikus?.find(ch => ch.haiku_id === currentHaiku.id);
+
+  // Update lastNavigatedToHaikuRef when currentHaiku changes
+  useEffect(() => {
+    if (currentHaiku) {
+      console.log(`CurrentHaiku changed to: ${currentHaiku.id}, title: ${currentHaiku.title}`);
+      lastNavigatedToHaikuRef.current = currentHaiku.id;
+    }
+  }, [currentHaiku]);
 
   return {
     haikus,

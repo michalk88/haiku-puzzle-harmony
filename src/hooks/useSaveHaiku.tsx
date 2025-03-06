@@ -30,6 +30,9 @@ export function useSaveHaiku({
       didSaveCurrentHaiku.current = false;
       saveAttemptsRef.current = 0;
       currentHaikuIdRef.current = haikuId;
+      console.log(`Save state reset for new haiku: didSaveCurrentHaiku=${didSaveCurrentHaiku.current}`);
+    } else {
+      console.log(`Same haiku detected: ${haikuId}, didSaveCurrentHaiku=${didSaveCurrentHaiku.current}`);
     }
   };
 
@@ -39,6 +42,12 @@ export function useSaveHaiku({
     // 2. We have a current haiku
     // 3. We haven't already saved this haiku
     // 4. We're not already in the process of saving
+    console.log(`=== SAVE HAIKU CHECKS ===`);
+    console.log(`isSolved: ${isSolved}`);
+    console.log(`currentHaiku: ${currentHaiku?.id}`);
+    console.log(`didSaveCurrentHaiku.current: ${didSaveCurrentHaiku.current}`);
+    console.log(`isSaving: ${isSaving}`);
+    
     if (isSolved && currentHaiku && !didSaveCurrentHaiku.current && !isSaving) {
       try {
         setIsSaving(true);
@@ -51,6 +60,7 @@ export function useSaveHaiku({
         
         // Mark as saved to avoid duplicate saves
         didSaveCurrentHaiku.current = true;
+        console.log(`didSaveCurrentHaiku flag set to: ${didSaveCurrentHaiku.current}`);
         
         // Save only the haiku_id to Supabase
         await saveCompletedHaiku.mutateAsync({
@@ -66,6 +76,7 @@ export function useSaveHaiku({
       } catch (error) {
         console.error("Error saving haiku:", error);
         didSaveCurrentHaiku.current = false;
+        console.log(`Save failed, didSaveCurrentHaiku reset to: ${didSaveCurrentHaiku.current}`);
         toast({
           title: "Error saving haiku",
           description: "There was an error saving your solution. Please try again.",
@@ -75,7 +86,9 @@ export function useSaveHaiku({
         setIsSaving(false);
       }
     } else if (didSaveCurrentHaiku.current) {
-      console.log("Skipping save - already saved this haiku");
+      console.log(`Skipping save - already saved haiku ID: ${currentHaiku?.id}`);
+    } else {
+      console.log(`Save conditions not met: solved=${isSolved}, haiku=${!!currentHaiku}, alreadySaved=${didSaveCurrentHaiku.current}, saving=${isSaving}`);
     }
   };
 
