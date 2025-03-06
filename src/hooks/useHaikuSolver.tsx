@@ -23,6 +23,7 @@ export function useHaikuSolver({
   goToNextUnsolved
 }: HaikuSolverProps) {
   const navigationRef = useRef(false);
+  const hasSolvedToastShownRef = useRef(false);
   const { toast } = useToast();
 
   // Game state management
@@ -57,25 +58,31 @@ export function useHaikuSolver({
     updateCurrentHaikuRef(currentHaiku?.id || null);
     // Reset navigation flag when haiku changes
     navigationRef.current = false;
+    // Reset toast shown flag when haiku changes
+    hasSolvedToastShownRef.current = false;
   }, [currentHaiku, updateCurrentHaikuRef]);
 
-  // Save haiku when solved and show congratulations toast
+  // Show toast when solved, but don't auto-refetch
   useEffect(() => {
-    if (isSolved && currentHaiku && !navigationRef.current) {
+    if (isSolved && currentHaiku && !hasSolvedToastShownRef.current) {
+      // Only show the toast once per solve
+      hasSolvedToastShownRef.current = true;
+      
       // Show toast when haiku is solved
       toast({
         title: "Congratulations!",
         description: "You've solved the haiku correctly.",
       });
       
-      // Save haiku but don't auto-navigate
-      saveHaiku();
+      // Save haiku but skip the immediate refetch to prevent count updates
+      // This helps prevent the UI from updating prematurely
+      saveHaiku(true); // true = skip refetch
     }
   }, [isSolved, currentHaiku, saveHaiku, toast]);
 
   // Handle continuing to next haiku - this is only called when the user
   // explicitly clicks the Continue button
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (navigationRef.current) return;
     
     navigationRef.current = true;
@@ -83,7 +90,11 @@ export function useHaikuSolver({
     // First reset the current game state
     handleNextHaiku();
     
-    // Then navigate to the next unsolved haiku, but only when explicitly requested
+    // Now we can safely refetch the completed haikus to update counts
+    // This happens after the user has clicked "Continue"
+    await refetchCompletedHaikus();
+    
+    // Then navigate to the next unsolved haiku
     setTimeout(() => {
       goToNextUnsolved();
     }, 100);

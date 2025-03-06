@@ -31,7 +31,7 @@ export function useSaveHaiku({
     }
   };
 
-  const saveHaiku = async () => {
+  const saveHaiku = async (skipRefetch: boolean = false) => {
     if (isSolved && currentHaiku && !didSaveCurrentHaiku.current && !isSaving) {
       try {
         setIsSaving(true);
@@ -50,8 +50,14 @@ export function useSaveHaiku({
           haiku_id: currentHaiku.id
         });
         
-        // Only refetch the completed haikus after saving, but don't trigger navigation
-        await refetchCompletedHaikus();
+        // Only refetch the completed haikus after saving if not skipped
+        // This helps prevent premature updates to the solved count
+        if (!skipRefetch) {
+          console.log("Refetching completed haikus after save");
+          await refetchCompletedHaikus();
+        } else {
+          console.log("Skipping refetch of completed haikus (will be done later)");
+        }
         
         console.log("Haiku saved successfully");
       } catch (error) {

@@ -12,6 +12,7 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
   const [currentHaikuIndex, setCurrentHaikuIndex] = useState(0);
   const navigationInProgressRef = useRef(false);
   const lastReportedCountRef = useRef<number | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     haikus,
@@ -22,7 +23,7 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
     refetchCompletedHaikus
   } = useHaikuData();
 
-  // Filter out completed haikus to get available ones
+  // Filter out completed haikus to get available ones - with debounce protection
   useEffect(() => {
     if (haikus && completedHaikus && !navigationInProgressRef.current) {
       console.log("Filtering available haikus...");
@@ -38,14 +39,29 @@ export function useHaikuNavigation({ onSolvedCountChange }: HaikuNavigationProps
       
       setAvailableHaikus(available);
       
-      // Sync the solvedCount with the parent component, but only if it actually changed
-      if (onSolvedCountChange && lastReportedCountRef.current !== completedIds.size) {
-        const count = completedIds.size;
-        console.log("Updating solved count to:", count);
-        onSolvedCountChange(count);
-        lastReportedCountRef.current = count;
+      // Clear any existing debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
+      
+      // Debounce the solved count update to prevent rapid fluctuations
+      debounceTimerRef.current = setTimeout(() => {
+        // Sync the solvedCount with the parent component, but only if it actually changed
+        if (onSolvedCountChange && lastReportedCountRef.current !== completedIds.size) {
+          const count = completedIds.size;
+          console.log("Updating solved count to:", count);
+          onSolvedCountChange(count);
+          lastReportedCountRef.current = count;
+        }
+      }, 500); // 500ms debounce
     }
+    
+    // Cleanup the timer on unmount
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [haikus, completedHaikus, onSolvedCountChange]);
 
   // Find the next unsolved haiku - but ONLY when explicitly requested

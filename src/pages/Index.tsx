@@ -18,13 +18,15 @@ const Index = () => {
     }
   }, [refetchCompletedHaikus]);
 
-  // Initialize solved count from completed haikus
+  // Initialize solved count from completed haikus - with better uniqueness checking
   useEffect(() => {
     if (completedHaikus && !isLoadingCompleted) {
-      // Get unique haiku_ids to count accurately
+      // Use a Set for unique haiku_ids to ensure accurate counting
       const uniqueHaikuIds = new Set(completedHaikus.map(haiku => haiku.haiku_id));
-      console.log("Index: Setting solved count to", uniqueHaikuIds.size);
-      setSolvedCount(uniqueHaikuIds.size);
+      const uniqueCount = uniqueHaikuIds.size;
+      
+      console.log("Index: Setting solved count to", uniqueCount, "unique IDs:", Array.from(uniqueHaikuIds));
+      setSolvedCount(uniqueCount);
     }
   }, [completedHaikus, isLoadingCompleted]);
 
