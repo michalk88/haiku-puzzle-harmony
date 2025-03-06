@@ -39,6 +39,7 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
 
   // Force count update function
   const handleForceCountUpdate = () => {
+    console.log("Forcing count update in HaikuPuzzle");
     setForcedCountUpdate(prev => prev + 1);
   };
 
@@ -104,6 +105,9 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
         noMoreHaikusRef.current = true;
       }
       
+      // Force a count update before navigation
+      handleForceCountUpdate();
+      
       setTimeout(() => {
         goToNextUnsolved();
         // Reset the flag after navigation completes
@@ -160,6 +164,11 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
               if (isLastAvailableHaiku) {
                 noMoreHaikusRef.current = true;
               }
+              
+              // Force count update before continuing
+              handleForceCountUpdate();
+              
+              // Continue to next haiku
               handleContinue();
             }}
           />

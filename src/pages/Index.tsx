@@ -35,8 +35,8 @@ const Index = () => {
         clearTimeout(countUpdateTimerRef.current);
       }
       
-      // Set a timer to update the count after a longer delay
-      // This helps prevent flickering, premature updates, and race conditions
+      // Set a timer to update the count after a shorter delay
+      // This helps prevent flickering, but updates more quickly
       countUpdateTimerRef.current = setTimeout(() => {
         // Use a Set for unique haiku_ids to ensure accurate counting
         const uniqueHaikuIds = new Set(completedHaikus.map(haiku => haiku.haiku_id));
@@ -44,7 +44,7 @@ const Index = () => {
         
         console.log("Index: Setting solved count to", uniqueCount, "unique IDs:", Array.from(uniqueHaikuIds));
         setSolvedCount(uniqueCount);
-      }, 500);
+      }, 100);
     }
   }, [completedHaikus, isLoadingCompleted]);
 
@@ -65,7 +65,7 @@ const Index = () => {
     // Release the lock after a delay
     setTimeout(() => {
       countUpdateLockRef.current = false;
-    }, 1500);
+    }, 500);
   };
 
   return (

@@ -87,7 +87,7 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
         }
         
         // Debounce the solved count update to prevent rapid fluctuations
-        // Longer timeout - 1000ms - to ensure we don't update too early
+        // Shorter timeout to more quickly update the counter
         debounceTimerRef.current = setTimeout(() => {
           // Sync the solvedCount with the parent component, but only if we're not navigating
           if (onSolvedCountChange && !pendingNavigationRef.current) {
@@ -96,7 +96,7 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
             onSolvedCountChange(count);
             lastReportedCountRef.current = count;
           }
-        }, 1000);
+        }, 300);
       }
     }
     
@@ -173,8 +173,8 @@ export function useHaikuNavigation({ onSolvedCountChange, forcedCountUpdate = 0 
         // This prevents premature count updates
         setTimeout(() => {
           pendingNavigationRef.current = false;
-        }, 800);
-      }, 300);
+        }, 500);
+      }, 200);
     });
   }, [haikus, completedHaikus, currentHaikuIndex, availableHaikus.length, refetchCompletedHaikus]);
 

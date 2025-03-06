@@ -127,10 +127,15 @@ export function useHaikuSolver({
     handleNextHaiku();
     
     try {
-      // Now we can safely refetch the completed haikus to update counts
-      // This happens after the user has clicked "Continue"
+      // Force a refetch of completed haikus to ensure the counter is updated
       console.log("Explicitly refetching completed haikus after Continue button");
       await refetchCompletedHaikus();
+      
+      // Call onCountUpdate to ensure the counter is updated
+      if (onCountUpdate) {
+        console.log("Calling onCountUpdate to update counter after Continue");
+        onCountUpdate();
+      }
       
       // Mark that we've refetched after solving, so we don't do it again
       hasRefetchedAfterSolveRef.current = true;
@@ -139,11 +144,17 @@ export function useHaikuSolver({
       setTimeout(() => {
         console.log("Navigating to next unsolved haiku after Continue button");
         goToNextUnsolved();
+        
+        // Reset navigation ref after a delay
+        setTimeout(() => {
+          navigationRef.current = false;
+        }, 300);
       }, 100);
     } catch (error) {
       console.error("Error refetching completed haikus:", error);
       // Still try to navigate even if refetch fails
       goToNextUnsolved();
+      navigationRef.current = false;
     }
   };
 

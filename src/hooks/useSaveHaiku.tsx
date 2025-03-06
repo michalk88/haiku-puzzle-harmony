@@ -58,6 +58,10 @@ export function useSaveHaiku({
           haiku_id: currentHaiku.id
         });
         
+        // Immediately refetch completed haikus to update counts
+        console.log("Refetching completed haikus after save");
+        await refetchCompletedHaikus();
+        
         // Call onSaveComplete callback to update counts immediately
         if (onSaveComplete) {
           console.log("Calling onSaveComplete callback to update counts");

@@ -91,6 +91,9 @@ export const useSolvedHaikus = () => {
         setDisplayHaikus([]);
         setSolvedCount(0);
         
+        // Force a refetch to make sure we get the latest data
+        await refetchCompletedHaikus();
+        
         // Add a small delay before redirecting
         setTimeout(() => {
           navigate('/', { replace: true });
