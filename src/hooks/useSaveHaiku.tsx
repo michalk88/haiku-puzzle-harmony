@@ -1,7 +1,10 @@
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useToast } from "./use-toast";
 import { Haiku } from "@/types/haiku";
+
+// Global set to track which haikus have been saved in the current session
+const savedHaikusSet = new Set<string>();
 
 interface SaveHaikuProps {
   currentHaiku: Haiku | null;
@@ -18,51 +21,37 @@ export function useSaveHaiku({
   refetchCompletedHaikus,
   onSaveComplete
 }: SaveHaikuProps) {
-  const didSaveCurrentHaiku = useRef(false);
-  const saveAttemptsRef = useRef(0);
-  const currentHaikuIdRef = useRef<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
-  const updateCurrentHaikuRef = (haikuId: string | null) => {
-    // Only reset save status if we're truly moving to a different haiku
-    if (haikuId !== currentHaikuIdRef.current) {
-      console.log(`Moving to a new haiku: ${haikuId} (was: ${currentHaikuIdRef.current})`);
-      // Reset all the tracking variables
-      didSaveCurrentHaiku.current = false;
-      saveAttemptsRef.current = 0;
-      currentHaikuIdRef.current = haikuId;
-      console.log(`Save state reset for new haiku: didSaveCurrentHaiku=${didSaveCurrentHaiku.current}`);
-    } else {
-      console.log(`Same haiku detected: ${haikuId}, didSaveCurrentHaiku=${didSaveCurrentHaiku.current}`);
-    }
-  };
-
+  console.log("useSaveHaiku - savedHaikusSet contents:", Array.from(savedHaikusSet));
+  
+  // Check if the current haiku is already saved in our tracking set
+  const isCurrentHaikuSaved = currentHaiku ? savedHaikusSet.has(currentHaiku.id) : false;
+  
   const saveHaiku = async () => {
     // Only save if:
     // 1. Haiku is solved
     // 2. We have a current haiku
-    // 3. We haven't already saved this haiku
+    // 3. We haven't already saved this haiku in this session
     // 4. We're not already in the process of saving
     console.log(`=== SAVE HAIKU CHECKS ===`);
     console.log(`isSolved: ${isSolved}`);
     console.log(`currentHaiku: ${currentHaiku?.id}`);
-    console.log(`didSaveCurrentHaiku.current: ${didSaveCurrentHaiku.current}`);
+    console.log(`isCurrentHaikuSaved: ${isCurrentHaikuSaved}`);
     console.log(`isSaving: ${isSaving}`);
+    console.log(`savedHaikusSet contains:`, Array.from(savedHaikusSet));
     
-    if (isSolved && currentHaiku && !didSaveCurrentHaiku.current && !isSaving) {
+    if (isSolved && currentHaiku && !isCurrentHaikuSaved && !isSaving) {
       try {
         setIsSaving(true);
         console.log(`========== ATTEMPTING TO SAVE HAIKU ==========`);
         console.log(`Haiku ID: ${currentHaiku.id}, Title: ${currentHaiku.title}`);
         
-        // Increment save attempts
-        saveAttemptsRef.current += 1;
-        console.log(`Save attempt #${saveAttemptsRef.current}`);
-        
-        // Set the flag BEFORE saving to prevent concurrent save attempts
-        didSaveCurrentHaiku.current = true;
-        console.log(`didSaveCurrentHaiku flag set to: ${didSaveCurrentHaiku.current}`);
+        // Add to our tracking set BEFORE saving to prevent concurrent save attempts
+        savedHaikusSet.add(currentHaiku.id);
+        console.log(`Added haiku ${currentHaiku.id} to savedHaikusSet`);
+        console.log(`savedHaikusSet now contains:`, Array.from(savedHaikusSet));
         
         // Save only the haiku_id to Supabase
         await saveCompletedHaiku.mutateAsync({
@@ -77,9 +66,13 @@ export function useSaveHaiku({
         
       } catch (error) {
         console.error("Error saving haiku:", error);
-        // Reset the flag if saving failed
-        didSaveCurrentHaiku.current = false;
-        console.log(`Save failed, didSaveCurrentHaiku reset to: ${didSaveCurrentHaiku.current}`);
+        // Remove from tracking set if saving failed
+        if (currentHaiku) {
+          savedHaikusSet.delete(currentHaiku.id);
+          console.log(`Removed haiku ${currentHaiku.id} from savedHaikusSet due to error`);
+          console.log(`savedHaikusSet now contains:`, Array.from(savedHaikusSet));
+        }
+        
         toast({
           title: "Error saving haiku",
           description: "There was an error saving your solution. Please try again.",
@@ -88,17 +81,28 @@ export function useSaveHaiku({
       } finally {
         setIsSaving(false);
       }
-    } else if (didSaveCurrentHaiku.current) {
-      console.log(`Skipping save - already saved haiku ID: ${currentHaiku?.id}`);
+    } else if (isCurrentHaikuSaved) {
+      console.log(`Skipping save - already saved haiku ID: ${currentHaiku?.id} (in savedHaikusSet)`);
     } else {
-      console.log(`Save conditions not met: solved=${isSolved}, haiku=${!!currentHaiku}, alreadySaved=${didSaveCurrentHaiku.current}, saving=${isSaving}`);
+      console.log(`Save conditions not met: solved=${isSolved}, haiku=${!!currentHaiku}, alreadySaved=${isCurrentHaikuSaved}, saving=${isSaving}`);
+    }
+  };
+
+  // When the component mounts or a new haiku loads, if it's already completed,
+  // add it to our tracking set
+  const markCurrentHaikuAsSaved = (haikuId: string) => {
+    if (!savedHaikusSet.has(haikuId)) {
+      console.log(`Marking haiku ${haikuId} as already saved`);
+      savedHaikusSet.add(haikuId);
+      console.log(`savedHaikusSet now contains:`, Array.from(savedHaikusSet));
     }
   };
 
   return {
     isSaving,
-    didSaveCurrentHaiku: didSaveCurrentHaiku.current,
-    updateCurrentHaikuRef,
+    isCurrentHaikuSaved,
+    savedHaikusSet,
+    markCurrentHaikuAsSaved,
     saveHaiku
   };
 }

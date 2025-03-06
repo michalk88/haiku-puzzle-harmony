@@ -6,7 +6,6 @@ import CompletedHaiku from "./haiku/CompletedHaiku";
 import LoadingState from "./haiku/LoadingState";
 import NoHaikusAvailable from "./haiku/NoHaikusAvailable";
 import HaikuGameplay from "./haiku/HaikuGameplay";
-import ProgressIndicator from "./haiku/ProgressIndicator";
 import { useHaikuNavigation } from "../hooks/useHaikuNavigation";
 import { useHaikuSolver } from "../hooks/useHaikuSolver";
 import { useAuth } from "@/context/AuthContext";
@@ -115,11 +114,6 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
     }
   });
 
-  // Calculate progress percentage
-  const totalHaikus = haikus?.length || 0;
-  const solvedCount = completedHaikus?.length || 0;
-  const progressPercentage = totalHaikus > 0 ? Math.round((solvedCount / totalHaikus) * 100) : 0;
-
   // Loading state
   if (isLoadingHaikus || isLoadingCompleted) {
     return <LoadingState />;
@@ -145,12 +139,6 @@ const HaikuPuzzle: React.FC<HaikuPuzzleProps> = ({ onSolvedCountChange }) => {
   return (
     <div className="relative min-h-screen flex flex-col bg-white transition-all duration-300">
       <div className="w-full max-w-2xl mx-auto px-2 sm:px-4 py-6 sm:py-8 flex-1">
-        <ProgressIndicator 
-          totalHaikus={totalHaikus}
-          solvedCount={solvedCount}
-          percentage={progressPercentage}
-        />
-
         <div className="mb-2">
           <HaikuHeader
             title={currentHaiku.title}

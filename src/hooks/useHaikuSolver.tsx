@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from "react";
 import { useHaikuGameState } from "./useHaikuGameState";
 import { useSaveHaiku } from "./useSaveHaiku";
@@ -26,8 +27,6 @@ export function useHaikuSolver({
   const navigationRef = useRef(false);
   const hasSolvedToastShownRef = useRef(false);
   const hasRefetchedAfterSolveRef = useRef(false);
-  const hasSavedCurrentHaikuRef = useRef(false);
-  const lastSavedHaikuIdRef = useRef<string | null>(null);
   const { toast } = useToast();
 
   // Game state management
@@ -59,8 +58,12 @@ export function useHaikuSolver({
     }
   };
 
-  // Haiku saving functionality
-  const { updateCurrentHaikuRef, saveHaiku, didSaveCurrentHaiku } = useSaveHaiku({
+  // Haiku saving functionality with simplified tracking
+  const { 
+    saveHaiku, 
+    isCurrentHaikuSaved,
+    markCurrentHaikuAsSaved
+  } = useSaveHaiku({
     currentHaiku,
     isSolved,
     saveCompletedHaiku,
@@ -68,78 +71,49 @@ export function useHaikuSolver({
     onSaveComplete: handleSaveComplete
   });
 
-  // Update current haiku reference when it changes
+  // Mark haiku as saved if it's already completed
   useEffect(() => {
-    const haikuId = currentHaiku?.id || null;
-    console.log(`==== HAIKU CHANGED ====`);
-    console.log(`New haiku ID: ${haikuId}`);
-    console.log(`Previous lastSavedHaikuId: ${lastSavedHaikuIdRef.current}`);
-    console.log(`isCompleted status: ${isCompleted}`);
-    
-    // Update the save tracker in the useSaveHaiku hook
-    updateCurrentHaikuRef(haikuId);
-    
-    // Reset navigation flag when haiku changes
-    navigationRef.current = false;
-    
-    // Reset toast shown flag when haiku changes
-    hasSolvedToastShownRef.current = false;
-    
-    // Reset refetch flag when haiku changes
-    hasRefetchedAfterSolveRef.current = false;
-    
-    // Set save flag if this is a previously completed haiku
-    if (isCompleted) {
-      console.log(`Setting hasSavedCurrentHaikuRef=true because this haiku is already completed`);
-      hasSavedCurrentHaikuRef.current = true;
-      lastSavedHaikuIdRef.current = haikuId;
-    } else {
-      // Only reset the save flag if this is a new haiku 
-      // (not the same as the last saved one)
-      if (lastSavedHaikuIdRef.current !== haikuId) {
-        console.log(`Resetting hasSavedCurrentHaikuRef=false for new unsolved haiku`);
-        hasSavedCurrentHaikuRef.current = false;
-        // Keep the lastSavedHaikuIdRef value - don't reset it
-      }
+    if (currentHaiku && isCompleted) {
+      console.log(`Marking haiku ${currentHaiku.id} as already saved because isCompleted is true`);
+      markCurrentHaikuAsSaved(currentHaiku.id);
     }
-  }, [currentHaiku, updateCurrentHaikuRef, isCompleted]);
+  }, [currentHaiku, isCompleted, markCurrentHaikuAsSaved]);
 
-  // Save the haiku when solved, but don't show toast (visual feedback already present)
+  // Reset toast shown flag when haiku changes
+  useEffect(() => {
+    if (currentHaiku) {
+      console.log(`Resetting hasSolvedToastShownRef for haiku: ${currentHaiku.id}`);
+      hasSolvedToastShownRef.current = false;
+    }
+  }, [currentHaiku]);
+
+  // Save the haiku when solved (but don't show toast - visual feedback already present)
   useEffect(() => {
     console.log(`=== SOLVE-SAVE CHECK ===`);
     console.log(`isSolved: ${isSolved}`);
     console.log(`currentHaiku: ${currentHaiku?.id}`);
     console.log(`isCompleted: ${isCompleted}`);
     console.log(`hasSolvedToastShownRef: ${hasSolvedToastShownRef.current}`);
-    console.log(`hasSavedCurrentHaikuRef: ${hasSavedCurrentHaikuRef.current}`);
-    console.log(`didSaveCurrentHaiku: ${didSaveCurrentHaiku}`);
-    console.log(`lastSavedHaikuIdRef: ${lastSavedHaikuIdRef.current}`);
+    console.log(`isCurrentHaikuSaved: ${isCurrentHaikuSaved}`);
     
     // Only save once per solve and only if this is a new solve (not a pre-completed one)
     if (isSolved && 
         currentHaiku && 
         !hasSolvedToastShownRef.current && 
         !isCompleted && 
-        !hasSavedCurrentHaikuRef.current && 
-        !didSaveCurrentHaiku &&
-        lastSavedHaikuIdRef.current !== currentHaiku.id) {
+        !isCurrentHaikuSaved) {
       
       console.log("First time solving this haiku - saving");
+      
       // Only save once per solve
       hasSolvedToastShownRef.current = true;
-      hasSavedCurrentHaikuRef.current = true;
-      lastSavedHaikuIdRef.current = currentHaiku.id;
       
       // Save haiku but don't show toast (we already have "Great job!" in the UI)
       saveHaiku();
-    } else if (isCompleted && currentHaiku) {
-      console.log("This haiku was already completed - not saving again");
-      hasSavedCurrentHaikuRef.current = true;
-      lastSavedHaikuIdRef.current = currentHaiku.id;
     } else if (isSolved) {
-      console.log(`Not saving because: hasSolvedToastShownRef=${hasSolvedToastShownRef.current}, isCompleted=${isCompleted}, hasSavedCurrentHaikuRef=${hasSavedCurrentHaikuRef.current}, didSaveCurrentHaiku=${didSaveCurrentHaiku}, lastSavedHaikuId=${lastSavedHaikuIdRef.current}`);
+      console.log(`Not saving because: hasSolvedToastShownRef=${hasSolvedToastShownRef.current}, isCompleted=${isCompleted}, isCurrentHaikuSaved=${isCurrentHaikuSaved}`);
     }
-  }, [isSolved, currentHaiku, isCompleted, saveHaiku, didSaveCurrentHaiku]);
+  }, [isSolved, currentHaiku, isCompleted, saveHaiku, isCurrentHaikuSaved]);
 
   // Handle continuing to next haiku - this is only called when the user
   // explicitly clicks the Continue button
